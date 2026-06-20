@@ -2,7 +2,7 @@
 node_modules/
 
 # Generated files
-nextcode-demo/system-solutions-presentation.pptx
+01.lesson/01.week1/nextcode-demo/system-solutions-presentation.pptx
 dist/
 build/
 coverage/
