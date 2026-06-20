@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linux Command Lab</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Linux Command Lab</p>
+        <h1>Linux コマンドを手を動かして覚える</h1>
+      </div>
+      <div class="progress-strip" aria-label="学習進捗">
+        <span class="progress-number" id="learnedCount">0</span>
+        <span class="progress-label">習得済み</span>
+      </div>
+    </header>
+
+    <section class="workspace" aria-label="Linux コマンド学習アプリ">
+      <aside class="sidebar">
+        <label class="field-label" for="searchInput">コマンド検索</label>
+        <input id="searchInput" class="search-input" type="search" placeholder="例: grep, 権限, ファイル">
+
+        <div class="category-list" id="categoryList" aria-label="カテゴリ"></div>
+
+        <section class="status-panel" aria-label="進捗サマリー">
+          <div>
+            <span class="status-value" id="totalCount">0</span>
+            <span class="status-name">登録コマンド</span>
+          </div>
+          <div>
+            <span class="status-value" id="quizBest">0%</span>
+            <span class="status-name">クイズ最高</span>
+          </div>
+        </section>
+      </aside>
+
+      <section class="content">
+        <nav class="view-tabs" aria-label="表示切替">
+          <button class="tab-button active" type="button" data-view="learnView">学習</button>
+          <button class="tab-button" type="button" data-view="practiceView">練習</button>
+          <button class="tab-button" type="button" data-view="quizView">クイズ</button>
+          <button class="tab-button" type="button" data-view="sheetView">一覧</button>
+        </nav>
+
+        <section class="view active" id="learnView">
+          <div class="learn-layout">
+            <section class="command-list" id="commandList" aria-label="コマンド一覧"></section>
+
+            <article class="command-detail" id="commandDetail" aria-live="polite">
+              <div class="terminal-visual" aria-hidden="true">
+                <div class="terminal-bar">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <pre id="terminalPreview">$ pwd
+/home/student
+$ ls
+notes.txt  scripts  downloads</pre>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="practiceView">
+          <div class="practice-grid">
+            <section class="practice-panel">
+              <p class="section-kicker">ターミナル練習</p>
+              <h2 id="challengeTitle">課題を読み込み中</h2>
+              <p id="challengeText" class="challenge-text"></p>
+              <div class="answer-row">
+                <span class="prompt">$</span>
+                <input id="practiceInput" class="command-input" type="text" spellcheck="false" autocomplete="off" placeholder="ここにコマンドを入力">
+                <button id="runPractice" class="primary-button" type="button">実行</button>
+              </div>
+              <div class="practice-actions">
+                <button id="showHint" class="ghost-button" type="button">ヒント</button>
+                <button id="nextChallenge" class="ghost-button" type="button">次の課題</button>
+              </div>
+            </section>
+
+            <section class="terminal-output" aria-label="実行結果">
+              <div class="terminal-bar">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <pre id="practiceOutput">課題に合うコマンドを入力すると、結果と解説が表示されます。</pre>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="quizView">
+          <div class="quiz-panel">
+            <div class="quiz-head">
+              <div>
+                <p class="section-kicker">4択クイズ</p>
+                <h2 id="quizQuestion">問題を読み込み中</h2>
+              </div>
+              <div class="score-box">
+                <span id="quizScore">0 / 0</span>
+                <span>正解</span>
+              </div>
+            </div>
+            <div class="quiz-options" id="quizOptions"></div>
+            <p class="feedback" id="quizFeedback" aria-live="polite"></p>
+            <button id="nextQuiz" class="primary-button" type="button">次の問題</button>
+          </div>
+        </section>
+
+        <section class="view" id="sheetView">
+          <div class="sheet-head">
+            <div>
+              <p class="section-kicker">チートシート</p>
+              <h2>基本コマンド一覧</h2>
+            </div>
+            <button id="resetProgress" class="ghost-button danger" type="button">進捗リセット</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>コマンド</th>
+                  <th>用途</th>
+                  <th>よく使う例</th>
+                  <th>カテゴリ</th>
+                </tr>
+              </thead>
+              <tbody id="sheetBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "nextcode-demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build:pptx": "node tools/generate_pptx.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "pptxgenjs": "^4.0.1"
+  }
+}
