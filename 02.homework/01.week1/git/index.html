@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Git Dungeon</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="game">
+    <header class="hud">
+      <div class="title">
+        <span class="mark" aria-hidden="true">GD</span>
+        <div>
+          <p class="eyebrow">Git Dungeon</p>
+          <h1>リポジトリの迷宮</h1>
+        </div>
+      </div>
+
+      <section class="stats" aria-label="プレイヤー状態">
+        <div class="stat">
+          <span>LV</span>
+          <strong id="levelValue">1</strong>
+        </div>
+        <div class="stat">
+          <span>HP</span>
+          <strong id="hpValue">100</strong>
+        </div>
+        <div class="stat">
+          <span>EXP</span>
+          <strong id="xpValue">0</strong>
+        </div>
+        <div class="stat branch">
+          <span>BRANCH</span>
+          <strong id="branchValue">none</strong>
+        </div>
+      </section>
+    </header>
+
+    <section class="screen" aria-label="Git探索ゲーム">
+      <section class="map-panel">
+        <div class="quest-card">
+          <div>
+            <p class="eyebrow" id="questAct">ACT 1</p>
+            <h2 id="questTitle">起動中</h2>
+            <p id="questText"></p>
+          </div>
+          <button id="resetGame" class="small-button" type="button">やり直す</button>
+        </div>
+
+        <div id="mapGrid" class="map-grid" aria-label="ダンジョンマップ"></div>
+
+        <div class="movement" aria-label="移動操作">
+          <button class="move-button up" type="button" data-move="up" aria-label="上へ">↑</button>
+          <button class="move-button left" type="button" data-move="left" aria-label="左へ">←</button>
+          <button class="move-button down" type="button" data-move="down" aria-label="下へ">↓</button>
+          <button class="move-button right" type="button" data-move="right" aria-label="右へ">→</button>
+          <button id="lookButton" class="look-button" type="button">調べる</button>
+        </div>
+      </section>
+
+      <aside class="side-panel">
+        <section class="panel command-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Command</p>
+              <h2 id="placeName">現在地</h2>
+            </div>
+            <span id="placeHint" class="place-hint">...</span>
+          </div>
+
+          <div id="commandChips" class="command-chips"></div>
+
+          <div class="command-line">
+            <span>$</span>
+            <input id="commandInput" type="text" spellcheck="false" autocomplete="off" aria-label="Gitコマンド入力">
+            <button id="runCommand" class="cast-button" type="button">唱える</button>
+          </div>
+
+          <div id="choicePanel" class="choice-panel" hidden>
+            <p>衝突した見出しをどう直す？</p>
+            <button type="button" data-choice="ours">見出し: Git入門</button>
+            <button type="button" data-choice="theirs">見出し: Git Sprint</button>
+            <button type="button" data-choice="both">見出し: Git Sprint 入門</button>
+          </div>
+        </section>
+
+        <section class="panel inventory-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Worktree</p>
+              <h2>持ち物</h2>
+            </div>
+          </div>
+          <div id="inventoryList" class="inventory-list"></div>
+        </section>
+
+        <section class="panel history-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">History</p>
+              <h2>履歴</h2>
+            </div>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </section>
+
+        <section class="panel log-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Log</p>
+              <h2>冒険ログ</h2>
+            </div>
+          </div>
+          <pre id="gameLog"></pre>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
