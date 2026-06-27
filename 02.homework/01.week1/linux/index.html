@@ -3,140 +3,148 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Linux Command Lab</title>
+  <title>Linux Story Quest</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main class="app-shell">
+  <main class="quest-app">
     <header class="topbar">
-      <div>
-        <p class="eyebrow">Linux Command Lab</p>
-        <h1>Linux コマンドを手を動かして覚える</h1>
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">$</span>
+        <div>
+          <p class="eyebrow">Linux Story Quest</p>
+          <h1>コマンドで街をひらく</h1>
+        </div>
       </div>
-      <div class="progress-strip" aria-label="学習進捗">
-        <span class="progress-number" id="learnedCount">0</span>
-        <span class="progress-label">習得済み</span>
+
+      <div class="progress-wrap" aria-label="進行状況">
+        <div id="progressDots" class="progress-dots"></div>
+        <p id="progressText" class="progress-text">1 / 36</p>
+      </div>
+
+      <div class="top-actions">
+        <button id="bookButton" class="icon-button" type="button" aria-label="コマンド一覧" title="コマンド一覧">?</button>
+        <button id="resetButton" class="icon-button reset" type="button" aria-label="最初から" title="最初から">↻</button>
       </div>
     </header>
 
-    <section class="workspace" aria-label="Linux コマンド学習アプリ">
-      <aside class="sidebar">
-        <label class="field-label" for="searchInput">コマンド検索</label>
-        <input id="searchInput" class="search-input" type="search" placeholder="例: grep, 権限, ファイル">
+    <section class="stage-layout" aria-label="Linux学習ゲーム">
+      <section class="scene-panel">
+        <div id="scene" class="scene action-idle">
+          <div class="sun" aria-hidden="true"></div>
+          <div class="cloud cloud-a" aria-hidden="true"></div>
+          <div class="cloud cloud-b" aria-hidden="true"></div>
 
-        <div class="category-list" id="categoryList" aria-label="カテゴリ"></div>
-
-        <section class="status-panel" aria-label="進捗サマリー">
-          <div>
-            <span class="status-value" id="totalCount">0</span>
-            <span class="status-name">登録コマンド</span>
+          <div class="place home active" data-place="home">
+            <span class="place-icon">⌂</span>
+            <span>ホーム</span>
           </div>
-          <div>
-            <span class="status-value" id="quizBest">0%</span>
-            <span class="status-name">クイズ最高</span>
+          <div class="place docs" data-place="docs">
+            <span class="place-icon">□</span>
+            <span>資料室</span>
           </div>
-        </section>
-      </aside>
-
-      <section class="content">
-        <nav class="view-tabs" aria-label="表示切替">
-          <button class="tab-button active" type="button" data-view="learnView">学習</button>
-          <button class="tab-button" type="button" data-view="practiceView">練習</button>
-          <button class="tab-button" type="button" data-view="quizView">クイズ</button>
-          <button class="tab-button" type="button" data-view="sheetView">一覧</button>
-        </nav>
-
-        <section class="view active" id="learnView">
-          <div class="learn-layout">
-            <section class="command-list" id="commandList" aria-label="コマンド一覧"></section>
-
-            <article class="command-detail" id="commandDetail" aria-live="polite">
-              <div class="terminal-visual" aria-hidden="true">
-                <div class="terminal-bar">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-                <pre id="terminalPreview">$ pwd
-/home/student
-$ ls
-notes.txt  scripts  downloads</pre>
-              </div>
-            </article>
+          <div class="place atelier" data-place="atelier">
+            <span class="place-icon">◇</span>
+            <span>作業部屋</span>
           </div>
-        </section>
+          <div class="path-line path-home-docs" aria-hidden="true"></div>
+          <div class="path-line path-home-atelier" aria-hidden="true"></div>
 
-        <section class="view" id="practiceView">
-          <div class="practice-grid">
-            <section class="practice-panel">
-              <p class="section-kicker">ターミナル練習</p>
-              <h2 id="challengeTitle">課題を読み込み中</h2>
-              <p id="challengeText" class="challenge-text"></p>
-              <div class="answer-row">
-                <span class="prompt">$</span>
-                <input id="practiceInput" class="command-input" type="text" spellcheck="false" autocomplete="off" placeholder="ここにコマンドを入力">
-                <button id="runPractice" class="primary-button" type="button">実行</button>
-              </div>
-              <div class="practice-actions">
-                <button id="showHint" class="ghost-button" type="button">ヒント</button>
-                <button id="nextChallenge" class="ghost-button" type="button">次の課題</button>
-              </div>
-            </section>
-
-            <section class="terminal-output" aria-label="実行結果">
-              <div class="terminal-bar">
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-              <pre id="practiceOutput">課題に合うコマンドを入力すると、結果と解説が表示されます。</pre>
-            </section>
+          <div id="objectShelf" class="object-shelf" aria-hidden="true">
+            <span class="object file">guide.txt</span>
+            <span class="object folder">docs/</span>
+            <span class="object log">logs/</span>
+            <span class="object script">scripts/</span>
+            <span class="object config">config/</span>
           </div>
-        </section>
 
-        <section class="view" id="quizView">
-          <div class="quiz-panel">
-            <div class="quiz-head">
-              <div>
-                <p class="section-kicker">4択クイズ</p>
-                <h2 id="quizQuestion">問題を読み込み中</h2>
-              </div>
-              <div class="score-box">
-                <span id="quizScore">0 / 0</span>
-                <span>正解</span>
-              </div>
+          <div id="folderBuild" class="folder-build" aria-hidden="true">
+            <div class="folder-tab"></div>
+            <div class="folder-body"></div>
+            <span>atelier</span>
+          </div>
+
+          <div id="noteBuild" class="note-build" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <strong>idea.txt</strong>
+          </div>
+
+          <div id="searchBeam" class="search-beam" aria-hidden="true"></div>
+
+          <div id="avatar" class="avatar" data-place="home" aria-hidden="true">
+            <div class="hair"></div>
+            <div class="face">
+              <span class="eye left"></span>
+              <span class="eye right"></span>
+              <span class="smile"></span>
             </div>
-            <div class="quiz-options" id="quizOptions"></div>
-            <p class="feedback" id="quizFeedback" aria-live="polite"></p>
-            <button id="nextQuiz" class="primary-button" type="button">次の問題</button>
-          </div>
-        </section>
-
-        <section class="view" id="sheetView">
-          <div class="sheet-head">
-            <div>
-              <p class="section-kicker">チートシート</p>
-              <h2>基本コマンド一覧</h2>
+            <div class="body">
+              <span class="scarf"></span>
+              <span class="arm left"></span>
+              <span class="arm right"></span>
             </div>
-            <button id="resetProgress" class="ghost-button danger" type="button">進捗リセット</button>
+            <div class="legs">
+              <span></span>
+              <span></span>
+            </div>
           </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>コマンド</th>
-                  <th>用途</th>
-                  <th>よく使う例</th>
-                  <th>カテゴリ</th>
-                </tr>
-              </thead>
-              <tbody id="sheetBody"></tbody>
-            </table>
+
+          <div class="story-bubble">
+            <p id="storyLine">まずは自分がどこにいるか知ろう。</p>
           </div>
-        </section>
+        </div>
+
+        <div class="result-card" aria-live="polite">
+          <p class="result-label">実行結果</p>
+          <pre id="resultOutput">ここにコマンドの結果が表示されます。</pre>
+        </div>
       </section>
+
+      <aside class="mission-card">
+        <p id="stageLabel" class="eyebrow">Step 1</p>
+        <h2 id="stageTitle">現在地を知る</h2>
+        <p id="stageText" class="stage-text"></p>
+
+        <div class="command-focus">
+          <span>今日のコマンド</span>
+          <strong id="focusCommand">pwd</strong>
+          <p id="focusMeaning">今いる場所を表示する。</p>
+        </div>
+
+        <div class="goal-box">
+          <p>やること</p>
+          <strong id="goalText">pwd を入力する</strong>
+        </div>
+
+        <div class="helper-row">
+          <button id="hintButton" class="soft-button" type="button">ヒント</button>
+          <button id="fillButton" class="soft-button primary" type="button">答えを見る</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="command-dock" aria-label="コマンド入力">
+      <div class="chips" id="commandChips"></div>
+      <form id="commandForm" class="command-form" autocomplete="off">
+        <label for="commandInput">ミナに指示</label>
+        <input id="commandInput" type="text" spellcheck="false" placeholder="ここにコマンドを入力">
+        <button type="submit">実行</button>
+      </form>
+      <p id="feedbackLine" class="feedback-line">コマンドを入れると、ミナがその動きをして街が進みます。</p>
     </section>
   </main>
+
+  <dialog id="bookDialog" class="book-dialog">
+    <div class="book-head">
+      <div>
+        <p class="eyebrow">Command Book</p>
+        <h2>このゲームで覚えるコマンド</h2>
+      </div>
+      <button id="closeBook" class="icon-button" type="button" aria-label="閉じる">×</button>
+    </div>
+    <div id="bookList" class="book-list"></div>
+  </dialog>
 
   <script src="script.js"></script>
 </body>
