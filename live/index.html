@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>シミズ | AI Agent Developer</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f8f4;
+        --surface: #ffffff;
+        --ink: #202623;
+        --text: #35413d;
+        --muted: #697570;
+        --line: #dfe5df;
+        --green: #176f58;
+        --green-2: #0f4f43;
+        --blue: #315a7d;
+        --coral: #c85f4b;
+        --yellow: #f2c14e;
+        --soft-green: #e7f3ee;
+        --soft-blue: #e9f0f6;
+        --shadow: 0 18px 54px rgba(32, 38, 35, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(135deg, rgba(242, 193, 78, 0.18), transparent 34%),
+          linear-gradient(180deg, #fbfcf8 0%, var(--bg) 100%);
+        color: var(--ink);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic",
+          "YuGothic", "Noto Sans JP", "Segoe UI", sans-serif;
+        line-height: 1.75;
+        overflow-x: hidden;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      p,
+      h1,
+      h2,
+      h3 {
+        margin-top: 0;
+      }
+
+      .page {
+        width: min(1120px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 34px 0 42px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 10px 0 34px;
+        color: var(--muted);
+        font-size: 0.92rem;
+        font-weight: 700;
+      }
+
+      .brand {
+        color: var(--ink);
+        font-weight: 900;
+      }
+
+      .nav-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 38px;
+        padding: 0 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.72);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.1fr) minmax(310px, 0.9fr);
+        gap: 42px;
+        align-items: center;
+        min-height: calc(100vh - 120px);
+        padding: 12px 0 54px;
+      }
+
+      .hero > *,
+      .snapshot > *,
+      .strengths > *,
+      .work-grid > *,
+      .timeline > * {
+        min-width: 0;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 18px;
+        color: var(--green);
+        font-size: 0.82rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        content: "";
+        width: 34px;
+        height: 2px;
+        background: var(--coral);
+      }
+
+      h1 {
+        margin-bottom: 18px;
+        font-size: clamp(3.6rem, 9vw, 6.8rem);
+        line-height: 0.95;
+        letter-spacing: 0;
+        overflow-wrap: anywhere;
+      }
+
+      .hero-copy {
+        max-width: 780px;
+      }
+
+      .headline {
+        margin-bottom: 18px;
+        color: var(--ink);
+        font-size: clamp(1.34rem, 2.6vw, 2rem);
+        font-weight: 900;
+        line-height: 1.48;
+        overflow-wrap: anywhere;
+      }
+
+      .lead {
+        max-width: 720px;
+        margin-bottom: 28px;
+        color: var(--text);
+        font-size: 1.03rem;
+        overflow-wrap: anywhere;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 28px;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        min-height: 48px;
+        padding: 0 18px;
+        border: 1px solid var(--ink);
+        border-radius: 8px;
+        background: var(--ink);
+        color: #ffffff;
+        font-weight: 800;
+        transition:
+          transform 180ms ease,
+          box-shadow 180ms ease;
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(32, 38, 35, 0.16);
+      }
+
+      .button.secondary {
+        background: var(--surface);
+        color: var(--ink);
+      }
+
+      .icon {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 auto;
+      }
+
+      .proof-strip {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        max-width: 760px;
+      }
+
+      .proof-item {
+        padding: 15px 16px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.82);
+      }
+
+      .proof-item strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--ink);
+        font-size: 1rem;
+        line-height: 1.35;
+      }
+
+      .proof-item span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.86rem;
+        line-height: 1.55;
+      }
+
+      .profile-visual {
+        display: grid;
+        gap: 16px;
+      }
+
+      .signal {
+        position: relative;
+        min-height: 300px;
+        border-radius: 8px;
+        background:
+          linear-gradient(
+            135deg,
+            rgba(23, 111, 88, 0.96),
+            rgba(49, 90, 125, 0.92)
+          ),
+          var(--green);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .signal::before,
+      .signal::after {
+        position: absolute;
+        content: "";
+        border-radius: 999px;
+      }
+
+      .signal::before {
+        width: 190px;
+        height: 190px;
+        top: -48px;
+        right: -44px;
+        background: rgba(242, 193, 78, 0.9);
+      }
+
+      .signal::after {
+        width: 150px;
+        height: 150px;
+        bottom: -42px;
+        left: -36px;
+        background: rgba(200, 95, 75, 0.88);
+      }
+
+      .signal-inner {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        min-height: 300px;
+        padding: 24px;
+        color: #ffffff;
+      }
+
+      .signal-label {
+        margin-bottom: 0;
+        font-size: 0.8rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.82;
+      }
+
+      .signal-main {
+        align-self: center;
+        margin-bottom: 0;
+        font-size: clamp(1.75rem, 3vw, 2.35rem);
+        font-weight: 900;
+        line-height: 1.25;
+        letter-spacing: 0;
+      }
+
+      .signal-note {
+        width: fit-content;
+        max-width: 100%;
+        margin-bottom: 0;
+        padding: 10px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.13);
+        font-size: 0.88rem;
+        font-weight: 800;
+      }
+
+      .snapshot {
+        display: grid;
+        gap: 10px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: 0 12px 34px rgba(32, 38, 35, 0.06);
+      }
+
+      .snapshot-row {
+        display: grid;
+        grid-template-columns: 82px minmax(0, 1fr);
+        gap: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--line);
+        font-size: 0.94rem;
+      }
+
+      .snapshot-row:last-child {
+        padding-bottom: 0;
+        border-bottom: 0;
+      }
+
+      .snapshot-row dt {
+        color: var(--muted);
+        font-weight: 800;
+      }
+
+      .snapshot-row dd {
+        margin: 0;
+        color: var(--text);
+        font-weight: 700;
+        overflow-wrap: anywhere;
+      }
+
+      section {
+        padding: 56px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .section-head {
+        display: grid;
+        grid-template-columns: 230px minmax(0, 1fr);
+        gap: 34px;
+        align-items: start;
+        margin-bottom: 28px;
+      }
+
+      h2 {
+        margin-bottom: 0;
+        font-size: clamp(1.55rem, 3vw, 2.2rem);
+        line-height: 1.25;
+        letter-spacing: 0;
+      }
+
+      .section-head p {
+        margin-bottom: 0;
+        color: var(--muted);
+        overflow-wrap: anywhere;
+      }
+
+      .strengths {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .strength-card {
+        min-height: 100%;
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: 0 10px 30px rgba(32, 38, 35, 0.05);
+      }
+
+      .strength-card h3 {
+        margin-bottom: 12px;
+        color: var(--ink);
+        font-size: 1.08rem;
+        line-height: 1.45;
+      }
+
+      .strength-card p {
+        margin-bottom: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        overflow-wrap: anywhere;
+      }
+
+      .work-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      .now-card {
+        padding: 28px;
+        border-radius: 8px;
+        background: var(--green-2);
+        color: #ffffff;
+      }
+
+      .now-card h3 {
+        margin-bottom: 14px;
+        font-size: 1.22rem;
+        line-height: 1.45;
+      }
+
+      .now-card p {
+        margin-bottom: 0;
+        color: rgba(255, 255, 255, 0.84);
+        overflow-wrap: anywhere;
+      }
+
+      .work-list {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .work-list li {
+        padding: 18px 18px 18px 20px;
+        border-left: 4px solid var(--green);
+        border-radius: 0 8px 8px 0;
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: 0 8px 24px rgba(32, 38, 35, 0.05);
+        overflow-wrap: anywhere;
+      }
+
+      .timeline {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .step {
+        position: relative;
+        padding: 22px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .step span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        margin-bottom: 14px;
+        border-radius: 999px;
+        background: var(--soft-green);
+        color: var(--green);
+        font-size: 0.86rem;
+        font-weight: 900;
+      }
+
+      .step h3 {
+        margin-bottom: 9px;
+        font-size: 1.02rem;
+        line-height: 1.45;
+      }
+
+      .step p {
+        margin-bottom: 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+        overflow-wrap: anywhere;
+      }
+
+      .evidence {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 16px;
+      }
+
+      .evidence-box {
+        padding: 24px;
+        border-radius: 8px;
+        background: var(--soft-blue);
+      }
+
+      .evidence-box.accent {
+        background: var(--soft-green);
+      }
+
+      .evidence-box h3 {
+        margin-bottom: 12px;
+        font-size: 1.08rem;
+      }
+
+      .evidence-box p {
+        margin-bottom: 0;
+        color: var(--text);
+        overflow-wrap: anywhere;
+      }
+
+      .keywords {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 26px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .keyword {
+        display: inline-flex;
+        align-items: center;
+        min-height: 36px;
+        padding: 6px 12px;
+        border: 1px solid #cbd7d1;
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--text);
+        font-size: 0.9rem;
+        font-weight: 800;
+        overflow-wrap: anywhere;
+      }
+
+      footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        padding-top: 28px;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      @media (max-width: 900px) {
+        .page {
+          width: min(720px, calc(100% - 28px));
+          padding-top: 22px;
+        }
+
+        .topbar {
+          padding-bottom: 24px;
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 28px;
+          min-height: auto;
+          padding-bottom: 42px;
+        }
+
+        .signal {
+          min-height: 250px;
+        }
+
+        .signal-inner {
+          min-height: 250px;
+        }
+
+        .proof-strip,
+        .strengths,
+        .work-grid,
+        .timeline,
+        .evidence,
+        .section-head {
+          grid-template-columns: 1fr;
+        }
+
+        section {
+          padding: 44px 0;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .page {
+          width: min(680px, calc(100% - 24px));
+        }
+
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        h1 {
+          font-size: clamp(3.1rem, 18vw, 4.2rem);
+        }
+
+        .headline {
+          font-size: 1.22rem;
+        }
+
+        .lead {
+          font-size: 0.98rem;
+        }
+
+        .actions {
+          align-items: stretch;
+        }
+
+        .button {
+          width: 100%;
+        }
+
+        .proof-strip {
+          gap: 8px;
+        }
+
+        .snapshot-row {
+          grid-template-columns: 1fr;
+          gap: 3px;
+        }
+
+        .strength-card,
+        .now-card,
+        .step,
+        .evidence-box {
+          padding: 20px;
+        }
+
+        footer {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <nav class="topbar" aria-label="ページ内ナビゲーション">
+        <a class="brand" href="#">シミズ</a>
+        <a
+          class="nav-link"
+          href="https://x.com/shimizu_ai01"
+          target="_blank"
+          rel="noopener noreferrer"
+          >X / @shimizu_ai01</a
+        >
+      </nav>
+
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">AI Agent Developer</p>
+          <h1>シミズ</h1>
+          <p class="headline">
+            業務を理解し、AIエージェントを現場で使える形に落とし込む。
+          </p>
+          <p class="lead">
+            保険系基幹システムの開発で、要件定義から設計・開発・運用保守までを5年以上経験。
+            現在はその実務感覚を土台に、法人向けAIエージェント開発、マルチエージェント実行基盤の設計、
+            AIツールを用いたシステム開発に取り組んでいます。
+          </p>
+          <div class="actions">
+            <a
+              class="button"
+              href="https://x.com/shimizu_ai01"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="シミズのXアカウントを開く"
+            >
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  fill="currentColor"
+                  d="M18.9 2h3.3l-7.2 8.2L23.5 22h-6.7l-5.2-6.8L5.7 22H2.4l7.7-8.8L2 2h6.9l4.7 6.2L18.9 2Zm-1.2 17.9h1.8L7.9 4H6L17.7 19.9Z"
+                />
+              </svg>
+              Xでつながる
+            </a>
+            <a class="button secondary" href="#strength">強みを見る</a>
+          </div>
+
+          <div class="proof-strip" aria-label="プロフィール要約">
+            <div class="proof-item">
+              <strong>業務理解</strong>
+              <span>基幹システム開発の全工程を経験</span>
+            </div>
+            <div class="proof-item">
+              <strong>基盤設計</strong>
+              <span>複数エージェントの並行実行を安定させる</span>
+            </div>
+            <div class="proof-item">
+              <strong>定着支援</strong>
+              <span>生成AI研修・育成・ファシリテーション</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="profile-visual" aria-label="シミズの現在地">
+          <div class="signal">
+            <div class="signal-inner">
+              <p class="signal-label">Core Message</p>
+              <p class="signal-main">業務理解<br />基盤設計<br />定着支援</p>
+              <p class="signal-note">実装して、使われる形まで整える</p>
+            </div>
+          </div>
+          <dl class="snapshot">
+            <div class="snapshot-row">
+              <dt>現在</dt>
+              <dd>マルチエージェント実行基盤の設計 / AI駆動開発</dd>
+            </div>
+            <div class="snapshot-row">
+              <dt>背景</dt>
+              <dd>元保険系SE。COBOLを含むウォーターフォール全工程を経験</dd>
+            </div>
+            <div class="snapshot-row">
+              <dt>特徴</dt>
+              <dd>開発・教育・マーケティング視点をつないで設計する</dd>
+            </div>
+          </dl>
+        </aside>
+      </header>
+
+      <section id="strength" aria-labelledby="strength-title">
+        <div class="section-head">
+          <h2 id="strength-title">何ができる人か</h2>
+          <p>
+            AIの話だけで終わらせず、業務の整理、実装、使い方の定着までを一連の流れとして扱えます。
+          </p>
+        </div>
+        <div class="strengths">
+          <article class="strength-card">
+            <h3>業務と要件を整理する</h3>
+            <p>
+              基幹システム開発で培った視点をもとに、現場の目的、制約、運用を踏まえてAI活用の形を整理します。
+            </p>
+          </article>
+          <article class="strength-card">
+            <h3>複数エージェントの動きを設計する</h3>
+            <p>
+              役割の違うAIエージェントが並行・協調して動く前提で、状態管理、実行順序、例外時の復旧を設計します。
+            </p>
+          </article>
+          <article class="strength-card">
+            <h3>人に伝え、使える状態にする</h3>
+            <p>
+              研修講師、新人アドバイザー、生成AI研修、ハッカソン運営の経験を活かし、導入後の理解と活用を支援します。
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="current-title">
+        <div class="section-head">
+          <h2 id="current-title">現在取り組んでいること</h2>
+          <p>
+            企業やチームがAIを試す段階から、複数エージェントを安定して動かす段階へ進むための仕組みづくりに注力しています。
+          </p>
+        </div>
+        <div class="work-grid">
+          <article class="now-card">
+            <h3>複数のAIエージェントが破綻なく動く基盤を整える</h3>
+            <p>
+              調査、判断、整理、実装支援などの役割を持つエージェントを、衝突や停滞が起きにくい流れで制御。
+              異常時には検知、修正、再実行へつなげられる設計を目指しています。
+            </p>
+          </article>
+          <ul class="work-list">
+            <li>法人向けAIエージェント開発</li>
+            <li>マルチエージェント実行基盤の設計・構築</li>
+            <li>AIツールを用いたシステム開発とAI駆動開発の実践</li>
+            <li>ファシリテーター育成・サポートエージェント開発</li>
+          </ul>
+        </div>
+      </section>
+
+      <section aria-labelledby="background-title">
+        <div class="section-head">
+          <h2 id="background-title">これまでの流れ</h2>
+          <p>
+            キャリアの軸は、システム開発の実務から、学習設計、生成AI活用、AIエージェント開発へ広がっています。
+          </p>
+        </div>
+        <div class="timeline">
+          <article class="step">
+            <span>1</span>
+            <h3>保険系SEとして全工程を経験</h3>
+            <p>
+              COBOLを含む汎用系開発で、要件定義から運用保守まで担当。小規模PMも経験しました。
+            </p>
+          </article>
+          <article class="step">
+            <span>2</span>
+            <h3>教える・支える役割を経験</h3>
+            <p>
+              研修講師や新人アドバイザーとして、技術を相手に合わせて伝える経験を重ねました。
+            </p>
+          </article>
+          <article class="step">
+            <span>3</span>
+            <h3>マーケティングとWebを学習</h3>
+            <p>
+              職業訓練校で、戦略立案、広告運用ツール、Webデザインを学び、見せ方の視点を補強しました。
+            </p>
+          </article>
+          <article class="step">
+            <span>4</span>
+            <h3>生成AI・AIエージェントへ</h3>
+            <p>
+              生成AI研修を提案・実施し、AI
+              Agents/AGIハッカソンの運営と開発参加につなげました。
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section aria-labelledby="evidence-title">
+        <div class="section-head">
+          <h2 id="evidence-title">根拠になる経験</h2>
+          <p>
+            強みとして見せるべき実績だけを、伝わりやすい粒度に整理しています。
+          </p>
+        </div>
+        <div class="evidence">
+          <article class="evidence-box">
+            <h3>AI領域での実践</h3>
+            <p>
+              日本初AI
+              Agentsハッカソン、日本初AGIハッカソンのオーガナイザーを担当。
+              参加者としてもAI
+              AgentおよびAGI関連のプロトタイプ開発に取り組みました。
+            </p>
+          </article>
+          <article class="evidence-box accent">
+            <h3>企画と学習支援</h3>
+            <p>
+              生成AIハッカソンでアイデア部門1位を獲得。
+              企業向けに「受講生対応に用いる生成AI活用法」の研修を提案し、実施しました。
+            </p>
+          </article>
+        </div>
+        <ul class="keywords" aria-label="関連キーワード">
+          <li class="keyword">元保険系SE</li>
+          <li class="keyword">COBOL</li>
+          <li class="keyword">ウォーターフォール全工程</li>
+          <li class="keyword">法人向けAIエージェント開発</li>
+          <li class="keyword">AI駆動開発</li>
+          <li class="keyword">生成AI研修</li>
+          <li class="keyword">法学部卒</li>
+          <li class="keyword">創造者</li>
+        </ul>
+      </section>
+
+      <footer>
+        <span>&copy; 2026 シミズ</span>
+        <a
+          href="https://x.com/shimizu_ai01"
+          target="_blank"
+          rel="noopener noreferrer"
+          >x.com/shimizu_ai01</a
+        >
+      </footer>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case File No.3 — 隣人に貸した一区画 | The Scholar's Casebook</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="est">Established MMXXVI · Study Chronicle</div>
+  <h1><a href="../index.html">The Scholar's Casebook</a></h1>
+  <div class="subtitle">— 或る学徒の事件簿:技術学習の記録 —</div>
+  <div class="ornament">❦ ❦ ❦</div>
+</header>
+
+<nav class="top-nav">
+  <a href="../index.html">Casebook 学習記録</a>
+  <a href="../index.html#exhibition">Exhibition 制作物</a>
+  <a href="../about.html">About この書斎について</a>
+</nav>
+
+<main class="container">
+<article class="entry">
+<div class="entry-inner">
+
+<header class="entry-header">
+  <div class="vol">Case File No. 3 · Amazon Web Services</div>
+  <h1>隣人に貸した一区画<br>— 他人の資源に我が名を与える、クロスアカウント委任の全記録 —</h1>
+  <div class="dateline">2026年7月 記す · S3 / CloudFront / ACM / Route 53 / DNS委任</div>
+  <hr class="rule">
+</header>
+
+<p class="lead">依頼は同期の学徒から舞い込んだ。「君のドメインのサブドメイン <code>friend.example.com</code> で、私のサイトを公開させてほしい」。サイトの中身——S3もCloudFrontも——は先方のAWSアカウントにあり、私の手元にあるのはドメインの台帳だけ。前件までと決定的に違うのは、<strong>資源と名前の持ち主が別人である</strong>という一点だ。結論を先に記す。私のやることは台帳に二行書くだけ。だがその二行に至るまでに、S3とは何か、DNSとは何か、証明書とは何かを、すべて一本の糸でつなぎ直すことになった。本稿はその全記録である。</p>
+
+<h2><span class="chap">I.</span>事件の構図 — 誰が何を持っているか</h2>
+
+<pre><code>私  : example.com のドメイン(Route 53のホストゾーン = 台帳)
+同期: サイトの資源(S3 = 倉庫、CloudFront = 店)…先方のアカウント内
+目標: https://friend.example.com で同期のサイトが 🔒 付きで開く</code></pre>
+
+<img class="fig" src="images/10_two_estates.png" alt="台帳を持つ地主と、倉庫と店を持つ商人の二つの領地">
+<p class="figcap">図1 — 左が私(台帳の主)、右が同期(倉庫と店の主)。私の土地の道しるべが、隣人の店を指す</p>
+
+<p>これは「名前の世界(私の領地)」と「モノの世界(同期の資源)」を、<strong>持ち主同士の合意でつなぐ</strong>作業である。役割分担の原則は一行で足りる:</p>
+
+<div class="notecard">
+  <span class="notecard-title">◆ 大原則</span>
+  資源(S3/CloudFront/証明書)のことは<strong>資源の持ち主</strong>がやる。台帳(ホストゾーン)への書き込みだけは、<strong>ドメインの持ち主</strong>がやる。
+</div>
+
+<h2><span class="chap">II.</span>同期は「S3を作った」。……で、なぜそれだけでは駄目なのか</h2>
+
+<p>同期はS3にHTMLと画像を上げた。だがS3はあくまで<strong>ファイル置き場——倉庫</strong>である。倉庫のままでは今回の目標に三つ届かない。</p>
+
+<img class="fig" src="images/14_warehouse_store.png" alt="薄暗い倉庫から店頭へ荷馬車が品を運び、店主が客に手渡す">
+<p class="figcap">図2 — S3は倉庫、CloudFrontは店頭。客は倉庫に入るのではなく、店で品(ページ)を受け取る</p>
+
+<div class="table-scroll"><table>
+  <tr><th>要件</th><th>S3単体</th><th>CloudFrontを前に置くと</th></tr>
+  <tr><td>HTTPS(独自ドメインの🔒)</td><td>❌ httpしか話せない</td><td>✅ ACM証明書を「着られる」</td></tr>
+  <tr><td>独自ドメイン名での受付</td><td>△ バケット名の縛り</td><td>✅ 代替ドメイン名で自由</td></tr>
+  <tr><td>世界への高速配信</td><td>❌</td><td>✅ CDNとしてエッジから即応</td></tr>
+</table></div>
+
+<p><strong>証明書という身分証を着られるのはCloudFrontだけ</strong>。ゆえに同期はまずS3をオリジン(店に品を卸す倉庫)としてCloudFrontを建てる。できあがると <code>d1234abcd.cloudfront.net</code> なる仮の住所が与えられ、この時点で「怪しげな英数字の住所でなら、世界中から見える」状態になる。以後の全工程は、この住所に<strong>ちゃんとした名前を与えるため</strong>の作業である。</p>
+
+<h2><span class="chap">III.</span>DNSという台帳 — なぜ私の協力なしには成立しないのか</h2>
+
+<p>ブラウザに <code>friend.example.com</code> と打った者は、まず<strong>DNS——インターネットの台帳網</strong>に「それはどこか」と尋ねる。台帳に「それは d1234abcd.cloudfront.net のことだ」と書いてあれば、旅人は店にたどり着ける。</p>
+
+<img class="fig" src="images/13_dns_ledger.png" alt="旅人が台帳の司書に尋ね、指し示された店へ向かう三段階">
+<p class="figcap">図3 — 旅人(ブラウザ)は名前を告げ、台帳(DNS)で住所を知り、店(CloudFront)へ向かう</p>
+
+<p>そして <code>example.com</code> 配下の問い合わせは、すべて<strong>私のホストゾーン</strong>に届く。ここに書き込めるのは地球上で私だけ。同期がどれほど立派な店を構えても、私が台帳に一行書かぬ限り、誰一人たどり着けない。これが「サブドメインの<strong>委任</strong>」の意味——<strong>私の土地の一角を、隣人に貸す</strong>ということだ。</p>
+
+<img class="fig" src="images/17_estate_plot.png" alt="旗の立つ広い土地の一角の区画に看板が立ち、遠くの隣人の店を指す">
+<p class="figcap">図4 — 我が領地の一角に隣人の看板を立て、彼の店へ案内する</p>
+
+<div class="notecard">
+  <span class="notecard-title">◆ DNSレコードの正体</span>
+  レコードとは「<strong>特定の質問への答えの登録</strong>」である。書く前は「そんな名前は存在しない」が返り、書いた瞬間から世界中のその質問に答えが返る。サブドメインを「作る」ボタンなど存在しない——<strong>レコードを書いたとき、その名前は生まれる</strong>。ゆえにサブドメインを作るのは、店の主ではなく台帳の主なのである。
+</div>
+
+<h2><span class="chap">IV.</span>全行程の見取り図</h2>
+
+<img class="fig" src="images/15_overview.png" alt="旅人、台帳の領地、施錠と証明書つきの店、倉庫が一本道でつながる俯瞰図">
+<p class="figcap">図5 — 全体像。旅人 → 私の台帳 → 同期の店(🔒と証明書)→ 同期の倉庫。看板だけ私のもの、店と倉庫は隣人のもの</p>
+
+<pre><code>同期: ① S3をオリジンにCloudFrontを建てる(店の開業)
+同期: ② ACM(us-east-1!)で friend.example.com の証明書を申請
+        └ 「検証用CNAME」の名と値が発行され、私に届く
+私  : ③ 台帳に検証用CNAMEを一行(地主の封蝋)→ 証明書が発行される
+同期: ④ CloudFrontに代替ドメイン名+証明書を装着(看板と身分証)
+        └ 店の住所 dxxxx.cloudfront.net が私に届く
+私  : ⑤ 台帳に本命のAliasを一行(正式掲載)→ この瞬間に公開
+検分: https://friend.example.com 🔒</code></pre>
+
+<p>順番は動かせない。CloudFrontには<strong>「有効な証明書なくして看板を掲げるべからず」</strong>という掟があるため、封蝋(③)が看板(④)より必ず先。台帳への正式掲載(⑤)は店の支度が全て済んでから——載せた瞬間から客が来るのだから。</p>
+
+<h2><span class="chap">V.</span>証明書とは何を証明する紙か</h2>
+
+<p>ここで一度立ち止まる。そもそも証明書とは何か。ブラウザが接続する相手は、実のところ<strong>ただのIPアドレスの先の「誰か」</strong>にすぎない。経路を細工して偽の店に誘い込む手口は現実に存在する。そこで店は、信頼された発行機関(今回はACM)が署名した証明書を提示する。その紙が保証するのは二つ:</p>
+
+<ul>
+  <li><strong>本人性</strong> — 「この店は <code>friend.example.com</code> を名乗る資格がある。<strong>その名のDNSを管理する者が承諾済み</strong>だ」</li>
+  <li><strong>暗号化</strong> — 同封の公開鍵(南京錠)で、盗み聞きされぬ通信路(HTTPS)を確立する</li>
+</ul>
+
+<p>逆に<strong>保証しないもの</strong>も記しておく。品物の善し悪し、店主の人格。🔒=安全なサイト、ではない。「本物の名で、漏れずに話せている」——それだけである。</p>
+
+<h3>ACMの審査法 — 地主の封蝋</h3>
+
+<p>では「DNSの管理者が承諾済み」を、ACMはどう確かめるのか。誰でも「私が friend.example.com です」と申請できてしまっては偽の身分証が作り放題だ。ACMの手口はこうである。申請を受けると、<strong>問題と正解のペア</strong>を発行する:</p>
+
+<pre><code>質問する名前: _187d13781f71e5…….friend.example.com   ← ランダムな試験用の名前
+期待する答え: _01c31c5a64006……acm-validations.aws    ← ランダムな正解</code></pre>
+
+<p>そして宣告する。「<strong>この質問にこの答えが返るよう、DNSに登録できたら合格</strong>」。台帳に書けるのは地主だけ——ゆえに書けた事実そのものが「地主の承諾」の証明になる。私は同期から届いたこの二値を、自分の台帳にCNAMEとして一行書く。ACMの検分係(自動プログラム)は数分おきに公開DNSへ質問を投げ続け、答えが一致した瞬間、証明書を発行する。</p>
+
+<img class="fig" src="images/11_landlord_seal.png" alt="地主が台帳に記入し封蝋を押し、検査官が検分して商人に証明書を渡す">
+<p class="figcap">図6 — 私が台帳に一行書く(封蝋)→ 検分係が虫眼鏡で検める → 同期に証明書が渡る</p>
+
+<div class="notecard">
+  <span class="notecard-title">◆ 三つの注意</span>
+  (一)Route 53の入力欄は末尾に <code>.example.com</code> を自動で付ける。フル名を貼ると <code>…example.com.example.com</code> なる怪文書と化し、検証は永遠に通らぬ。<strong>手前の部分だけ</strong>入れること。
+  (二)ランダム文字列を省いてはならない。あれは案内用の名にあらず<strong>試験の答案用紙の番号</strong>——意味不明であること自体が仕様である(推測を防ぎ、本命の名前とも衝突させない)。
+  (三)発行後も<strong>消すな</strong>。証明書は約十三ヶ月で切れるが、答案が残っていれば検分係が再訪して自動更新してくれる。
+</div>
+
+<div class="notecard">
+  <span class="notecard-title">◆ よくある誤解 — 「私はもう自分のドメインで証明書を持っている」</span>
+  残念ながら流用は利かない。第一に、証明書は<strong>使う店と同じアカウントのACM</strong>になければ装着できず、アカウント間の譲渡もできない(身分証は本人名義に限る)。第二に、証明書は書かれた名前にしか効かない。ゆえに申請者は必ず同期であり、名義は <code>friend.example.com</code>、場所は<strong>us-east-1</strong>(CloudFrontはそこの証明書しか見えない——東京で申請する過ちは、全国のハマりどころ第一位である)。なお申請時点でその名前がまだ世に存在せずとも構わない。検分係が見るのは答案の一行だけ——<strong>更地のまま営業許可だけ先に取る</strong>のが、むしろ正しい順序である。
+</div>
+
+<h2><span class="chap">VI.</span>発行と装着は別の話 — 店側の受け入れ支度</h2>
+
+<p>証明書が発行されても、それはまだ<strong>ACMという役所の引き出しの中</strong>にある。ブラウザが検分するのは役所ではなく店頭だ。同期は自分のCloudFrontで二つの設定をする:</p>
+
+<div class="table-scroll"><table>
+  <tr><th>設定</th><th>意味</th><th>怠るとどうなるか</th></tr>
+  <tr><td>代替ドメイン名に <code>friend.example.com</code></td><td>共用ビルへのテナント届け。「この名の客は私宛」の宣言</td><td>403 — 受付が「その名の契約者はいない」と門前払い</td></tr>
+  <tr><td>カスタムSSL証明書を選択</td><td>引き出しの身分証を<strong>店頭に装着</strong>する</td><td>SSLエラー — TLS握手の玄関先で決裂</td></tr>
+</table></div>
+
+<p>CloudFrontの実体は何百万のサイトが同居する<strong>共用ビル</strong>である。ブラウザは接続の劈頭、必ず「私は <code>friend.example.com</code> に用があって参った」と<strong>名乗る</strong>。受付はこの名乗りをテナント名簿と照合し、その名の身分証を提示する。名簿と身分証、どちらが欠けても客は玄関で追い返される。DNSがいくら正しく案内しても、店側が受け入れ支度をしていなければ徒労に終わる——<strong>案内(私)と受け入れ(同期)、両方揃って初めて扉は開く</strong>。</p>
+
+<h2><span class="chap">VII.</span>第二の書き込み — 本命のAlias(正式掲載)</h2>
+
+<p>同期から店の住所 <code>d1234abcd.cloudfront.net</code> が届いたら、最後の一行を書く:</p>
+
+<pre><code>Record name : friend
+Type        : A
+Alias       : オン → 「Alias to CloudFront distribution」
+            → 欄に dxxxx.cloudfront.net を直接貼る</code></pre>
+
+<div class="notecard">
+  <span class="notecard-title">◆ 候補に出ない、が正常</span>
+  Aliasの候補一覧は<strong>自分のアカウントのCloudFront</strong>しか拾わない。他人の店は永遠に出てこないので、届いた住所を<strong>手で貼り付ける</strong>。あの欄は自由入力を受け付ける。
+</div>
+
+<h3>A・CNAME・Alias — 三者の見分け</h3>
+
+<p>旅人の問い「friend.example.com の番地(IP)は?」への答え方が三通りある。旅人が最後に必要とするのは常に<strong>IPアドレスただ一つ</strong>であり、台帳の調べ物は「IPが手に入るまで続く」ことを思い出されたい。</p>
+
+<div class="table-scroll"><table>
+  <tr><th>方式</th><th>台帳の答え</th><th>評</th></tr>
+  <tr><td><strong>A(素)</strong></td><td>「番地は 13.224.10.5 だ」</td><td>直書き。相手(CloudFront)の番地は頻繁に変わるゆえ、今回は<strong>不可</strong></td></tr>
+  <tr><td><strong>CNAME</strong></td><td>「d1234….cloudfront.net という<strong>名前</strong>で調べ直せ」</td><td>名前から名前への橋。IPの管理は先方(AWS)に任せられるが、旅人に二度手間</td></tr>
+  <tr><td><strong>Alias(A)</strong></td><td>(裏で番地を調べ)「13.224.10.5 だ」</td><td><strong>名前で控え、IPで即答</strong>。CNAMEの発想とAの応対の良いとこ取り。AWS専用・問い合わせ課金なし</td></tr>
+</table></div>
+
+<p>CNAMEが結ぶのは<strong>名前と名前</strong>である(IPでもURLでもない)。「私の管理下の名前 → 他人の管理下の名前」という橋——検証用CNAMEも本命も、本質はこの橋の一種だ。この一行を保存した瞬間、<code>friend.example.com</code> という名前が世界に誕生し、公開される。</p>
+
+<h2><span class="chap">VIII.</span>アクセス時の一部始終</h2>
+
+<img class="fig" src="images/12_full_route.png" alt="旅人が地主に道を尋ね、指し示された鍵付きの店へ歩いていく道のり">
+<p class="figcap">図7 — 訪問者は私の台帳で道を知り、同期の店で身分証を検め、倉庫の品を受け取る。道中はすべて施錠(HTTPS)</p>
+
+<pre><code>1. ブラウザ「friend.example.com はどこか」
+2. 私の台帳(Alias)が番地を即答 → 旅人、店に到着
+3. TLS握手: ブラウザ「friend.example.com 殿か。身分証を」
+   → 店が装着済みの証明書を提示。その信頼の根っこは
+     私が押した封蝋(検証CNAME)にある → 🔒
+4. 店は名乗りをテナント名簿と照合 → 倉庫(S3)から品を出して手渡す 🎉</code></pre>
+
+<p>検分の道具も記しておく。<code>dig friend.example.com</code> でAWSの番地が返れば台帳は働いている。<code>curl -I https://friend.example.com</code> で200が返れば開店である。</p>
+
+<h2><span class="chap">IX.</span>これはお互い様の課題である</h2>
+
+<img class="fig" src="images/16_mutual_estates.png" alt="左右対称の二つの領地の境界で、二人の紳士が羊皮紙のメモを交換する">
+<p class="figcap">図8 — 私と同期は完全に対称。逆に私のサイトを同期のドメインで公開するときは、役割がそっくり入れ替わる</p>
+
+<p>同期も自分のドメインを持っている。今度は<strong>私のサイト</strong>を同期のサブドメイン <code>me.friend-domain.com</code> で公開するなら、上の全工程の役割を入れ替えるだけだ:</p>
+
+<div class="table-scroll"><table>
+  <tr><th>作業</th><th>同期のサイトを私の名で<br>(本稿の向き)</th><th>私のサイトを同期の名で<br>(逆向き)</th></tr>
+  <tr><td>S3+CloudFrontを用意</td><td><strong>同期</strong></td><td><strong>私</strong></td></tr>
+  <tr><td>ACMで証明書を申請(us-east-1)</td><td><strong>同期</strong></td><td><strong>私</strong></td></tr>
+  <tr><td>検証用CNAMEを台帳に記帳</td><td><strong>私</strong></td><td><strong>同期</strong></td></tr>
+  <tr><td>CloudFrontに看板+身分証を装着</td><td><strong>同期</strong></td><td><strong>私</strong></td></tr>
+  <tr><td>本命のAliasを記帳</td><td><strong>私</strong></td><td><strong>同期</strong></td></tr>
+</table></div>
+
+<p>迷ったら大原則(I.)に立ち返ればよい。<strong>資源のことは資源の持ち主、台帳のことは台帳の持ち主</strong>。</p>
+
+<div class="divider">❦ ❦ ❦</div>
+
+<h2><span class="chap">X.</span>発展 — 区画の鍵ごと渡す(方法b・NS委任)</h2>
+
+<p>本稿の方式(方法a)では、同期に頼まれる度に私が台帳へ書く。私が旅に出れば同期の作業は止まる。もう一つの道がある——<strong>「friend.example.com から先の頁は、まるごと隣人の台帳を見よ」と一行だけ書き、以後の管理を任せる</strong>。これがNSレコードによる<strong>委任</strong>だ。</p>
+
+<img class="fig" src="images/18_delegation_key.png" alt="地主が台帳の一頁を指し、区画の友人へ真鍮の鍵を手渡す。友人は自分の小さな台帳に書き込む">
+<p class="figcap">図9 — 方法aは「頼まれる度に地主が書く」、方法bは「区画の鍵ごと渡し、中の看板は友人が自由に立てる」</p>
+
+<pre><code>同期: friend.example.com のホストゾーンを自分のアカウントに新設
+      → ネームサーバー4台の名が発行される → 私に届く
+私  : 台帳にNSレコード一行(その4台の名を列記)…これで終い
+同期: 以後、検証CNAMEもAliasも孫サブドメインも、全て自己完結</code></pre>
+
+<p>NS = Name Server、「この名の担当はこの台帳である」という案内板だ。実は <code>example.com</code> 自体も、世界の大元の台帳からNSで委任されて動いている。方法bは同じ仕組みをもう一段深く自らやるだけ——DNSという建物の骨組みを己の手で触る好機ゆえ、「発展」課題とされている。</p>
+
+<div class="table-scroll"><table>
+  <tr><th></th><th>方法a(都度記帳)</th><th>方法b(NS委任)</th></tr>
+  <tr><td>私の手間</td><td>頼まれる度に一行</td><td>最初のNS一行のみ</td></tr>
+  <tr><td>同期の自由度</td><td>常に私を待つ</td><td>完全に自己完結</td></tr>
+  <tr><td>費用</td><td>零</td><td>ゾーン代 月$0.50。払うのは<strong>委任される側(同期)</strong>——「専用の台帳を持つ者が、その台帳代を払う」</td></tr>
+  <tr><td>危険</td><td>少ない</td><td>NS4行の写し間違いは「時々つながらぬ」という最悪の壊れ方をする。管理権も丸ごと移る——信頼できる相手に限る</td></tr>
+</table></div>
+
+<h2><span class="chap">XI.</span>よくある未解決事項</h2>
+
+<div class="table-scroll"><table>
+  <tr><th>症状</th><th>原因と対処</th></tr>
+  <tr><td>SSL/暗号系のエラー</td><td>証明書の未装着、またはデプロイ中(Deploying)。装着(VI.)を確認し完了を待つ</td></tr>
+  <tr><td>403とCloudFrontのエラーページ</td><td>代替ドメイン名の未登録・綴り違い</td></tr>
+  <tr><td>NXDOMAIN(名前が存在しない)</td><td>本命のAlias(VII.)が未記帳、または名前の打ち違い</td></tr>
+  <tr><td>証明書が永遠に「検証保留中」</td><td>検証CNAMEの写し間違い、または二重サフィックス(V.の注意一)</td></tr>
+  <tr><td>証明書が選択肢に出ない</td><td>us-east-1以外で申請している(毎度の罠)</td></tr>
+  <tr><td>cloudfront.netでは見えるのに名前で見えない</td><td>本命Aliasの反映待ち。digで検分し五〜三十分待つ</td></tr>
+</table></div>
+
+<div class="notecard">
+  <span class="notecard-title">◆ 結び</span>
+  隣人の店に我が名を貸すのに、私が書いたのは台帳の二行——承諾の封蝋(検証CNAME)と、正式掲載(Alias)のみ。S3は倉庫ゆえ店(CloudFront)を建て、店は身分証(証明書)なくして看板を掲げられず、身分証の発行には地主の封蝋が要り、封蝋は台帳に書ける者にしか押せない。すべての工程は一本の糸でつながっている。境界が明瞭であればこそ、他人同士の領地は安全につながる——DNSとは、つまるところ<strong>信頼の帳簿</strong>である。
+</div>
+
+</div>
+</article>
+
+<nav class="entry-nav">
+  <a href="case-02-subdomain-s3.html">← 前の事件簿:サブドメインと秘匿された保管庫</a>
+  <a href="../index.html">記事一覧へ戻る →</a>
+</nav>
+</main>
+
+<footer>
+  <div class="motto">"Education never ends, Watson. It is a series of lessons, with the greatest for the last."</div>
+  <div>The Scholar's Casebook — 学習の記録は続く</div>
+</footer>
+
+</body>
+</html>

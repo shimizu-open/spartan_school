@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case File No.1 — 独自ドメインとHTTPSの謎 | The Scholar's Casebook</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="est">Established MMXXVI · Study Chronicle</div>
+  <h1><a href="../index.html">The Scholar's Casebook</a></h1>
+  <div class="subtitle">— 或る学徒の事件簿:技術学習の記録 —</div>
+  <div class="ornament">❦ ❦ ❦</div>
+</header>
+
+<nav class="top-nav">
+  <a href="../index.html">Casebook 学習記録</a>
+  <a href="../index.html#exhibition">Exhibition 制作物</a>
+  <a href="../about.html">About この書斎について</a>
+</nav>
+
+<main class="container">
+<article class="entry">
+<div class="entry-inner">
+
+<header class="entry-header">
+  <div class="vol">Case File No. 1 · Amazon Web Services</div>
+  <h1>独自ドメインとHTTPSの謎<br>— 名を名乗る資格の証明 —</h1>
+  <div class="dateline">2026年7月 記す · お名前.com / Route 53 / ACM / CloudFront</div>
+  <hr class="rule">
+</header>
+
+<p class="lead">独自ドメインでHTTPSのサイトを公開する。言葉にすれば一行だが、その裏側では「名前の登記」「道案内」「本人証明」「配達」という四つの仕事が、それぞれ別の担当者によって遂行されている。本件はその全貌を、予備知識ゼロの読者に向けて記録するものである。</p>
+
+<img class="fig" src="images/01_overview.png" alt="全体構成:お名前.com→Route 53→ACM→CloudFront">
+<p class="figcap">図1 — 事件の全体図。ユーザーの背後で4つの登場人物が連携している</p>
+
+<h2><span class="chap">I.</span>登場人物の整理</h2>
+
+<div class="table-scroll"><table>
+  <tr><th>登場人物</th><th>役割</th><th>例えるなら</th></tr>
+  <tr><td><strong>お名前.com</strong></td><td>ドメインを「購入・所有」する場所(レジストラ)</td><td>土地の登記をしてくれる不動産屋</td></tr>
+  <tr><td><strong>Route 53</strong></td><td>ドメイン名の「案内板」を管理するDNSサービス</td><td>住所を聞かれたら道案内する案内所</td></tr>
+  <tr><td><strong>ACM</strong></td><td>SSL/TLS証明書を無料で発行</td><td>「本物です」と保証する身分証の発行所</td></tr>
+  <tr><td><strong>CloudFront</strong></td><td>世界中にコンテンツを高速配信するCDN</td><td>世界中に支店を持つ配達員</td></tr>
+</table></div>
+
+<div class="notecard">
+  <span class="notecard-title">◆ 要点</span>
+  「ドメインの所有」と「ドメインの案内(DNS)」は別の仕事である。お名前.comで買った名前の案内係を、Route 53に任せている——これが本構成の骨子だ。
+</div>
+
+<p>まるごと一つのたとえ話にするとこうなる。①お名前.comで「店の屋号」を登記した。②「その店はどこ?」と聞かれたときの<strong>道案内係</strong>はRoute 53に委任した。③「この店は本物」と示す<strong>営業許可証(証明書)</strong>をACMという役所で発行してもらった。④実際の接客は世界中に支店を持つ配達チェーンCloudFrontが担う。</p>
+
+<div class="divider">❦ ❦ ❦</div>
+
+<h2><span class="chap">II.</span>DNSという名の案内人</h2>
+
+<p>コンピュータは <code>example.com</code> という名前では通信できない。通信できるのは <code>13.224.xx.xx</code> のような<strong>IPアドレス</strong>だけである。名前から住所への変換を担うのが <strong>DNS</strong>——世界共通の電話帳だ。</p>
+
+<img class="fig" src="images/02_dns_resolution.png" alt="DNS名前解決の流れ">
+<p class="figcap">図2 — 名前解決は「道を尋ねる旅」。ルート → .com → Route 53 と辿り、最後にIPアドレスの札を受け取る</p>
+
+<p>ブラウザに名前を打つと、①ルートDNS「.comのことは.comのサーバーに聞け」→ ②.comサーバー「そのドメインはRoute 53に聞け」→ ③Route 53のホストゾーン「それはCloudFrontだ」——と辿られる。②で「Route 53に聞け」と案内されるのは、<strong>お名前.com側でネームサーバーをRoute 53のものに変更したから</strong>。これを「委任」と呼ぶ。</p>
+
+<img class="fig" src="images/03_ns_delegation.png" alt="ネームサーバーの委任">
+<p class="figcap">図3 — 委任。お名前.comは所有の登記のみを保持し、日々の案内台帳(ホストゾーン)はRoute 53が持つ</p>
+
+<h2><span class="chap">III.</span>暗号化だけでは、なぜ足りぬのか</h2>
+
+<p>HTTPSの仕事は二つある。<strong>暗号化</strong>(盗み聞きの防止)と<strong>本人確認</strong>である。そして直感に反するが、暗号化だけでは安全にならない。カフェの偽Wi-Fiに繋いでしまえば、あなたは「偽サーバーと」完璧に暗号化された会話をしてしまう。泥棒と二人きりの密室で丁寧に会話するようなものだ。</p>
+
+<img class="fig" src="images/06_why_cert.png" alt="暗号化だけでは偽サーバーと会話してしまう">
+<p class="figcap">図4 — 左:暗号化だけでは泥棒と「安全に」会話してしまう。右:証明書があれば偽物は門前払い</p>
+
+<p>これを防ぐのが<strong>証明書</strong>である。ブラウザには出荷時から「信頼できる認証局(CA)のリスト」が組み込まれており(Amazonもその一つ)、証明書とは「このドメインの正当なサーバーはこの鍵を持つ」という宣言にCAが<strong>デジタル署名</strong>したものだ。署名は偽造できないため、偽サーバーは有効な証明書を提示できない。</p>
+
+<h3>「案内されているのに、なぜ大丈夫なのか」</h3>
+
+<p>ここが本件最大の急所である。<strong>ユーザーは実はドメインにアクセスしていない</strong>。アクセスの実態は必ず「①誰かに名前→IPを聞く ②教えられたIPに接続する」の二段階であり、その「誰か」(DNSリゾルバ)は接続したWi-Fiが自動で指定してくる。つまり悪意あるネットワーク上では、正しい名前を打っても嘘の住所を教えられ得る。</p>
+
+<img class="fig" src="images/07_dns_hijack.png" alt="偽Wi-FiによるDNS乗っ取りの3コマ">
+<p class="figcap">図5 — 偽Wi-Fi事件の顛末。①偽アクセスポイントに接続 ②「bank.com?」に攻撃者が「私のIPだ」と嘘 ③しかし証明書の門で偽サーバーは阻まれる</p>
+
+<p>だが確認作業を行うのは案内された側ではなく、<strong>手元のブラウザ自身</strong>である。ブラウザは入力されたドメイン名を「期待値」として持ったまま移動する。案内がどれほど嘘でも、期待値は改竄できない。着いた先で行われるこの照合の儀式を<strong>TLSハンドシェイク</strong>と呼ぶ。</p>
+
+<blockquote class="deduction">
+  「私は example.com と打ち込まれてここに案内されてきた。<br>
+  ならば貴殿は、example.com を名乗る資格があると認証局に証明されたサーバーのはずだ。<br>
+  証明書を見せたまえ。そして秘密鍵の実演も。」
+  <span class="who">— ブラウザ君の推理(暗記用の一文)</span>
+</blockquote>
+
+<p>証明書は公開情報ゆえ、提示だけなら泥棒にも真似できる。そこでブラウザは使い捨ての課題を送り、<strong>ペアの秘密鍵での署名をその場で実演</strong>させる(秘密鍵の所有証明)。秘密鍵は本物のサーバーから一度も外に出ないため、コピー犯はここで必ず破綻する。</p>
+
+<img class="fig" src="images/04_https_cert.png" alt="ACM証明書とTLSハンドシェイク">
+<p class="figcap">図6 — ACM(us-east-1)が発行した証明書をCloudFrontが提示し、ブラウザが3点(名前一致・信頼できるCA・期限内)を検分する</p>
+
+<div class="notecard warn">
+  <span class="notecard-title">⚠ 落とし穴</span>
+  CloudFrontで使うACM証明書は<strong>必ずバージニア北部(us-east-1)で発行</strong>すること。東京リージョンで発行した証明書は選択肢に現れない。また検証用のDNSレコードは置きっぱなしにしておけば、証明書は自動更新される。
+</div>
+
+<h3>照合が不合格ならどうなるか</h3>
+
+<ul>
+  <li>ページは一切表示されず、<strong>データを送る前に</strong>接続は切断される(渡るのはSNIの申告程度)</li>
+  <li>ブラウザは全画面の警告を出す(<code>NET::ERR_CERT_COMMON_NAME_INVALID</code> 等)</li>
+  <li>ただし人間は警告を突破できてしまう。<strong>「赤い警告が出たら進まない」</strong>が唯一のルール</li>
+  <li>警告=攻撃とは限らない。設定ミス・期限切れ・DNS反映待ちの方がむしろ多い。ブラウザは原因を区別できないため一律で止める設計である</li>
+</ul>
+
+<div class="divider">❦ ❦ ❦</div>
+
+<h2><span class="chap">IV.</span>CloudFrontという配達網</h2>
+
+<p>CloudFrontはCDN——世界中の配信拠点(エッジロケーション)にコンテンツをキャッシュし、ユーザーに最も近い場所から配達する仕組みである。設定は二つ:「代替ドメイン名」に独自ドメインを登録し、「カスタムSSL証明書」にACMの証明書を紐付ける。</p>
+
+<img class="fig" src="images/05_cdn_edge.png" alt="CDNの配信網">
+<p class="figcap">図7 — 最寄りの支店(エッジ)から配達。キャッシュが無いときだけ本店(オリジン)へ取りに行く</p>
+
+<p>最後にRoute 53のホストゾーンへ<strong>エイリアスAレコード</strong>を一行。「この名前で来た者はCloudFrontへ案内せよ」。通常のCNAMEと違いルートドメインにも使え、クエリ課金もない、Route 53独自の便法である。</p>
+
+<h2><span class="chap">V.</span>事件の再構成 — アクセスの一部始終</h2>
+
+<img class="fig" src="images/00_visual_abstract.png" alt="ビジュアルアブストラクト:SETUPとEVERY ACCESS">
+<p class="figcap">図8 — 総括。上段は一度だけ行う設定、下段は毎アクセスごとに繰り返される検証と配信</p>
+
+<pre><code>1. DNS解決     : ルート → .com → (委任により) Route 53 → CloudFrontのIP
+2. TLS握手     : 証明書の提示 + 秘密鍵の実演 → 名前一致・信頼CA・期限内 → 🔒
+3. 配信        : エッジのキャッシュから即応。無ければオリジンへ
+4. 表示        : 事件解決 🎉</code></pre>
+
+<div class="notecard">
+  <span class="notecard-title">◆ 結び</span>
+  お名前.com=名の登記。Route 53=案内台帳。ACM=名乗る資格の証明(自動更新)。CloudFront=配達。
+  DNSは「速いが正直とは限らない案内人」、証明書は「着いた先で身分を検める門番」。両者が揃って初めて、玄関の鍵マークは灯る。
+</div>
+
+</div>
+</article>
+
+<nav class="entry-nav">
+  <a href="case-00-s3-cloudfront.html">← 前日譚:倉庫と受付係、二通の手紙</a>
+  <a href="case-02-subdomain-s3.html">次の事件簿:サブドメインと秘匿された保管庫 →</a>
+</nav>
+</main>
+
+<footer>
+  <div class="motto">"Education never ends, Watson. It is a series of lessons, with the greatest for the last."</div>
+  <div>The Scholar's Casebook — 学習の記録は続く</div>
+</footer>
+
+</body>
+</html>

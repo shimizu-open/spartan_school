@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case File No.2 — サブドメインと秘匿された保管庫 | The Scholar's Casebook</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="est">Established MMXXVI · Study Chronicle</div>
+  <h1><a href="../index.html">The Scholar's Casebook</a></h1>
+  <div class="subtitle">— 或る学徒の事件簿:技術学習の記録 —</div>
+  <div class="ornament">❦ ❦ ❦</div>
+</header>
+
+<nav class="top-nav">
+  <a href="../index.html">Casebook 学習記録</a>
+  <a href="../index.html#exhibition">Exhibition 制作物</a>
+  <a href="../about.html">About この書斎について</a>
+</nav>
+
+<main class="container">
+<article class="entry">
+<div class="entry-inner">
+
+<header class="entry-header">
+  <div class="vol">Case File No. 2 · Amazon Web Services</div>
+  <h1>サブドメインと秘匿された保管庫<br>— S3静的サイト公開の手引 —</h1>
+  <div class="dateline">2026年7月 記す · S3 / CloudFront / OAC / Route 53</div>
+  <hr class="rule">
+</header>
+
+<p class="lead">前件にてドメインの構えは完成した。次なる依頼はこうである——「同じドメインのサブドメインに、静的ファイルのみを収めた別のS3を公開したい」。結論から言えば、新たに購うものは何一つない。作るのは三つ、足すのは台帳の一行である。</p>
+
+<h2><span class="chap">I.</span>何を作り、何を作らないか</h2>
+
+<pre><code>既にあるもの : example.com     → CloudFront ① → 既存のオリジン
+今回作るもの : sub.example.com → CloudFront ②(新規)→ S3(新規・非公開)</code></pre>
+
+<div class="table-scroll"><table>
+  <tr><th>新たに作るもの</th><th>個数</th><th>役割</th></tr>
+  <tr><td>S3バケット</td><td>1</td><td>静的ファイルの保管庫</td></tr>
+  <tr><td>CloudFrontディストリビューション</td><td>1</td><td>HTTPSと独自ドメインの窓口</td></tr>
+  <tr><td>Route 53のAレコード(エイリアス)</td><td>1行</td><td><code>sub</code> → CloudFront② の案内</td></tr>
+</table></div>
+
+<p>逆に<strong>作らなくてよいもの</strong>:新しいドメインの購入、お名前.comでの作業、新しいホストゾーン、そして(<code>*.example.com</code> のワイルドカードが発行済みなら)新しい証明書。いずれも不要である。</p>
+
+<h2><span class="chap">II.</span>サブドメインは「買う」ものにあらず</h2>
+
+<p>金を払って登記したのは <code>example.com</code> という「土地」である。<strong>その土地の中をどう区切るかは持ち主の自由</strong>。<code>sub</code> も <code>www</code> も <code>api</code> も、Route 53のホストゾーン——すなわち自分の台帳——に一行書き足すだけで、誰の許可も追加料金も要らずに無限に作れる。</p>
+
+<img class="fig" src="images/08_subdomain_concept.png" alt="サブドメインの概念図">
+<p class="figcap">図1 — example.comという木から枝を伸ばすだけ。Route 53曰く「台帳に一行足すだけですよ」</p>
+
+<h2><span class="chap">III.</span>なぜS3単体では足りず、CloudFrontをもう一基据えるのか</h2>
+
+<div class="table-scroll"><table>
+  <tr><th>要件</th><th>S3単体</th><th>CloudFront経由</th></tr>
+  <tr><td>HTTPS(独自ドメインの証明書)</td><td>❌ 設定できない</td><td>✅ ACM証明書を設定可</td></tr>
+  <tr><td>独自ドメイン</td><td>△ バケット名の縛りあり</td><td>✅ 代替ドメイン名で自由</td></tr>
+  <tr><td>バケットを非公開に保つ</td><td>❌ 世界に公開が必要</td><td>✅ 非公開のまま配信</td></tr>
+  <tr><td>高速配信・キャッシュ</td><td>❌</td><td>✅</td></tr>
+</table></div>
+
+<p><strong>証明書を持てるのはCloudFrontだけ</strong>。ゆえにHTTPSで独自ドメイン公開する以上、S3の前にCloudFrontを置くのがAWSの定石である。窓口(ドメイン)ごとに一基が基本ゆえ、既存①とは別に②を新設する。</p>
+
+<h3>OAC — 保管庫を世界に晒さぬための社員証</h3>
+
+<p>バケットは<strong>非公開のまま</strong>とし、「CloudFront②からの訪問だけ扉を開ける」規則を敷く。これが<strong>OAC(Origin Access Control)</strong>である。CloudFrontはAWSが署名した社員証を提示し、バケットポリシー(入場規則)には「この社員証を持つ②のみ入場可」と記す。一般客や賊がバケットの住所を直接叩いても<strong>Access Denied</strong>。玄関をCloudFrontに一本化することで、キャッシュもHTTPS強制も効かぬ裏口を塞ぐのが狙いだ。</p>
+
+<img class="fig" src="images/09_s3_oac.png" alt="OACの仕組み">
+<p class="figcap">図2 — CloudFrontだけが社員証(OAC)で保管庫に入れる。裏口から忍び込もうとする者は門前払い</p>
+
+<div class="divider">❦ ❦ ❦</div>
+
+<h2><span class="chap">IV.</span>手順書(マネジメントコンソール)</h2>
+
+<h3>Step 1 — S3バケットを作る</h3>
+<ul>
+  <li>バケット名は任意、リージョンは<strong>どこでもよい</strong>(東京で可)</li>
+  <li>「パブリックアクセスをすべてブロック」は<strong>オンのまま</strong></li>
+  <li>静的ファイル(<code>index.html</code> 等)をアップロード</li>
+</ul>
+<div class="notecard">
+  <span class="notecard-title">◆ 意味</span>
+  この時点では誰も開けられぬ金庫を置いただけ。なお「静的ウェブサイトホスティング」機能は有効化<strong>不要</strong>(あれは公開バケット用の旧式である)。
+</div>
+
+<h3>Step 2 — 証明書を確認する(us-east-1)</h3>
+<ul>
+  <li>ACMコンソールを<strong>バージニア北部(us-east-1)</strong>に切り替え</li>
+  <li><code>*.example.com</code> を含む証明書があれば<strong>再利用</strong>。無ければDNS検証で新規発行</li>
+</ul>
+<div class="notecard">
+  <span class="notecard-title">◆ 意味</span>
+  <code>*</code> は「どんなサブドメインでも一致」のワイルドカード。一枚で <code>www</code> も <code>sub</code> も <code>api</code> も賄える万能身分証である。
+</div>
+
+<h3>Step 3 — CloudFrontディストリビューションを新設</h3>
+<ul>
+  <li>オリジン:Step 1のバケット(<code>.s3.リージョン.amazonaws.com</code> の方を選ぶ)</li>
+  <li>オリジンアクセス:<strong>OAC</strong> を新規作成して割り当て</li>
+  <li>ビューワープロトコル:「Redirect HTTP to HTTPS」</li>
+  <li>代替ドメイン名:<code>sub.example.com</code> / カスタムSSL証明書:Step 2のもの</li>
+  <li>デフォルトルートオブジェクト:<code>index.html</code></li>
+</ul>
+<div class="notecard">
+  <span class="notecard-title">◆ 意味</span>
+  「sub.example.com名義の窓口」の開設である。代替ドメイン名は「この名で来た客は私宛」という宣言、証明書は毎アクセスのTLSハンドシェイクで提示される身分証(前件参照)。
+</div>
+
+<h3>Step 4 — バケットポリシーを貼る(入場規則)</h3>
+<pre><code>{
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": { "Service": "cloudfront.amazonaws.com" },
+    "Action": "s3:GetObject",
+    "Resource": "arn:aws:s3:::バケット名/*",
+    "Condition": { "StringEquals": {
+      "AWS:SourceArn": "arn:aws:cloudfront::アカウントID:distribution/②のID"
+    }}
+  }]
+}</code></pre>
+<div class="notecard">
+  <span class="notecard-title">◆ 日本語に訳すと</span>
+  「CloudFrontというサービスが、<strong>ただし②のディストリビューション経由に限り</strong>、このバケットのファイルを読むことを許可する」。Condition の一行が他人のCloudFrontを締め出す。
+</div>
+
+<h3>Step 5 — Route 53に一行足す</h3>
+<ul>
+  <li>既存ホストゾーン → レコード作成:名前 <code>sub</code>、タイプ <code>A</code>、エイリアス<strong>オン</strong> → CloudFront②</li>
+</ul>
+<div class="notecard">
+  <span class="notecard-title">◆ 意味</span>
+  台帳に「subと聞かれたら②を案内せよ」と追記。<strong>これがサブドメイン発行の実体のすべて</strong>。購入も申請も存在しない。
+</div>
+
+<h3>Step 6 — 検分</h3>
+<pre><code># 案内が効いているか
+dig sub.example.com
+
+# HTTPSで開けるか(200が返れば良し)
+curl -I https://sub.example.com
+
+# 裏口が塞がっているか(AccessDeniedなら良し = OACが機能)
+curl -I https://バケット名.s3.リージョン.amazonaws.com/index.html</code></pre>
+
+<div class="divider">❦ ❦ ❦</div>
+
+<h2><span class="chap">V.</span>アクセス時の一部始終</h2>
+
+<pre><code>1. ブラウザ「sub.example.com はどこ?」→ Route 53が一行を見て②を案内
+2. TLS握手: ②が *.example.com の証明書を提示+秘密鍵の実演 → 🔒
+3. ②がキャッシュから即応。無ければOACの社員証でS3へ → index.html取得
+4. 表示 🎉(以後はエッジから即配達)</code></pre>
+
+<p>新しい概念は<strong>OACただ一つ</strong>。残りはすべて前件で解明済みの手口の再演である。</p>
+
+<h2><span class="chap">VI.</span>よくある未解決事項</h2>
+
+<div class="table-scroll"><table>
+  <tr><th>症状</th><th>原因と対処</th></tr>
+  <tr><td>証明書エラー</td><td>証明書が <code>*.example.com</code> を含まない。Step 2へ</td></tr>
+  <tr><td>Access Denied 表示</td><td>バケットポリシー未設定/デフォルトルートオブジェクト未設定</td></tr>
+  <tr><td>サブパスで Access Denied</td><td>S3+OACでは <code>xxx/index.html</code> の自動補完が効かぬ。CloudFront FunctionでURL書き換え(発展)</td></tr>
+  <tr><td>更新が反映されない</td><td>エッジのキャッシュ。Invalidationで <code>/*</code> を指定</td></tr>
+  <tr><td>証明書が選択肢に出ない</td><td>us-east-1以外で発行している(前件と同じ罠)</td></tr>
+</table></div>
+
+<div class="notecard">
+  <span class="notecard-title">◆ 結び</span>
+  サブドメインは台帳の一行。S3は証明書を持てぬゆえCloudFrontを窓口に。保管庫は非公開のままOACで一本化。費用はほぼ零——領地の増築は、かくも安上がりである。
+</div>
+
+</div>
+</article>
+
+<nav class="entry-nav">
+  <a href="case-01-domain-https.html">← 前の事件簿:独自ドメインとHTTPSの謎</a>
+  <a href="../index.html">記事一覧へ戻る →</a>
+</nav>
+</main>
+
+<footer>
+  <div class="motto">"Education never ends, Watson. It is a series of lessons, with the greatest for the last."</div>
+  <div>The Scholar's Casebook — 学習の記録は続く</div>
+</footer>
+
+</body>
+</html>

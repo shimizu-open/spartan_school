@@ -1,0 +1,303 @@
+/* ============================================
+   The Scholar's Casebook — Victorian Study Theme
+   ============================================ */
+
+:root {
+  --paper: #f4ecda;
+  --paper-deep: #ece1c8;
+  --ink: #2b2118;
+  --ink-soft: #4a3b2c;
+  --sepia: #6b5233;
+  --gold: #a8842c;
+  --gold-bright: #c9a145;
+  --oxblood: #6e2f22;
+  --forest: #2e4636;
+  --rule: #c9b98f;
+  --card: #faf4e4;
+  --shadow: rgba(43, 33, 24, 0.18);
+  --serif: "Cormorant Garamond", Georgia, "Times New Roman", "Yu Mincho", "游明朝", "Hiragino Mincho ProN", serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--serif);
+  background-color: var(--paper);
+  /* subtle aged-paper texture via gradients only (self-contained) */
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(168, 132, 44, 0.06), transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(110, 47, 34, 0.05), transparent 50%),
+    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(107, 82, 51, 0.015) 3px, rgba(107, 82, 51, 0.015) 4px);
+  color: var(--ink);
+  line-height: 1.9;
+  font-size: 17px;
+}
+
+/* ---------- Masthead ---------- */
+.masthead {
+  text-align: center;
+  padding: 2.2rem 1rem 1.2rem;
+  border-bottom: 3px double var(--gold);
+  background: linear-gradient(180deg, var(--paper-deep), var(--paper));
+}
+.masthead .est {
+  font-size: 0.78rem;
+  letter-spacing: 0.35em;
+  color: var(--sepia);
+  text-transform: uppercase;
+}
+.masthead h1 {
+  font-size: clamp(1.9rem, 5vw, 3.2rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  margin: 0.3rem 0 0.1rem;
+}
+.masthead h1 a { color: inherit; text-decoration: none; }
+.masthead .subtitle {
+  font-style: italic;
+  color: var(--sepia);
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+}
+.ornament {
+  color: var(--gold);
+  font-size: 1.1rem;
+  letter-spacing: 0.6em;
+  margin-top: 0.6rem;
+  user-select: none;
+}
+
+/* ---------- Nav ---------- */
+nav.top-nav {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+  flex-wrap: wrap;
+}
+nav.top-nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 0.92rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.2rem;
+  border-bottom: 1px solid transparent;
+  transition: color 0.25s, border-color 0.25s;
+}
+nav.top-nav a:hover, nav.top-nav a.active {
+  color: var(--oxblood);
+  border-bottom-color: var(--gold);
+}
+
+/* ---------- Layout ---------- */
+.container { max-width: 880px; margin: 0 auto; padding: 0 1.2rem; }
+.wide { max-width: 1040px; }
+
+/* ---------- Hero ---------- */
+.hero { position: relative; margin: 2rem auto 0; }
+.hero img {
+  width: 100%;
+  display: block;
+  border: 1px solid var(--sepia);
+  outline: 6px solid var(--paper);
+  outline-offset: -8px;
+  box-shadow: 0 10px 30px var(--shadow);
+  filter: sepia(0.12);
+}
+.hero-caption {
+  text-align: center;
+  font-style: italic;
+  color: var(--sepia);
+  font-size: 0.9rem;
+  margin-top: 0.8rem;
+}
+
+/* ---------- Section headings ---------- */
+.section-head {
+  text-align: center;
+  margin: 3.2rem 0 1.8rem;
+}
+.section-head h2 {
+  display: inline-block;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  color: var(--forest);
+  text-transform: uppercase;
+  padding: 0 1.4rem 0.35rem;
+  border-bottom: 2px solid var(--gold);
+}
+.section-head .flourish { color: var(--gold); letter-spacing: 0.5em; margin-top: 0.5rem; font-size: 0.95rem; }
+
+/* ---------- Article cards (index) ---------- */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin: 0 0 3rem;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  box-shadow: 0 6px 18px var(--shadow);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+}
+.card::before {
+  content: "";
+  position: absolute; inset: 6px;
+  border: 1px solid var(--gold);
+  opacity: 0.45;
+  pointer-events: none;
+}
+.card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px var(--shadow); }
+.card img { width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block; filter: sepia(0.15); }
+.card-body { padding: 1.3rem 1.4rem 1.5rem; display: flex; flex-direction: column; flex: 1; }
+.card-body .vol {
+  font-size: 0.72rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 0.4rem;
+}
+.card-body h3 { font-size: 1.28rem; font-weight: 600; line-height: 1.5; margin-bottom: 0.6rem; }
+.card-body h3 a { color: var(--ink); text-decoration: none; }
+.card-body h3 a:hover { color: var(--oxblood); }
+.card-body p { font-size: 0.95rem; color: var(--ink-soft); flex: 1; }
+.card-body .meta {
+  margin-top: 1rem; padding-top: 0.7rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.82rem; font-style: italic; color: var(--sepia);
+  display: flex; justify-content: space-between;
+}
+.read-link { color: var(--oxblood); text-decoration: none; font-style: normal; letter-spacing: 0.1em; }
+.read-link:hover { color: var(--gold); }
+
+.card.coming { opacity: 0.75; }
+.card.coming .thumb-placeholder {
+  aspect-ratio: 16/10;
+  display: flex; align-items: center; justify-content: center;
+  background: repeating-linear-gradient(45deg, var(--paper-deep), var(--paper-deep) 12px, var(--card) 12px, var(--card) 24px);
+  color: var(--sepia); font-style: italic; font-size: 1.1rem;
+}
+
+/* ---------- Article page ---------- */
+article.entry { background: var(--card); border: 1px solid var(--rule); box-shadow: 0 8px 26px var(--shadow); margin: 2.5rem 0 3rem; position: relative; }
+article.entry::before { content: ""; position: absolute; inset: 10px; border: 1px solid var(--gold); opacity: 0.4; pointer-events: none; }
+.entry-inner { padding: clamp(1.6rem, 5vw, 3.4rem); position: relative; }
+
+.entry-header { text-align: center; margin-bottom: 2.4rem; }
+.entry-header .vol { font-size: 0.75rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--gold); }
+.entry-header h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 600; line-height: 1.6; margin: 0.5rem 0; }
+.entry-header .dateline { font-style: italic; color: var(--sepia); font-size: 0.92rem; }
+.entry-header .rule { width: 120px; margin: 1.1rem auto 0; border: none; border-top: 2px solid var(--gold); }
+
+.entry h2 {
+  font-size: 1.35rem; font-weight: 600; color: var(--forest);
+  margin: 2.6rem 0 1rem; padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--rule);
+  letter-spacing: 0.04em;
+}
+.entry h2 .chap { color: var(--gold); font-style: italic; margin-right: 0.6em; }
+.entry h3 { font-size: 1.12rem; font-weight: 600; color: var(--oxblood); margin: 1.8rem 0 0.7rem; }
+.entry p { margin: 0 0 1.1rem; }
+.entry ul, .entry ol { margin: 0 0 1.2rem 1.6rem; }
+.entry li { margin-bottom: 0.4rem; }
+.entry strong { color: var(--oxblood); }
+.entry a { color: var(--oxblood); }
+
+/* drop cap for the lead paragraph */
+.lead::first-letter {
+  font-size: 3.2em; float: left; line-height: 0.85;
+  padding: 0.06em 0.12em 0 0; color: var(--oxblood); font-weight: 600;
+}
+
+.entry img.fig {
+  width: 100%; display: block; margin: 1.6rem auto 0.5rem;
+  border: 1px solid var(--sepia);
+  outline: 5px solid var(--card); outline-offset: -6px;
+  box-shadow: 0 6px 16px var(--shadow);
+}
+.figcap { text-align: center; font-style: italic; font-size: 0.88rem; color: var(--sepia); margin-bottom: 1.6rem; }
+
+/* tables */
+.entry table { width: 100%; border-collapse: collapse; margin: 1.2rem 0 1.6rem; font-size: 0.93rem; }
+.entry th, .entry td { border: 1px solid var(--rule); padding: 0.55rem 0.8rem; text-align: left; vertical-align: top; }
+.entry th { background: var(--paper-deep); letter-spacing: 0.05em; color: var(--forest); }
+.entry tr:nth-child(even) td { background: rgba(201, 185, 143, 0.12); }
+.table-scroll { overflow-x: auto; }
+
+/* code */
+.entry code {
+  font-family: "SFMono-Regular", Consolas, Menlo, monospace;
+  font-size: 0.84em;
+  background: rgba(107, 82, 51, 0.12);
+  padding: 0.12em 0.4em; border-radius: 3px;
+}
+.entry pre {
+  background: #2f2820; color: #e8dcc0;
+  padding: 1.1rem 1.3rem; overflow-x: auto;
+  border-left: 4px solid var(--gold);
+  margin: 1.2rem 0 1.6rem;
+  font-size: 0.85rem; line-height: 1.7;
+}
+.entry pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+/* callouts */
+.notecard {
+  background: var(--paper-deep);
+  border-left: 4px solid var(--gold);
+  padding: 1rem 1.3rem; margin: 1.3rem 0 1.6rem;
+  font-size: 0.95rem;
+}
+.notecard .notecard-title { font-weight: 600; color: var(--forest); letter-spacing: 0.08em; display: block; margin-bottom: 0.3rem; }
+.notecard.warn { border-left-color: var(--oxblood); }
+.notecard.warn .notecard-title { color: var(--oxblood); }
+
+blockquote.deduction {
+  margin: 1.6rem 0; padding: 1.2rem 1.6rem;
+  border-top: 1px solid var(--gold); border-bottom: 1px solid var(--gold);
+  font-style: italic; font-size: 1.05rem; text-align: center; color: var(--ink-soft);
+}
+blockquote.deduction .who { display: block; margin-top: 0.5rem; font-size: 0.85rem; letter-spacing: 0.2em; color: var(--gold); font-style: normal; }
+
+/* section divider */
+.divider { text-align: center; color: var(--gold); letter-spacing: 0.8em; margin: 2.4rem 0; user-select: none; }
+
+/* prev/next */
+.entry-nav {
+  display: flex; justify-content: space-between; gap: 1rem;
+  margin: 0 0 3rem; font-style: italic;
+}
+.entry-nav a { color: var(--oxblood); text-decoration: none; }
+.entry-nav a:hover { color: var(--gold); }
+
+/* ---------- About block ---------- */
+.about-note {
+  background: var(--card); border: 1px solid var(--rule);
+  padding: 1.8rem 2rem; margin: 0 0 3rem;
+  box-shadow: 0 6px 18px var(--shadow);
+  font-size: 0.98rem;
+}
+.about-note h3 { color: var(--forest); margin-bottom: 0.6rem; letter-spacing: 0.1em; }
+
+/* ---------- Footer ---------- */
+footer {
+  border-top: 3px double var(--gold);
+  margin-top: 2rem;
+  padding: 1.6rem 1rem 2.2rem;
+  text-align: center;
+  color: var(--sepia);
+  font-size: 0.85rem;
+  font-style: italic;
+  background: linear-gradient(0deg, var(--paper-deep), var(--paper));
+}
+footer .motto { letter-spacing: 0.15em; margin-bottom: 0.3rem; }
+
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  nav.top-nav { gap: 1.2rem; }
+}

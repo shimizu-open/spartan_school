@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case File No.0 — 倉庫と受付係、二通の手紙 | The Scholar's Casebook</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="est">Established MMXXVI · Study Chronicle</div>
+  <h1><a href="../index.html">The Scholar's Casebook</a></h1>
+  <div class="subtitle">— 或る学徒の事件簿:技術学習の記録 —</div>
+  <div class="ornament">❦ ❦ ❦</div>
+</header>
+
+<nav class="top-nav">
+  <a href="../index.html">Casebook 学習記録</a>
+  <a href="../index.html#exhibition">Exhibition 制作物</a>
+  <a href="../about.html">About この書斎について</a>
+</nav>
+
+<main class="container">
+<article class="entry">
+<div class="entry-inner">
+
+<header class="entry-header">
+  <div class="vol">Case File No. 0 · 前日譚 · Amazon Web Services</div>
+  <h1>倉庫と受付係、二通の手紙<br>— S3とCloudFrontの誤解録 —</h1>
+  <div class="dateline">Case No.1 に先立つ調査の記録 · S3 / CloudFront / Origin / CNAME</div>
+  <hr class="rule">
+</header>
+
+<p class="lead">これは Case No.1(独自ドメインとHTTPSの謎)に着手する前、S3とCloudFrontの関係を巡って抱いた数々の誤解と、その解消の記録である。「Static website hosting が Disabled なのにサイトが見えるのはなぜか」「Origin domain とは何者か」「CNAMEが二種類あるように見える」——当時の疑問は、どれも本質を突いていた。</p>
+
+<h2><span class="chap">I.</span>S3には二つの顔がある — 「Webサイト」と「倉庫」</h2>
+
+<p>最初の謎はこれだった。S3の画面で <code>Static website hosting: Disabled</code> なのに、独自ドメインでサイトが表示される。矛盾ではないのか?</p>
+
+<p>答え:S3の使い方は二通りあり、<strong>今回の構成では静的ウェブサイトホスティング機能を使っていない</strong>。</p>
+
+<div class="table-scroll"><table>
+  <tr><th></th><th>パターンA:S3自体を公開</th><th>パターンB:CloudFrontの裏の倉庫(今回)</th></tr>
+  <tr><td>Static website hosting</td><td>Enabled にする</td><td><strong>Disabled でよい</strong></td></tr>
+  <tr><td>使われるURL</td><td><code>bucket.s3-website-リージョン…</code><br>(website endpoint)</td><td><code>bucket.s3.リージョン.amazonaws.com</code><br>(通常のバケットエンドポイント)</td></tr>
+  <tr><td>S3の役割</td><td>Webサイトの表玄関</td><td>ファイル置き場(倉庫)</td></tr>
+</table></div>
+
+<p>CloudFrontはS3を「Webサイト」として見ていない。<strong>「index.html をください」→「はい、どうぞ」</strong>——ただファイルを取りに行くだけである。つまり:</p>
+
+<blockquote class="deduction">
+  S3 = ファイルを保管する<strong>倉庫</strong><br>
+  CloudFront = 外から来る客を受け付ける<strong>入口(受付係)</strong>
+  <span class="who">— 本件の根本原理</span>
+</blockquote>
+
+<p>むしろ本番構成では、S3を公開せずCloudFront経由のみ許可する(OAC)のが定石。倉庫の扉は受付係にしか開かない方がよいのだ(この仕組みの詳細は <a href="case-02-subdomain-s3.html">Case No.2</a> に記録した)。</p>
+
+<div class="divider">❦ ❦ ❦</div>
+
+<h2><span class="chap">II.</span>Origin domain の正体 — 照合ではなく、保存された一行の文字列</h2>
+
+<p>次の疑問。「CloudFrontのOrigin domainに書かれている内容が、S3側にはバラバラに書いてある。CloudFrontはそれを集めて照合しているのか?」</p>
+
+<p>分解すると確かにそう見える:</p>
+
+<pre><code>my-bucket.s3.ap-northeast-1.amazonaws.com
+└──┬───┘ └┬┘ └─────┬──────┘ └────┬────┘
+バケット名  S3  リージョン(東京)  AWSのドメイン
+
+S3画面では: Bucket name: my-bucket / Region: ap-northeast-1 と別々に表示</code></pre>
+
+<p>しかし答えは否。<strong>CloudFrontは毎回S3の画面を見て組み立てているのではなく、ディストリビューション設定に「Origin domain」という一つの文字列として保存されている</strong>だけである。設定した瞬間に写し取られた住所録であり、以後S3側と自動照合はされない。</p>
+
+<h3>どこで見るか(目的別の索引)</h3>
+
+<div class="table-scroll"><table>
+  <tr><th>見たいもの</th><th>見る場所</th></tr>
+  <tr><td>CloudFrontがどのS3へ取りに行くか</td><td>CloudFront → Distribution → <strong>Origins → Origin domain</strong>(ここが本命)</td></tr>
+  <tr><td>その元になるS3情報</td><td>S3 → Bucket → Bucket name / Region</td></tr>
+  <tr><td>CloudFrontに与えた入場許可</td><td>S3 → Bucket → Permissions → <strong>Bucket policy</strong>(OACの許可JSON)</td></tr>
+  <tr><td>設定全体をJSONで</td><td><code>aws cloudfront get-distribution-config --id ID</code> → <code>Origins.Items[].DomainName</code></td></tr>
+</table></div>
+
+<p>オリジンとは<strong>「CloudFrontが元データを取りに行く場所」=原本置き場</strong>。CloudFrontは常にS3へ行くわけではなく、エッジにキャッシュがあれば即返し、無いときだけオリジンへ赴く。「最終的にS3にアクセスが行く」とは「キャッシュに無いとき、代理で取りに行く先がS3」という意味である。</p>
+
+<div class="divider">❦ ❦ ❦</div>
+
+<h2><span class="chap">III.</span>二通の手紙 — CNAMEは二種類ある</h2>
+
+<p>調査中もっとも混乱したのがここである。CNAMEという言葉が二つの全く違う場面に現れる。</p>
+
+<p>まずCNAMEとは、DNSレコードの一種で<strong>「この名前は、あちらの名前の別名です」</strong>という意味に過ぎない(Aレコードが「名前→IPアドレス」なのに対し、CNAMEは「名前→別の名前」)。だが本件では、用途の異なる二通が登場する:</p>
+
+<div class="table-scroll"><table>
+  <tr><th></th><th>① 案内用CNAME</th><th>② ACM検証用CNAME</th></tr>
+  <tr><td>形</td><td><code>www.example.com → dxxxx.cloudfront.net</code></td><td><code>_ランダム.example.com → _ランダム.acm-validations.aws</code></td></tr>
+  <tr><td>目的</td><td>訪問者をCloudFrontへ<strong>案内</strong>する</td><td>「私はこのドメインのDNSを操作できる=持ち主」だと<strong>ACMに証明</strong>する</td></tr>
+  <tr><td>誰が読む</td><td>世界中のブラウザ</td><td>ACM(認証局)だけ</td></tr>
+  <tr><td>消してよいか</td><td>消したらサイトに繋がらない</td><td>置きっぱなしにすると証明書が<strong>自動更新</strong>される(推奨:残す)</td></tr>
+</table></div>
+
+<p>②が必要な理由:もし誰でも他人のドメインの証明書を取れたら、<code>google.com</code> の証明書を貰って偽サイトが作り放題になる。ゆえにACMは「このランダムなCNAMEをDNSに置けるなら本人」という試験を課す。<strong>ユーザーのアクセス経路は一切変わらない</strong>。あれは検証専用の暗号めいた合言葉である。</p>
+
+<h3>正しい発行の順序(当時、順番を誤解していた)</h3>
+
+<pre><code>ACMで証明書を申請
+  → Pending validation(保留)
+  → ACMが検証用CNAME(②)を提示
+  → それを Route 53 に登録
+  → ACMがDNSを確認 → 証明書 Issued(発行済み)
+  → その証明書を CloudFront に取り付ける
+  → CloudFrontに Alternate domain name を登録
+  → Route 53 に案内用レコード(①)を作成</code></pre>
+
+<div class="notecard warn">
+  <span class="notecard-title">⚠ 当時の誤解</span>
+  「CloudFrontにCNAMEを登録することでドメイン管理者だと証明され、証明書が発行される」と思っていたが、これは逆。<strong>証明はRoute 53上の検証用CNAME(②)で完了し、発行済みの証明書を後からCloudFrontに付ける</strong>のが正しい順序である。
+</div>
+
+<h2><span class="chap">IV.</span>CloudFront側のCNAME欄は「許可リスト」</h2>
+
+<p>ではCloudFrontの設定にある「CNAME(代替ドメイン名)」とは何か。これはDNSレコードではなく、<strong>受付係の来客名簿</strong>である。</p>
+
+<ul>
+  <li>CloudFrontには生まれつき本名がある:<code>dxxxx.cloudfront.net</code>。この名前なら無条件で受け付ける</li>
+  <li>独自ドメイン名で訪ねて来た客を受け付けるには、<strong>「この名前で来た客も私宛だ」という登録(Alternate domain name)</strong>が必要</li>
+  <li>登録が無いと、DNSの案内が正しくてもCloudFrontが「その名前は取り扱っていない」と門前払いする(403)</li>
+  <li>そして<strong>この登録には発行済みACM証明書の添付が必須</strong>。他人のドメインを勝手に名簿へ書けない仕組みになっている</li>
+</ul>
+
+<p>Route 53側のCNAME/エイリアスが「道案内」、CloudFront側のCNAMEが「受付名簿」。同じ語だが役割はまるで違う。</p>
+
+<div class="divider">❦ ❦ ❦</div>
+
+<h2><span class="chap">V.</span>HTTPSはどこで終わるか — リダイレクトと提供の違い</h2>
+
+<p>最後の誤解:「S3でHTTPからHTTPSにリダイレクトできるなら、ACMは要らないのでは?」</p>
+
+<p>これは<strong>「HTTPSへ案内すること」と「HTTPSを提供すること」の混同</strong>である。</p>
+
+<ul>
+  <li><strong>リダイレクト</strong> = 「その用件はあちらの窓口へ」と案内する行為。案内した先でHTTPSを受けられる者が必要</li>
+  <li><strong>HTTPSの提供</strong> = 証明書と秘密鍵を持ち、TLSハンドシェイクに応じる行為(<a href="case-01-domain-https.html">Case No.1</a> 参照)</li>
+  <li>S3のwebsite endpointは<strong>HTTPSを受けられない</strong>(HTTPのみ)。ゆえに独自ドメインのHTTPSは成立しない</li>
+  <li>証明書(ACM)を取り付けられるのは<strong>CloudFront</strong>。だからHTTPS化とは「S3の前にCloudFrontを置き、そこで暗号化を終端させる」ことを意味する</li>
+</ul>
+
+<div class="notecard">
+  <span class="notecard-title">◆ 結び — 前日譚で得た三つの武器</span>
+  ①S3は倉庫、CloudFrontは受付係。倉庫が表玄関を持つ必要はない。
+  ②Origin domainは保存された一行の住所。照合の魔法は存在しない。
+  ③CNAMEという語が出たら「案内用か、検証用か、それとも受付名簿か」を問え。
+  この三つの武器を携えて、Case No.1 の捜査は始まった。
+</div>
+
+<p style="font-size:0.85rem; font-style:italic; color:#6b5233;">出典:ChatGPTとの学習対話(<a href="https://chatgpt.com/share/6a413bf7-e3d4-83ee-bdf5-8463e62d71cc">共有リンク</a>)を要約・再構成したもの。</p>
+
+</div>
+</article>
+
+<nav class="entry-nav">
+  <a href="../index.html">← 記事一覧へ戻る</a>
+  <a href="case-01-domain-https.html">次の事件簿:独自ドメインとHTTPSの謎 →</a>
+</nav>
+</main>
+
+<footer>
+  <div class="motto">"Education never ends, Watson. It is a series of lessons, with the greatest for the last."</div>
+  <div>The Scholar's Casebook — 学習の記録は続く</div>
+</footer>
+
+</body>
+</html>
