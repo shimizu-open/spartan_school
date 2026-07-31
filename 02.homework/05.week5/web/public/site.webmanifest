@@ -1,0 +1,23 @@
+{
+  "name": "かけら",
+  "short_name": "かけら",
+  "description": "価値を決めずに、心が動いた一片をとっておく場所",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef1f1",
+  "theme_color": "#eef1f1",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

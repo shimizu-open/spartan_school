@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<!--
+  見せることが中心のページなので横に要素を置かず、1カラムで展示を順にたどれる骨格にする。
+  入口が2つなので上部バーに収め、狭い画面だけハンバーガーに畳んで閲覧領域を保つ。
+  4つの展示室は内容を見比べやすくするため、カードグリッドで同じ重みを与える。
+-->
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      name="description"
+      content="シャーロック・ホームズ正典60編の世界を、人物・年表・作品・地図から見わたす資料館。"
+    >
+    <title>ベイカー街資料館 | THE BAKER STREET ARCHIVE</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="main.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="index.html">THE BAKER STREET ARCHIVE</a>
+      <button
+        class="menu-button"
+        type="button"
+        aria-expanded="false"
+        aria-controls="global-navigation"
+        aria-label="メニューを開く"
+      >
+        <span aria-hidden="true">☰</span>
+        MENU
+      </button>
+      <nav
+        class="global-navigation"
+        id="global-navigation"
+        aria-label="主要ナビゲーション"
+      >
+        <!-- aria-currentは、支援技術にも現在表示中のページを伝えるために付ける。 -->
+        <ul>
+          <li><a href="index.html" aria-current="page">館内案内</a></li>
+          <li><a href="chronology.html">年表</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero__inner">
+          <p class="eyebrow">THE BAKER STREET ARCHIVE</p>
+          <h1 id="page-title">ベイカー街資料館</h1>
+          <p class="hero__lead">
+            1887年から1927年まで、40年をかけて書かれた60の物語。
+            その世界を、人物・年表・作品・地図の4つの入口から見わたす。
+          </p>
+          <a class="hero__button" href="#floor-guide">館内をまわる</a>
+        </div>
+      </section>
+
+      <section class="section" id="floor-guide" aria-labelledby="guide-title">
+        <div class="section__inner">
+          <p class="section-number" aria-hidden="true">01</p>
+          <h2 id="guide-title">館内案内</h2>
+          <div class="guide-grid">
+            <article class="guide-card">
+              <p class="status">準備中</p>
+              <h3>人物名鑑</h3>
+              <p>
+                探偵、記録者、宿敵、家主。物語を動かす9人の履歴。
+              </p>
+            </article>
+            <a class="guide-card guide-card--link" href="chronology.html">
+              <p class="status">年表へ</p>
+              <h3>年表</h3>
+              <p>
+                誕生から完結、そしてパブリックドメイン化まで。40年の刊行史。
+              </p>
+            </a>
+            <article class="guide-card">
+              <p class="status">準備中</p>
+              <h3>作品総覧</h3>
+              <p>
+                長編4作・短編56作。それらを収める9冊の書物とともに。
+              </p>
+            </article>
+            <article class="guide-card">
+              <p class="status">準備中</p>
+              <h3>ロンドン地図</h3>
+              <p>
+                221B、スコットランドヤード、パディントン駅。物語が歩いた街。
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section--elevated" id="about" aria-labelledby="about-title">
+        <div class="section__inner about">
+          <div>
+            <p class="section-number" aria-hidden="true">02</p>
+            <h2 id="about-title">資料館について</h2>
+          </div>
+          <p class="about__copy">
+            シャーロック・ホームズの物語は、長編4作と短編56作の計60作からなる。
+            これらは「正典（Canon）」と呼ばれ、後世に書かれた無数の翻案と区別される。
+            本資料館が扱うのはこの60作のみである。
+          </p>
+        </div>
+      </section>
+
+      <section class="section" id="numbers" aria-labelledby="numbers-title">
+        <div class="section__inner">
+          <p class="section-number" aria-hidden="true">03</p>
+          <h2 id="numbers-title">数字で見る正典</h2>
+          <div class="number-grid">
+            <article class="number-card">
+              <p class="number-card__value">60</p>
+              <h3>正典の作品数</h3>
+            </article>
+            <article class="number-card">
+              <p class="number-card__value">4</p>
+              <h3>長編の数</h3>
+            </article>
+            <article class="number-card">
+              <p class="number-card__value">56</p>
+              <h3>短編の数</h3>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p class="site-footer__name">THE BAKER STREET ARCHIVE</p>
+        <p>
+          本資料館が扱うシャーロック・ホームズ正典は、著作権保護期間が満了したパブリックドメイン作品です。
+        </p>
+        <p>出典：アーサー・コナン・ドイル『シャーロック・ホームズ』正典60編</p>
+      </div>
+    </footer>
+  </body>
+</html>

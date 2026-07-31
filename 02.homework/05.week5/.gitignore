@@ -1,0 +1,7 @@
+node_modules/
+vendor/
+web/dist/
+api/.env
+api/storage/logs/
+.DS_Store
+*.log

@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+@source "./index.html";
+@source "./app/**/*.js";
+
+@font-face {
+  font-family: "Zen Old Mincho";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("../fonts/zen-old-mincho-latin-400-normal.woff2") format("woff2");
+  unicode-range: U+0000-024F, U+2000-206F;
+}
+
+@font-face {
+  font-family: "Zen Old Mincho";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("../fonts/zen-old-mincho-japanese-400-normal.woff2") format("woff2");
+  unicode-range: U+3000-30FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
+}
+
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("../fonts/zen-kaku-gothic-new-latin-400-normal.woff2") format("woff2");
+  unicode-range: U+0000-024F, U+2000-206F;
+}
+
+@font-face {
+  font-family: "Zen Kaku Gothic New";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("../fonts/zen-kaku-gothic-new-japanese-400-normal.woff2") format("woff2");
+  unicode-range: U+3000-30FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
+}
+
+@theme {
+  --color-sushi: #eef1f1;
+  --color-men: #fafcfc;
+  --color-kei: #dde3e3;
+  --color-sumi: #333c40;
+  --color-nibi: #616c74;
+  --color-ai: #33566e;
+  --color-seiji: #3e6b63;
+  --color-kin: #85631f;
+  --color-ai-usu: #e6ecef;
+  --color-seiji-usu: #e5eceb;
+  --font-mincho: "Zen Old Mincho", serif;
+  --font-gothic: "Zen Kaku Gothic New", sans-serif;
+  --text-logo: 1.625rem;
+  --text-logo-md: 1.875rem;
+  --text-record: 1.0625rem;
+  --text-record-md: 1.125rem;
+  --text-ui: 0.8125rem;
+  --text-ui-md: 0.875rem;
+  --text-note: 0.75rem;
+  --text-line: 0.875rem;
+  --text-line-md: 0.9375rem;
+  --leading-record: 2.05;
+  --tracking-logo: 0.32em;
+  --tracking-date: 0.22em;
+  --spacing-touch: 2.75rem;
+  --spacing-button: 3.25rem;
+  --spacing-content: 35rem;
+  --spacing-content-md: 38.75rem;
+  --container-onboarding: 30rem;
+  --animate-settle: settle 0.4s cubic-bezier(.16,.84,.44,1);
+  --animate-reveal: reveal 0.4s ease 0.2s both;
+  --animate-unlock: unlock 6s ease-in-out infinite;
+  @keyframes settle {
+    from { opacity: 0; transform: translateY(-0.5rem); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes reveal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes unlock {
+    50% { opacity: 0.68; }
+  }
+}
+
+@utility shard {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
+}
+
+@utility shard-sm {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%);
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@custom-variant short (@media (max-height: 499px));
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-sushi: #262b2c;
+    --color-men: #2f3537;
+    --color-kei: #3b4244;
+    --color-sumi: #e4e9ea;
+    --color-nibi: #9ea9ae;
+    --color-ai: #94b7d0;
+    --color-seiji: #8db9ae;
+    --color-kin: #d3ae72;
+    --color-ai-usu: #2c383f;
+    --color-seiji-usu: #2b3a37;
+  }
+}

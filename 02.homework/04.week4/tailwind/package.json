@@ -1,0 +1,18 @@
+{
+  "name": "sherlock-characters",
+  "version": "1.0.0",
+  "description": "Tailwind で作るキャラクター紹介ページ（S3 + CloudFront 公開用）",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "dev": "npx @tailwindcss/cli -i src/input.css -o dist/output.css --watch",
+    "build": "npx @tailwindcss/cli -i src/input.css -o dist/output.css --minify"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3"
+  }
+}

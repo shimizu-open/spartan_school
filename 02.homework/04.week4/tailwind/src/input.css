@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+/*
+  @theme に登録した値は、そのまま Tailwind のクラスとして使えるようになる。
+  --color-tweed を登録すると bg-tweed / text-tweed / border-tweed が生える。
+  色を1か所で管理できるので、後から変えたいときはここだけ直せばよい。
+*/
+@theme {
+  /* ツイードの茶：ページ全体の地色 */
+  --color-tweed: #4a3c2e;
+  --color-tweed-dark: #3a2f24; /* 千鳥格子の濃いほう */
+  --color-tweed-deep: #2d241b; /* ヘッダー・フッターの帯 */
+
+  /* 書類の紙：ツイードの上に乗るカード */
+  --color-paper: #efe9da;
+  --color-paper-edge: #d8cfb8;
+
+  /* 文字 */
+  --color-ink: #2b2723; /* 本文。真っ黒にしない（インクの黒は少し茶色い） */
+  --color-faded: #6f675c; /* 補助テキスト。褪せた文字 */
+
+  /* アクセント */
+  --color-brass: #c8a45c; /* 真鍮。ツイード地の上の文字に */
+  --color-stamp: #a83a2c; /* 赤いスタンプ・印章 */
+
+  /* フォント。Webフォントは読み込まず、環境にあるものを使う */
+  --font-typewriter: "Courier New", "Consolas", monospace;
+  --font-display: "Times New Roman", "Yu Mincho", serif;
+}
+
+/*
+  千鳥格子（ハウンドトゥース）。
+  画像を使わずグラデーションだけで作る理由：
+  S3 にアップロードするファイルを増やしたくないため。柄程度ならCSSで足りる。
+  面で敷き詰めると文字が読めなくなるので、帯や区切りに細く使うこと。
+*/
+@utility houndstooth {
+  background-color: var(--color-tweed);
+  background-image:
+    linear-gradient(
+      45deg,
+      var(--color-tweed-dark) 25%,
+      transparent 25%,
+      transparent 75%,
+      var(--color-tweed-dark) 75%
+    ),
+    linear-gradient(
+      45deg,
+      var(--color-tweed-dark) 25%,
+      transparent 25%,
+      transparent 75%,
+      var(--color-tweed-dark) 75%
+    ),
+    linear-gradient(
+      -45deg,
+      var(--color-tweed-dark) 25%,
+      transparent 25%,
+      transparent 75%,
+      var(--color-tweed-dark) 75%
+    );
+  background-size: 10px 10px;
+  background-position: 0 0, 5px 5px, 2.5px 2.5px;
+}
+
+/*
+  ツイードの布目。細かいノイズを重ねて、べた塗りに見えないようにする。
+  こちらも画像を使わず、極小のグラデーションの繰り返しで表現する。
+*/
+@utility tweed-weave {
+  background-color: var(--color-tweed);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      rgb(255 255 255 / 0.03) 0 1px,
+      transparent 1px 3px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      rgb(0 0 0 / 0.06) 0 1px,
+      transparent 1px 3px
+    );
+}
+
+/*
+  赤いスタンプ。傾けて重ねる。
+  枠線と文字だけで作り、塗りつぶさない（本物のゴム印は輪郭が擦れるため）。
+*/
+@utility stamp {
+  border: 2px solid var(--color-stamp);
+  color: var(--color-stamp);
+  font-family: var(--font-typewriter);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.75;
+}

@@ -1,0 +1,42 @@
+{
+  "Name": "kakera-p1-security-headers",
+  "Comment": "Security headers for the P1 static application",
+  "SecurityHeadersConfig": {
+    "XSSProtection": {
+      "Protection": true,
+      "ModeBlock": true,
+      "Override": true
+    },
+    "FrameOptions": {
+      "FrameOption": "DENY",
+      "Override": true
+    },
+    "ReferrerPolicy": {
+      "ReferrerPolicy": "no-referrer",
+      "Override": true
+    },
+    "ContentSecurityPolicy": {
+      "ContentSecurityPolicy": "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; manifest-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      "Override": true
+    },
+    "ContentTypeOptions": {
+      "Override": true
+    },
+    "StrictTransportSecurity": {
+      "AccessControlMaxAgeSec": 63072000,
+      "IncludeSubdomains": true,
+      "Preload": true,
+      "Override": true
+    }
+  },
+  "CustomHeadersConfig": {
+    "Quantity": 1,
+    "Items": [
+      {
+        "Header": "Permissions-Policy",
+        "Value": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+        "Override": true
+      }
+    ]
+  }
+}

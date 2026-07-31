@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>JS練習</title>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <h1 id="title">こんにちは</h1>
+
+    <button id="btn">押して</button>
+    <p id="msg">まだ押されていません</p>
+
+    <script>
+      const btn = document.querySelector("#btn");
+      const msg = document.querySelector("#msg");
+      let count = 0;
+
+      btn.addEventListener("click", () => {
+        count = count + 1;
+        msg.textContent = `${count} 回 押されました`; // ← DOMを書き換え
+      });
+    </script>
+  </body>
+</html>

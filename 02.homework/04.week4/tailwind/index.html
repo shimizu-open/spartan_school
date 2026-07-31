@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<!--
+  ■ デザイン方針：ツイードの事件ファイル
+    ツイードの茶（地）＋千鳥格子（帯）＋鹿撃ち帽と虫眼鏡（記号）で「探偵」を出し、
+    その上に「捜査資料」の体裁（ファイル番号・タイプライター体・赤いスタンプ・証明写真）を乗せる。
+    地の色と質感で雰囲気を、書類の体裁で情報の並べ方を担当させている。
+
+  ■ レイアウトの型：1カラム ＋ ヘッダーナビ ＋ ヒーロー ＋ カードグリッド
+    人物を並べて見比べるだけのページなので、横にサイドバーを置く理由がない。
+    9人は同格の情報なので、同じ形の書類に揃えて重みを均等にしている。
+
+  ■ CSS は dist/output.css だけを読む
+    CDN の <script> は使わない。本番では「使ったクラスだけ抽出した完成品」を配るため。
+-->
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登場人物 | ベイカー街の9人</title>
+    <meta
+      name="description"
+      content="シャーロック・ホームズ正典に繰り返し登場し、物語の骨格をなす9人の紹介。"
+    />
+    <link rel="stylesheet" href="dist/output.css" />
+  </head>
+
+  <body class="tweed-weave text-ink antialiased">
+    <!-- キーボード利用者が本文まで一気に飛べるようにする。普段は画面外に隠しておく -->
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:bg-brass focus:px-4 focus:py-2 focus:text-tweed-deep"
+      >本文へスキップ</a
+    >
+
+    <!-- ============ ヘッダー：バインダーの背表紙に見立てた濃色の帯 ============ -->
+    <header class="sticky top-0 z-40 shadow-lg shadow-black/30">
+      <div class="bg-tweed-deep">
+        <div
+          class="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6"
+        >
+          <a href="#top" class="flex items-center gap-3 text-brass">
+            <!-- 鹿撃ち帽のシルエット。インラインSVGなら画像を1枚も増やさずに済む -->
+            <svg
+              class="h-7 w-7 shrink-0"
+              viewBox="0 0 32 32"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                d="M16 5c-4.2 0-7.4 3-8.2 7L7 15h18l-.8-3c-.8-4-4-7-8.2-7z"
+              />
+              <path
+                d="M3 16.5c0-.6.4-1 1-1h24c.6 0 1 .4 1 1v1c0 .6-.4 1-1 1h-1.6l1.9 3.2a1 1 0 0 1-.9 1.5h-3.2a1 1 0 0 1-.9-.6L21 18.5h-10l-2.3 4.1a1 1 0 0 1-.9.6H4.6a1 1 0 0 1-.9-1.5l1.9-3.2H4c-.6 0-1-.4-1-1z"
+              />
+            </svg>
+            <span class="font-typewriter text-sm tracking-[0.3em]">CASE FILES</span>
+          </a>
+
+          <nav aria-label="ページ内ナビゲーション">
+            <ul class="flex gap-5 font-typewriter text-xs tracking-widest text-paper/70 sm:gap-8">
+              <li>
+                <a href="#cast" class="transition hover:text-brass">SUBJECTS</a>
+              </li>
+              <li>
+                <a href="#about" class="transition hover:text-brass">CANON</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+      <!-- 千鳥格子の細い帯。面で敷くと文字が読めなくなるので、6px の帯だけに使う -->
+      <div class="houndstooth h-1.5" aria-hidden="true"></div>
+    </header>
+
+    <main id="main">
+      <!-- ============ ヒーロー ============ -->
+      <section
+        id="top"
+        class="relative flex min-h-[calc(100vh-4.375rem)] items-center justify-center overflow-hidden px-4 py-20"
+      >
+        <img
+          src="images/hero-desk.jpg"
+          alt="茶色のツイードに鹿撃ち帽、虫眼鏡、パイプ、書類、インク壺を並べた机上"
+          width="1600"
+          height="896"
+          class="absolute inset-0 h-full w-full object-cover"
+        />
+        <!-- 文字を読ませるための暗いオーバーレイ。コントラスト比 4.5:1 以上を確保する -->
+        <div class="absolute inset-0 bg-tweed-deep/75" aria-hidden="true"></div>
+
+        <!-- 書類のヘッダーを模したブロック -->
+        <div
+          class="relative w-full max-w-xl border border-brass/40 bg-paper/95 px-6 py-10 text-center shadow-2xl sm:px-12"
+        >
+          <p class="font-typewriter text-[0.65rem] tracking-[0.25em] text-faded">
+            METROPOLITAN POLICE — CASE FILES
+          </p>
+          <div class="mt-4 border-t border-dashed border-paper-edge" aria-hidden="true"></div>
+
+          <!-- clamp を使わず Tailwind の段階指定で。text-5xl → md:text-7xl -->
+          <h1 class="mt-6 font-display text-5xl leading-tight md:text-7xl">
+            ベイカー街の<br />9人
+          </h1>
+          <p class="mt-5 font-typewriter text-xs tracking-widest text-faded">
+            THE CAST OF 221B
+          </p>
+
+          <div class="mt-6 border-t border-dashed border-paper-edge" aria-hidden="true"></div>
+          <dl
+            class="mt-4 flex justify-center gap-8 font-typewriter text-[0.65rem] tracking-widest text-faded"
+          >
+            <div class="flex gap-2">
+              <dt>SUBJECTS</dt>
+              <dd class="text-ink">09</dd>
+            </div>
+            <div class="flex gap-2">
+              <dt>STATUS</dt>
+              <dd class="text-stamp">OPEN</dd>
+            </div>
+          </dl>
+
+          <a
+            href="#cast"
+            class="mt-8 inline-flex items-center gap-2 border border-ink px-8 py-3 font-typewriter text-xs tracking-[0.2em] transition hover:bg-ink hover:text-paper"
+          >
+            <!-- 虫眼鏡 -->
+            <svg
+              class="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <circle cx="10.5" cy="10.5" r="6.5" />
+              <path d="M15.5 15.5 21 21" stroke-linecap="round" />
+            </svg>
+            調書を開く
+          </a>
+
+          <!-- 赤いスタンプ。装飾なので読み上げからは外す -->
+          <p
+            class="stamp absolute -top-4 right-4 rotate-[-8deg] bg-paper px-3 py-1 text-xs sm:right-8"
+            aria-hidden="true"
+          >
+            Confidential
+          </p>
+        </div>
+      </section>
+
+      <!-- ============ 登場人物 ============ -->
+      <section id="cast" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-24 sm:px-6">
+        <div class="flex items-end justify-between border-b border-brass/30 pb-4">
+          <div>
+            <p class="font-typewriter text-xs tracking-[0.3em] text-brass">SECTION 01</p>
+            <h2 class="mt-2 font-display text-3xl text-paper sm:text-4xl">登場人物</h2>
+          </div>
+          <p class="font-typewriter text-xs tracking-widest text-paper/50">09 FILES</p>
+        </div>
+
+        <!-- 画面幅に応じて 1列 → 2列 → 3列 に増やす -->
+        <ul class="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- ---------- 001 ホームズ ---------- -->
+          <li>
+            <article
+              class="group h-full border border-paper-edge bg-paper p-5 shadow-xl shadow-black/25 transition sm:rotate-[0.35deg] sm:hover:-translate-y-1 sm:hover:rotate-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            >
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-typewriter text-[0.65rem] tracking-widest text-faded">
+                    CASE FILE
+                  </p>
+                  <p class="font-typewriter text-lg text-stamp">No. 001</p>
+                </div>
+                <figure class="w-20 shrink-0">
+                  <img
+                    src="images/p-holmes.jpg"
+                    alt="鹿撃ち帽とインヴァネスコートを着た、鋭い目つきのシャーロック・ホームズ"
+                    width="768"
+                    height="768"
+                    loading="lazy"
+                    class="aspect-square w-full border border-ink/40 object-cover"
+                  />
+                  <figcaption
+                    class="mt-1 text-center font-typewriter text-[0.6rem] tracking-widest text-faded"
+                  >
+                    NO. 001
+                  </figcaption>
+                </figure>
+              </div>
+
+              <h3 class="mt-4 font-display text-xl">シャーロック・ホームズ</h3>
+              <p class="font-typewriter text-xs text-faded">Sherlock Holmes</p>
+
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+              <dl class="space-y-1 text-xs">
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">職業</dt>
+                  <dd>諮問探偵</dd>
+                </div>
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">住所</dt>
+                  <dd>ロンドン ベイカー街221B</dd>
+                </div>
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">初登場</dt>
+                  <dd>緋色の研究（1887年）</dd>
+                </div>
+              </dl>
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+
+              <p class="text-sm leading-relaxed text-ink/80">
+                世界で唯一の「諮問探偵」を名乗る。警察や私立探偵が行き詰まった事件に助言を与える職業を、自ら定義して始めた人物。観察と推理を武器とし、ヴァイオリンを弾き、化学実験を好む。
+              </p>
+            </article>
+          </li>
+
+          <!-- ---------- 002 ワトスン ---------- -->
+          <li>
+            <article
+              class="group h-full border border-paper-edge bg-paper p-5 shadow-xl shadow-black/25 transition sm:rotate-[-0.4deg] sm:hover:-translate-y-1 sm:hover:rotate-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            >
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-typewriter text-[0.65rem] tracking-widest text-faded">
+                    CASE FILE
+                  </p>
+                  <p class="font-typewriter text-lg text-stamp">No. 002</p>
+                </div>
+                <figure class="w-20 shrink-0">
+                  <img
+                    src="images/p-watson.jpg"
+                    alt="口髭を蓄えヴィクトリア朝の背広を着た、実直なジョン・H・ワトスン"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                    class="aspect-square w-full border border-ink/40 object-cover"
+                  />
+                  <figcaption
+                    class="mt-1 text-center font-typewriter text-[0.6rem] tracking-widest text-faded"
+                  >
+                    NO. 002
+                  </figcaption>
+                </figure>
+              </div>
+
+              <h3 class="mt-4 font-display text-xl">ジョン・H・ワトスン</h3>
+              <p class="font-typewriter text-xs text-faded">John H. Watson</p>
+
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+              <dl class="space-y-1 text-xs">
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">肩書き</dt>
+                  <dd>医師、記録者</dd>
+                </div>
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">初登場</dt>
+                  <dd>緋色の研究（1887年）</dd>
+                </div>
+              </dl>
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+
+              <p class="text-sm leading-relaxed text-ink/80">
+                元軍医。アフガニスタンでの従軍から負傷して帰国し、下宿を探していたところでホームズと出会い、221Bを共同で借りることになる。正典のほとんどは、このワトスンが書いた記録という体裁をとっている。
+              </p>
+            </article>
+          </li>
+
+          <!-- ---------- 003 ハドスン夫人 ---------- -->
+          <li>
+            <article
+              class="group h-full border border-paper-edge bg-paper p-5 shadow-xl shadow-black/25 transition sm:rotate-[0.3deg] sm:hover:-translate-y-1 sm:hover:rotate-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            >
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-typewriter text-[0.65rem] tracking-widest text-faded">
+                    CASE FILE
+                  </p>
+                  <p class="font-typewriter text-lg text-stamp">No. 003</p>
+                </div>
+                <figure class="w-20 shrink-0">
+                  <img
+                    src="images/p-hudson.jpg"
+                    alt="エプロンを身に着けた年配のハドスン夫人"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                    class="aspect-square w-full border border-ink/40 object-cover"
+                  />
+                  <figcaption
+                    class="mt-1 text-center font-typewriter text-[0.6rem] tracking-widest text-faded"
+                  >
+                    NO. 003
+                  </figcaption>
+                </figure>
+              </div>
+
+              <h3 class="mt-4 font-display text-xl">ハドスン夫人</h3>
+              <p class="font-typewriter text-xs text-faded">Mrs. Hudson</p>
+
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+              <dl class="space-y-1 text-xs">
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">肩書き</dt>
+                  <dd>221Bの家主</dd>
+                </div>
+              </dl>
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+
+              <p class="text-sm leading-relaxed text-ink/80">
+                ベイカー街221Bの家主。奇妙な訪問者や銃声、化学実験の臭いに耐えながら、下宿人であるホームズとワトスンの生活を支える。
+              </p>
+            </article>
+          </li>
+
+          <!-- ---------- 004 マイクロフト ---------- -->
+          <li>
+            <article
+              class="group h-full border border-paper-edge bg-paper p-5 shadow-xl shadow-black/25 transition sm:rotate-[-0.3deg] sm:hover:-translate-y-1 sm:hover:rotate-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            >
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-typewriter text-[0.65rem] tracking-widest text-faded">
+                    CASE FILE
+                  </p>
+                  <p class="font-typewriter text-lg text-stamp">No. 004</p>
+                </div>
+                <figure class="w-20 shrink-0">
+                  <img
+                    src="images/p-mycroft.jpg"
+                    alt="上等なヴィクトリア朝の服を着た、恰幅の良いマイクロフト・ホームズ"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                    class="aspect-square w-full border border-ink/40 object-cover"
+                  />
+                  <figcaption
+                    class="mt-1 text-center font-typewriter text-[0.6rem] tracking-widest text-faded"
+                  >
+                    NO. 004
+                  </figcaption>
+                </figure>
+              </div>
+
+              <h3 class="mt-4 font-display text-xl">マイクロフト・ホームズ</h3>
+              <p class="font-typewriter text-xs text-faded">Mycroft Holmes</p>
+
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+              <dl class="space-y-1 text-xs">
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">肩書き</dt>
+                  <dd>ホームズの兄、英国政府の官吏</dd>
+                </div>
+              </dl>
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+
+              <p class="text-sm leading-relaxed text-ink/80">
+                ホームズの7歳年上の兄。推理の才ではホームズを上回るとされるが、自ら足を運んで調べることを好まない。ディオゲネス・クラブの創立者の一人。
+              </p>
+            </article>
+          </li>
+
+          <!-- ---------- 005 レストレード ---------- -->
+          <li>
+            <article
+              class="group h-full border border-paper-edge bg-paper p-5 shadow-xl shadow-black/25 transition sm:rotate-[0.35deg] sm:hover:-translate-y-1 sm:hover:rotate-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            >
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-typewriter text-[0.65rem] tracking-widest text-faded">
+                    CASE FILE
+                  </p>
+                  <p class="font-typewriter text-lg text-stamp">No. 005</p>
+                </div>
+                <figure class="w-20 shrink-0">
+                  <img
+                    src="images/p-lestrade.jpg"
+                    alt="地味な背広を着た、小柄で機敏そうなレストレード警部"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                    class="aspect-square w-full border border-ink/40 object-cover"
+                  />
+                  <figcaption
+                    class="mt-1 text-center font-typewriter text-[0.6rem] tracking-widest text-faded"
+                  >
+                    NO. 005
+                  </figcaption>
+                </figure>
+              </div>
+
+              <h3 class="mt-4 font-display text-xl">レストレード警部</h3>
+              <p class="font-typewriter text-xs text-faded">Inspector Lestrade</p>
+
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+              <dl class="space-y-1 text-xs">
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">肩書き</dt>
+                  <dd>スコットランドヤードの警部</dd>
+                </div>
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">初登場</dt>
+                  <dd>緋色の研究（1887年）</dd>
+                </div>
+              </dl>
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+
+              <p class="text-sm leading-relaxed text-ink/80">
+                ロンドン警視庁（スコットランドヤード）の警部。正典に最も多く登場する警察官。実直で粘り強いが、目に見える事実の先を読む想像力に欠ける。
+              </p>
+            </article>
+          </li>
+
+          <!-- ---------- 006 モリアーティ（WANTED） ---------- -->
+          <li>
+            <article
+              class="group relative h-full border border-paper-edge bg-paper p-5 shadow-xl shadow-black/25 transition sm:rotate-[-0.35deg] sm:hover:-translate-y-1 sm:hover:rotate-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            >
+              <!-- スタンプは3枚だけに絞る。全部に置くと効果が消える -->
+              <p
+                class="stamp absolute top-3 right-3 rotate-[-10deg] bg-paper px-2 py-0.5 text-[0.7rem]"
+                aria-hidden="true"
+              >
+                Wanted
+              </p>
+
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-typewriter text-[0.65rem] tracking-widest text-faded">
+                    CASE FILE
+                  </p>
+                  <p class="font-typewriter text-lg text-stamp">No. 006</p>
+                </div>
+                <figure class="mt-8 w-20 shrink-0">
+                  <img
+                    src="images/p-moriarty.jpg"
+                    alt="広い額と暗い表情が印象的な、痩せたモリアーティ教授"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                    class="aspect-square w-full border border-ink/40 object-cover"
+                  />
+                  <figcaption
+                    class="mt-1 text-center font-typewriter text-[0.6rem] tracking-widest text-faded"
+                  >
+                    NO. 006
+                  </figcaption>
+                </figure>
+              </div>
+
+              <h3 class="mt-4 font-display text-xl">モリアーティ教授</h3>
+              <p class="font-typewriter text-xs text-faded">Professor James Moriarty</p>
+
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+              <dl class="space-y-1 text-xs">
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">肩書き</dt>
+                  <dd>数学者、犯罪組織の首領</dd>
+                </div>
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">初登場</dt>
+                  <dd>最後の事件（1893年）</dd>
+                </div>
+              </dl>
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+
+              <p class="text-sm leading-relaxed text-ink/80">
+                ホームズが「犯罪界のナポレオン」と呼ぶ人物。元は数学の教授であり、ロンドンの犯罪の多くを背後から統括しているとされる。「最後の事件」でホームズと対決する。
+              </p>
+            </article>
+          </li>
+
+          <!-- ---------- 007 アドラー（THE WOMAN） ---------- -->
+          <li>
+            <article
+              class="group relative h-full border border-paper-edge bg-paper p-5 shadow-xl shadow-black/25 transition sm:rotate-[0.3deg] sm:hover:-translate-y-1 sm:hover:rotate-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            >
+              <p
+                class="stamp absolute top-3 right-3 rotate-[8deg] bg-paper px-2 py-0.5 text-[0.7rem]"
+                aria-hidden="true"
+              >
+                The Woman
+              </p>
+
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-typewriter text-[0.65rem] tracking-widest text-faded">
+                    CASE FILE
+                  </p>
+                  <p class="font-typewriter text-lg text-stamp">No. 007</p>
+                </div>
+                <figure class="mt-8 w-20 shrink-0">
+                  <img
+                    src="images/p-adler.jpg"
+                    alt="舞台衣装風のヴィクトリア朝のドレスを着たアイリーン・アドラー"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                    class="aspect-square w-full border border-ink/40 object-cover"
+                  />
+                  <figcaption
+                    class="mt-1 text-center font-typewriter text-[0.6rem] tracking-widest text-faded"
+                  >
+                    NO. 007
+                  </figcaption>
+                </figure>
+              </div>
+
+              <h3 class="mt-4 font-display text-xl">アイリーン・アドラー</h3>
+              <p class="font-typewriter text-xs text-faded">Irene Adler</p>
+
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+              <dl class="space-y-1 text-xs">
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">肩書き</dt>
+                  <dd>オペラ歌手</dd>
+                </div>
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">初登場</dt>
+                  <dd>ボヘミアの醜聞（1891年）</dd>
+                </div>
+              </dl>
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+
+              <p class="text-sm leading-relaxed text-ink/80">
+                「ボヘミアの醜聞」に登場する女性。ホームズの計略を見破って出し抜いた。ワトスンによれば、ホームズは彼女をつねに「あの女性（the
+                woman）」と呼んだ。
+              </p>
+            </article>
+          </li>
+
+          <!-- ---------- 008 モラン（WANTED） ---------- -->
+          <li>
+            <article
+              class="group relative h-full border border-paper-edge bg-paper p-5 shadow-xl shadow-black/25 transition sm:rotate-[-0.4deg] sm:hover:-translate-y-1 sm:hover:rotate-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            >
+              <p
+                class="stamp absolute top-3 right-3 rotate-[-9deg] bg-paper px-2 py-0.5 text-[0.7rem]"
+                aria-hidden="true"
+              >
+                Wanted
+              </p>
+
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-typewriter text-[0.65rem] tracking-widest text-faded">
+                    CASE FILE
+                  </p>
+                  <p class="font-typewriter text-lg text-stamp">No. 008</p>
+                </div>
+                <figure class="mt-8 w-20 shrink-0">
+                  <img
+                    src="images/p-moran.jpg"
+                    alt="日焼けした顔に軍人らしい厳格さをたたえたセバスチャン・モラン大佐"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                    class="aspect-square w-full border border-ink/40 object-cover"
+                  />
+                  <figcaption
+                    class="mt-1 text-center font-typewriter text-[0.6rem] tracking-widest text-faded"
+                  >
+                    NO. 008
+                  </figcaption>
+                </figure>
+              </div>
+
+              <h3 class="mt-4 font-display text-xl">セバスチャン・モラン大佐</h3>
+              <p class="font-typewriter text-xs text-faded">Colonel Sebastian Moran</p>
+
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+              <dl class="space-y-1 text-xs">
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">肩書き</dt>
+                  <dd>元陸軍大佐、狙撃手</dd>
+                </div>
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">初登場</dt>
+                  <dd>空き家の冒険（1903年）</dd>
+                </div>
+              </dl>
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+
+              <p class="text-sm leading-relaxed text-ink/80">
+                モリアーティの組織で最も危険とされた人物。優れた狙撃手であり、「空き家の冒険」でホームズが仕掛けた罠にかかる。
+              </p>
+            </article>
+          </li>
+
+          <!-- ---------- 009 ベイカー街遊撃隊 ---------- -->
+          <li>
+            <article
+              class="group h-full border border-paper-edge bg-paper p-5 shadow-xl shadow-black/25 transition sm:rotate-[0.35deg] sm:hover:-translate-y-1 sm:hover:rotate-0 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+            >
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-typewriter text-[0.65rem] tracking-widest text-faded">
+                    CASE FILE
+                  </p>
+                  <p class="font-typewriter text-lg text-stamp">No. 009</p>
+                </div>
+                <figure class="w-20 shrink-0">
+                  <img
+                    src="images/p-irregulars.jpg"
+                    alt="暗い街角に集まるベイカー街遊撃隊の子供たち"
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                    class="aspect-square w-full border border-ink/40 object-cover"
+                  />
+                  <figcaption
+                    class="mt-1 text-center font-typewriter text-[0.6rem] tracking-widest text-faded"
+                  >
+                    NO. 009
+                  </figcaption>
+                </figure>
+              </div>
+
+              <h3 class="mt-4 font-display text-xl">ベイカー街遊撃隊</h3>
+              <p class="font-typewriter text-xs text-faded">The Baker Street Irregulars</p>
+
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+              <dl class="space-y-1 text-xs">
+                <div class="flex gap-3">
+                  <dt class="w-14 shrink-0 font-typewriter text-faded">初登場</dt>
+                  <dd>緋色の研究（1887年）</dd>
+                </div>
+              </dl>
+              <div class="my-3 border-t border-dashed border-paper-edge"></div>
+
+              <p class="text-sm leading-relaxed text-ink/80">
+                ホームズが雇うロンドンの浮浪児たちの集団。大人が入り込めない場所を歩き回り、街の情報を集めてくる。
+              </p>
+            </article>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ============ 正典について：書類の余白に貼られたメモ ============ -->
+      <section id="about" class="scroll-mt-20 px-4 pb-24 sm:px-6">
+        <div
+          class="mx-auto max-w-4xl rotate-[-0.3deg] border border-paper-edge bg-paper p-8 shadow-xl shadow-black/25 sm:p-12"
+        >
+          <p class="font-typewriter text-xs tracking-[0.3em] text-faded">SECTION 02 — NOTE</p>
+          <h2 class="mt-2 font-display text-3xl sm:text-4xl">正典について</h2>
+          <div class="my-5 border-t border-dashed border-paper-edge"></div>
+
+          <!-- max-w-[65ch] で1行の文字数を抑える。長すぎる行は目が迷子になるため -->
+          <p class="max-w-[65ch] leading-loose text-ink/80">
+            シャーロック・ホームズの物語は、長編4作と短編56作の計60作からなる。これらは「正典（Canon）」と呼ばれ、後世に書かれた無数の翻案と区別される。本ページが扱うのはこの60作のみである。
+          </p>
+
+          <!-- 伝票の数字欄のように等幅で大きく -->
+          <dl class="mt-8 grid grid-cols-3 gap-px border border-paper-edge bg-paper-edge">
+            <div class="bg-paper p-5 text-center">
+              <dd class="font-typewriter text-4xl text-stamp">60</dd>
+              <dt class="mt-2 font-typewriter text-[0.65rem] tracking-widest text-faded">
+                正典の作品数
+              </dt>
+            </div>
+            <div class="bg-paper p-5 text-center">
+              <dd class="font-typewriter text-4xl text-stamp">04</dd>
+              <dt class="mt-2 font-typewriter text-[0.65rem] tracking-widest text-faded">
+                長編の数
+              </dt>
+            </div>
+            <div class="bg-paper p-5 text-center">
+              <dd class="font-typewriter text-4xl text-stamp">56</dd>
+              <dt class="mt-2 font-typewriter text-[0.65rem] tracking-widest text-faded">
+                短編の数
+              </dt>
+            </div>
+          </dl>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============ フッター：綴じ込み欄 ============ -->
+    <footer>
+      <div class="houndstooth h-1.5" aria-hidden="true"></div>
+      <div class="bg-tweed-deep px-4 py-12 text-center sm:px-6">
+        <p class="font-typewriter text-xs tracking-[0.3em] text-brass">
+          221B BAKER STREET, LONDON
+        </p>
+        <p class="mx-auto mt-4 max-w-2xl text-xs leading-loose text-paper/60">
+          本ページが扱うシャーロック・ホームズ正典は、著作権保護期間が満了したパブリックドメイン作品です。
+        </p>
+        <p class="mt-1 text-xs text-paper/60">
+          出典：アーサー・コナン・ドイル『シャーロック・ホームズ』正典60編
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>

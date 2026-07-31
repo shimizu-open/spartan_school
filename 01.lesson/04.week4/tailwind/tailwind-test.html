@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <!-- スマホでは text-lg、画面幅768px以上では text-3xl になる見出し -->
+    <h1 class="text-lg md:text-3xl font-bold">レスポンシブな見出し</h1>
+
+    <!-- スマホでは縦積み、768px以上では横並びになるカード -->
+    <div class="flex flex-col md:flex-row gap-4">
+      <div class="bg-blue-100 p-4 rounded-md">カード1</div>
+      <div class="bg-blue-100 p-4 rounded-md">カード2</div>
+      <div class="bg-blue-100 p-4 rounded-md">カード3</div>
+    </div>
+  </body>
+</html>

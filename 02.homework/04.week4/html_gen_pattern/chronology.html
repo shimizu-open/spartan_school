@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<!--
+  時系列は縦一本が最も読みやすく、横に別の要素を置くと読む流れを妨げるため、1カラムにする。
+  ページ間の移動を迷わせないため、ヘッダーナビとハンバーガーはトップページと共通にする。
+  年ごとの前後関係を一本の流れとして見せるため、中身にはタイムラインを採用する。
+-->
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      name="description"
+      content="シャーロック・ホームズ正典60編の世界を、人物・年表・作品・地図から見わたす資料館。"
+    >
+    <title>年表 | ベイカー街資料館</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="main.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-name" href="index.html">THE BAKER STREET ARCHIVE</a>
+      <button
+        class="menu-button"
+        type="button"
+        aria-expanded="false"
+        aria-controls="global-navigation"
+        aria-label="メニューを開く"
+      >
+        <span aria-hidden="true">☰</span>
+        MENU
+      </button>
+      <nav
+        class="global-navigation"
+        id="global-navigation"
+        aria-label="主要ナビゲーション"
+      >
+        <!-- aria-currentは、支援技術にも現在表示中のページを伝えるために付ける。 -->
+        <ul>
+          <li><a href="index.html">館内案内</a></li>
+          <li><a href="chronology.html" aria-current="page">年表</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <header class="page-heading">
+        <div class="page-heading__inner">
+          <p class="eyebrow">THE BAKER STREET ARCHIVE</p>
+          <h1>年表</h1>
+          <p class="page-heading__lead">
+            第1作の発表から正典の完結、そして全作品が誰のものでもなくなるまで。
+          </p>
+        </div>
+      </header>
+
+      <section class="timeline-section" aria-label="刊行の歴史">
+        <!-- 出来事は順序そのものに意味があるため、項目の列挙を示すulではなくolを使う。 -->
+        <ol class="timeline">
+          <!-- datetimeは、表示とは別に年を機械が解釈できる形で伝えるために付ける。 -->
+          <li class="timeline__item">
+            <time class="timeline__year" datetime="1859">1859</time>
+            <div class="timeline__content">
+              <h2>アーサー・コナン・ドイル誕生</h2>
+              <p>スコットランド・エディンバラに生まれる。</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <time class="timeline__year" datetime="1887">1887</time>
+            <div class="timeline__content">
+              <h2>『緋色の研究』発表</h2>
+              <p>ビートンのクリスマス年鑑に掲載。ホームズとワトスンが初めて世に出る。</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <time class="timeline__year" datetime="1890">1890</time>
+            <div class="timeline__content">
+              <h2>『四つの署名』発表</h2>
+              <p>リッピンコット月刊誌に掲載された第2長編。</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <time class="timeline__year" datetime="1891">1891</time>
+            <div class="timeline__content">
+              <h2>ストランド誌で短編連載が始まる</h2>
+              <p>「ボヘミアの醜聞」を皮切りに短編の連載が開始され、ホームズの人気が爆発する。</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <time class="timeline__year" datetime="1892">1892</time>
+            <div class="timeline__content">
+              <h2>『シャーロック・ホームズの冒険』刊行</h2>
+              <p>最初の短編集。</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <time class="timeline__year" datetime="1893">1893</time>
+            <div class="timeline__content">
+              <h2>「最後の事件」発表</h2>
+              <p>ホームズがモリアーティ教授とともにライヘンバッハの滝に消える。第2短編集『シャーロック・ホームズの回想』も刊行。</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <time class="timeline__year" datetime="1901">1901</time>
+            <div class="timeline__content">
+              <h2>『バスカヴィル家の犬』連載開始</h2>
+              <p>ストランド誌で連載。滝の事件より前の出来事として発表された。翌1902年に単行本化。</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <time class="timeline__year" datetime="1903">1903</time>
+            <div class="timeline__content">
+              <h2>「空き家の冒険」発表</h2>
+              <p>ホームズが生還する。以後、連載が再開される。</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <time class="timeline__year" datetime="1905">1905</time>
+            <div class="timeline__content">
+              <h2>『シャーロック・ホームズの帰還』刊行</h2>
+              <p>復活後の短編を集めた第3短編集。</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <time class="timeline__year" datetime="1914">1914</time>
+            <div class="timeline__content">
+              <h2>『恐怖の谷』連載開始</h2>
+              <p>最後の長編。翌1915年に単行本化。</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <time class="timeline__year" datetime="1917">1917</time>
+            <div class="timeline__content">
+              <h2>『シャーロック・ホームズ最後の挨拶』刊行</h2>
+              <p>第4短編集。</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <time class="timeline__year" datetime="1927">1927</time>
+            <div class="timeline__content">
+              <h2>『シャーロック・ホームズの事件簿』刊行</h2>
+              <p>最後の短編集。これをもって正典60編が完結する。</p>
+            </div>
+          </li>
+          <li class="timeline__item">
+            <time class="timeline__year" datetime="1930">1930</time>
+            <div class="timeline__content">
+              <h2>コナン・ドイル没</h2>
+              <p>71歳。</p>
+            </div>
+          </li>
+          <li class="timeline__item timeline__item--era-gap">
+            <time class="timeline__year" datetime="2023">2023</time>
+            <div class="timeline__content">
+              <h2>正典全作品がパブリックドメインに</h2>
+              <p>米国において、最後まで権利が残っていた作品の保護期間が満了し、正典60編すべてが自由に利用できるようになった。</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+    </main>
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <p class="site-footer__name">THE BAKER STREET ARCHIVE</p>
+        <p>
+          本資料館が扱うシャーロック・ホームズ正典は、著作権保護期間が満了したパブリックドメイン作品です。
+        </p>
+        <p>出典：アーサー・コナン・ドイル『シャーロック・ホームズ』正典60編</p>
+      </div>
+    </footer>
+  </body>
+</html>
