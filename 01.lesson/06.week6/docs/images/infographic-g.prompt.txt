@@ -1,0 +1,216 @@
+Use case: infographic-diagram.
+Create ONE finished Japanese educational infographic as a raster PNG, landscape exact 3:2 aspect ratio, preferably 3072×2048 or the highest available resolution at 3:2. This is a new infographic, using three supplied images as REFERENCES, not a copy of their topic or text.
+
+REFERENCE PRIORITY:
+Image 1 (_style-clean.png): PRIMARY reference for delicate watercolor illustration, elegant pale colors, fine ink detail, serif headings, typography hierarchy, rounded educational panels, airy composition. Follow this first.
+Image 2 (_style-dense.png): SECONDARY reference only for careful detail and completeness of educational content. Do NOT copy its denser decoration or large cats.
+Image 3 (_ref-cat.jpg): CHARACTER IDENTITY reference. Match the blue fur, white muzzle and chest, cream-white forelock, large friendly dark blue eyes, pink nose, navy suit, waistcoat and bow tie. Render this same cat as small watercolor illustrations in three different work poses.
+
+MOST IMPORTANT VISUAL REQUIREMENTS:
+Near-white to extremely pale cream background. Watercolor blooms, distant European townscape, shelves and wooden crates appear FAINTLY ONLY at the outer top/bottom edges and four corners. The center information area stays WHITE and clean. Low overall saturation, restrained pale blue, tiny touches of sage green, pale apricot, warm ivory; dark navy readable text. Elegant hand-painted picture-book watercolor with thin ink linework matching Image 1, not flat corporate vector art, not 3D.
+No dense foliage, no leafy background, no green wash over the canvas. Plenty of breathing space inside panels. Thin delicate rounded frames with barely tinted backgrounds; absolutely no heavy dark panel outlines.
+Exactly three SMALL blue cats, one working quietly in a corner of each explanatory column. No big foreground mascot. Each cat occupies much less than one eighth of the whole canvas, ideally around 7–10% of the canvas width and 12% of its height. Do not obstruct text.
+English major headings in elegant large serif type; Japanese subtitles smaller below. Body Japanese precisely typeset, sharp and easy to read. Code uses a crisp monospaced font on white. ASCII single quotes ' only, never curly quotation marks in code.
+Preserve EVERY supplied line of content accurately. No misspelled Japanese, invented letters, gibberish, dropped content, duplicated sections or extra labels. Use natural line wrapping where needed, but do not rewrite the text.
+
+COMPOSITION AND READING ORDER — ESSENTIAL:
+Top: centered title and subtitle with quiet handwritten corner notes, plus a compact three-line vocabulary card in the upper-left part of the header area.
+IMMEDIATELY BELOW THE TITLE/HEADER AREA: a large FULL-WIDTH feature comparison named 「これまで と DI」. This is the HERO of the poster and MUST be ABOVE the three explanatory columns, not below them. Its detailed content is provided below.
+Middle: THREE EQUAL-WIDTH columns, left Dependency in very pale blue, center Type Hint in very pale green, right Container in very pale orange.
+Bottom: the strip 「動くときの流れ」 with FIVE numbered frames in ONE HORIZONTAL ROW connected by slender rightward arrows. A small sticky note sits at bottom right beside the flow strip.
+Very bottom edge: the two quiet handwritten closing lines.
+Suggested vertical proportions: header/title/vocabulary about 22%; prominent full-width comparison about 23%; three explanation columns about 34%; bottom flow and note about 17%; footer about 4%. Maintain comfortable text sizes and white space, adapting proportions slightly if needed. Do not put a repeated comparison at the bottom.
+
+ALL TEXT BELOW IS VERBATIM ARTWORK COPY. Labels such as 'title', 'description', and 'cat' are layout directions only and must not appear.
+
+HEADER:
+Centered large serif:
+Dependency Injection
+Centered Japanese subtitle:
+依存性注入（DI）のしくみ
+Smaller centered line:
+「使うものを、自分で用意しない」——　コントローラの引数に型を書くだけで、中身が届く
+
+Upper-left handwritten note, unobtrusive:
+DIは「使うものを、
+自分で用意しない」仕組み。
+まず3つの言葉だけ覚えれば読めます。
+
+Upper-right handwritten note:
+書くのは「何が欲しいか」だけ。
+「どう作るか」は書かなくていい。
+
+Small upper-left header card, three CHECKED lines, with enough width for legibility:
+まず、3つの言葉だけ
+✓ コントローラ ＝ ページを見せてと言われたときに動く処理
+✓ 引数（ひきすう） ＝ 処理に渡す材料を書く場所。カッコの中のこと
+✓ 型（かた） ＝「これは記事」という種類の名札
+
+MAIN FEATURE COMPARISON, FULL WIDTH, ABOVE THE THREE COLUMNS:
+Heading:
+これまで と DI
+
+Left white code frame, PALE RED small heading bar:
+これまで：自分で取りに行く
+
+Exact code, five lines:
+public function show($id)
+{
+    $article = Article::findOrFail($id);
+    return view('articles.show');
+}
+
+Sentence below left code:
+記事を「探す」仕事まで、自分で抱えている。
+
+Between left and right code frames, a thin rightward arrow, with this small label above:
+カッコに型を書くだけ
+
+Right white code frame, PALE BLUE small heading bar:
+DI：注文して受け取る
+
+Exact code, four lines:
+public function show(Article $article)
+{
+    return view('articles.show');
+}
+
+Sentence below right code:
+探す1行が消えた。本来の仕事だけが残る。
+
+THREE COLUMNS BELOW THE COMPARISON:
+
+LEFT COLUMN — extremely pale blue:
+Large serif heading:
+Dependency
+Japanese subtitle:
+依存性 ＝ 仕事に必要な材料
+Description:
+その処理をするのに、どうしても要るもの。記事ページなら「記事データ」。
+
+Small dark muted-blue example header bar:
+例：記事を表示するのに要るもの
+White example box beneath, crisp text:
+・記事データ（Article）
+・送信データ（Request）
+
+Small bullet section:
+こんなものが依存性
+・データベースの記事
+・フォームの入力内容
+・設定の値
+
+Small cat in the lower corner, examining a blueprint with a magnifying glass. Keep all text clear.
+
+CENTER COLUMN — extremely pale sage green:
+Large serif heading:
+Type Hint
+Japanese subtitle:
+型宣言 ＝ カッコに欲しいものを書く
+Description:
+引数に「欲しいものの名札」を書くだけ。用意の仕方は書かない。
+
+Small dark muted-teal example header bar:
+例：注文票を書く
+White code box beneath with these EXACT four lines:
+public function show(Article $article)
+{
+    return view('articles.show');
+}
+
+Small bullet section:
+ポイント
+・書くのは品名だけ
+・作り方は書かない
+・$article には記事がもう入っている
+
+Small waiter cat holding a BLANK white order slip in the lower corner. Same face and fur as reference image 3, navy clothes, polite pose. No invented writing on the order slip.
+
+RIGHT COLUMN — extremely pale apricot:
+Large serif heading:
+Container
+Japanese subtitle:
+サービスコンテナ ＝ 用意して渡す執事
+Description:
+Laravel の中にいる係。カッコの型を見て、中身を用意して渡してくれる。
+
+Small dark muted-brown example header bar:
+例：執事の仕事
+White example box beneath:
+1 カッコの型を読む
+2 記事を DB から探す
+3 引数に中身を入れる
+4 処理を呼ぶ
+
+Small bullet section:
+用語
+・PHP ＝ プログラムを書く言葉
+・フレームワーク ＝ アプリ作りの土台
+・DB ＝ データの保管場所
+
+Small butler cat holding a silver serving tray in the lower corner. Match reference identity. No overlap with text.
+
+BOTTOM FLOW STRIP, FIVE SMALL FRAMES IN ONE HORIZONTAL ROW:
+Heading:
+動くときの流れ
+
+Frame 1:
+1 ページを開く
+/articles/1 にアクセスする
+
+Thin right arrow to Frame 2:
+2 型を読む
+引数の Article という名札を見る
+
+Thin right arrow to Frame 3:
+3 記事を探す
+DB から 1番の記事を取ってくる
+
+Thin right arrow to Frame 4:
+4 中身を入れる
+$article に記事を入れる
+
+Thin right arrow to Frame 5:
+5 処理が動く
+show() が呼ばれてページが表示される
+
+BOTTOM-RIGHT SMALL WARM-IVORY STICKY NOTE:
+Heading:
+大切なポイント
+Three checked lines:
+✓ 書くのは「何が欲しいか」だけ
+✓ 「どう用意するか」は Laravel の仕事
+✓ index(Request $request) も、実は同じ仕組み
+Footnote, small but sharply readable, MUST INCLUDE the complete route:
+※ 記事を番号から探す部分は「ルートモデルバインディング」という仕組み。/articles/{article} の設定が要る。
+
+VERY BOTTOM, quiet handwritten:
+Left:
+自分で取りに行くのをやめて、注文する。
+Right:
+Build the future with code.
+
+FINAL QUALITY CHECK BEFORE RENDER:
+Comparison is first and most prominent under title. Three columns are second. Five-step flow is bottom. All specified copy present exactly once except code intentionally repeated in Type Hint and comparison. Fine panel borders, white center, very pale watercolor at edges only, restrained foliage, three small blue cat assistants. Exact 3:2 landscape. Highest available text clarity. All code quotes are straight ASCII '. No additional title such as Laravel, no Migration content carried over from references, no watermark.
+
+REFINEMENT PROMPT:
+Use case: style-transfer / precise-object-edit.
+Edit Image 1, the generated Dependency Injection Japanese infographic. Image 2 is the _style-clean.png watercolor style reference. Make one targeted refinement: SIMPLIFY AND LIGHTEN THE DECORATION to meet the user's strict white-center requirement.
+
+PRESERVE EXACTLY: 3:2 landscape canvas, all existing layout positions, title, subtitles, every Japanese explanatory line, all three example boxes, all code, bullet points, vocabulary card, five-step flow, sticky-note footnote including /articles/{article}, footer lines, and the blue cats' faces/colors/clothing/poses. Keep straight ASCII single quotes in every code block. Do not rewrite, reflow excessively, blur or corrupt text. Preserve the text content verbatim and at least the current legibility.
+
+CHANGE ONLY DECORATIVE PRESENTATION:
+1. The central information area must be almost pure white. Remove the wooden boxes and book stacks INSIDE the three explanatory panels, especially behind the magnifying-glass cat and waiter cat. The three cats work on clean white space with a very faint grounding shadow, no busy dioramas.
+2. Thin watercolor texture inside the three panels to an extremely pale wash: just a hint of pale blue / sage / apricot near the thin rounded panel borders. Make the panel interiors around 90–95% white. Preserve fine thin outlines.
+3. Watercolor towns, shelves, boxes and plants belong ONLY to a narrow outer perimeter and four corners. Fade the entire peripheral scenery substantially, lowering saturation and contrast. Keep the charming delicate ink-and-watercolor detail of the reference but render it as faint peripheral atmosphere. Reduce the foliage strongly; green is a tiny accent. No thick green bushes or foliage-filled borders.
+4. Remove the additional decorative handwritten placard on the right side of the comparison (the duplicate that reads 書くのは 何が欲しいか だけでいい). It was not requested. Replace with mostly blank near-white space and only very faint peripheral scenery.
+5. Remove all invented decorative book/mug/sign lettering such as Good Code Good Life, PHP, LARAVEL, Better Tomorrow in the border artwork. These objects may remain faintly painted at the edges but their surfaces should have NO letters. Keep all intended educational content, including the PHP glossary line and Laravel in the body.
+6. Reduce the THREE cats slightly in size, around 10–15%, preserving their poses and small corner placement. They are charming minor assistants, never foreground heroes.
+7. Make the central comparison arrow thinner and more elegant, keeping its rightward direction and label 「カッコに型を書くだけ」.
+
+Final mood: pale, elegant, airy watercolor educational poster; exact same complete Japanese content and strong readable serif typography; white breathing space is the dominant visual. The main comparison remains immediately under the title and above the three columns. Keep only the original specified content. Output one finished PNG.
+
+FINAL LOCAL CORRECTION PROMPT:
+Edit the supplied image with ONE extremely localized correction only. In the bottom-right corner of the pale-blue Dependency panel, the small cat is holding a magnifying glass but its blueprint has disappeared. Add a SMALL pale-blue architectural blueprint sheet directly in front of this cat, held with its free paw or resting on a tiny angled white drafting surface. The cat must be looking through its magnifying glass at the blueprint. The blueprint contains only thin simple technical drawing lines, NO text or symbols that resemble letters. Keep this little prop entirely within the existing cat illustration area; do not overlap the example box or bullet text. Keep the cat exactly the current small size, same blue fur and face, navy suit, cream forelock.
+
+Everything else is LOCKED: preserve the entire image pixel-for-pixel as much as possible, including ALL Japanese and English text, ALL PHP code with straight ASCII single quotes, all title positions, comparison above columns, vocabulary card, exact footnote /articles/{article}, serif type, five flow frames, sticky note, other two cats, extremely pale watercolor edges, almost-white backgrounds, delicate thin borders and all spacing. Do not add crates, books, foliage or new decorative text. Do not strengthen background colors. Exact same 3:2 landscape PNG. Only restore the small blueprint the cat is examining.

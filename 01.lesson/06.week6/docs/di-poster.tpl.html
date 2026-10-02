@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>依存性注入（DI）ビジュアルアブストラクト</title>
+<style>
+:root{
+  --navy:#0f2c47; --b900:#17456f; --b700:#2a6fae; --b600:#3b82c4; --b400:#7cb2de;
+  --b200:#bcdaf1; --b100:#dcebf8; --b50:#eff6fc;
+  --amber:#b06a21; --amber-bg:#fdf1e0; --amber-line:#e8c99c;
+  --green:#2c7a5e; --line:#cfe1f2; --muted:#59768f;
+  --code:#0d2740;
+}
+*{box-sizing:border-box; margin:0; padding:0}
+body{
+  background:#8fa9c0;
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Yu Gothic","Noto Sans JP",Meiryo,sans-serif;
+  color:var(--navy); -webkit-font-smoothing:antialiased;
+}
+.poster{
+  width:1240px; height:1754px; background:#eaf2fa; overflow:hidden;
+  display:flex; flex-direction:column; position:relative;
+}
+
+/* ===== HEADER ===== */
+.hd{background:linear-gradient(118deg,#123e66 0%,#1f5e96 48%,#2f7cbd 100%);
+  color:#fff; padding:34px 46px 32px; display:flex; align-items:center; gap:34px; position:relative; overflow:hidden}
+.hd::after{content:""; position:absolute; inset:0;
+  background:radial-gradient(circle at 84% 12%,rgba(255,255,255,.2),transparent 52%)}
+.hd-img{width:186px; height:186px; flex:none; border-radius:30px; border:5px solid rgba(255,255,255,.8);
+  box-shadow:0 12px 34px rgba(5,22,40,.38); position:relative; z-index:1; display:block}
+.hd-tx{position:relative; z-index:1; flex:1; min-width:0}
+.eyebrow{font-size:14px; letter-spacing:.3em; font-weight:800; opacity:.82; margin-bottom:9px}
+.hd h1{font-size:60px; line-height:1.12; letter-spacing:.02em; font-weight:800}
+.hd .en{font-size:17px; letter-spacing:.16em; opacity:.78; margin-top:7px}
+.thesis{margin-top:17px; background:rgba(255,255,255,.15); border-left:5px solid rgba(255,255,255,.8);
+  border-radius:0 13px 13px 0; padding:13px 20px; font-size:22px; font-weight:700; line-height:1.6}
+.thesis b{color:#ffd88f}
+
+/* ===== BODY ===== */
+.bd{flex:1; padding:24px 40px 22px; display:flex; flex-direction:column;
+  justify-content:space-between; gap:18px; min-height:0}
+.row-h{display:flex; align-items:center; gap:11px; margin-bottom:10px}
+.nm{width:29px; height:29px; flex:none; border-radius:9px; background:var(--b700); color:#fff;
+  display:grid; place-items:center; font-size:14px; font-weight:800}
+.row-h h2{font-size:22px; font-weight:800; letter-spacing:.01em}
+.row-h .hint{font-size:14px; color:var(--muted); font-weight:600; margin-left:2px}
+
+/* --- 言葉の分解 --- */
+.words{display:grid; grid-template-columns:1fr 26px 1fr 34px 1.18fr; gap:11px; align-items:center}
+.wc{background:#fff; border:2px solid var(--b200); border-radius:14px; padding:13px 17px}
+.wc .t{font-size:20px; font-weight:800; color:var(--b900)}
+.wc .t span{font-size:11px; letter-spacing:.11em; color:var(--muted); margin-left:8px; font-weight:700}
+.wc .d{font-size:15px; line-height:1.6; margin-top:4px}
+.wc .d b{color:var(--b700)}
+.op{font-size:25px; font-weight:800; color:var(--b400); text-align:center}
+.wres{background:var(--navy); color:#fff; border-radius:14px; padding:15px 18px;
+  font-size:18px; font-weight:800; line-height:1.55; text-align:center}
+.wres b{color:#8fd0ff}
+
+/* --- BEFORE / AFTER --- */
+.ba{display:grid; grid-template-columns:1fr 76px 1fr; gap:0 12px; align-items:stretch}
+.pn{border:3px solid; border-radius:18px; overflow:hidden; display:flex; flex-direction:column; background:#fff}
+.pn.bad{border-color:var(--amber-line)}
+.pn.good{border-color:var(--b400)}
+.pn .tg{padding:8px 16px; font-size:15px; font-weight:800; letter-spacing:.06em; color:#fff; display:flex; justify-content:space-between; align-items:center}
+.pn.bad .tg{background:var(--amber)}
+.pn.good .tg{background:var(--b700)}
+.pn .tg em{font-style:normal; font-size:12px; opacity:.9; letter-spacing:.14em}
+.pn .im{height:318px; overflow:hidden; background:var(--b100)}
+.pn .im img{width:100%; height:100%; display:block; object-fit:cover}
+.pn.bad .im img{object-position:50% 47%}   /* 抱えた荷物まで見せる */
+.pn.good .im img{object-position:50% 33%}  /* 差し出された皿まで見せる */
+.pn .cd{padding:11px 13px 13px; background:var(--code); flex:1}
+.pn pre{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  font-size:14.5px; line-height:1.8; color:#d7e8f8; white-space:pre}
+.pn .ft{padding:11px 15px; font-size:14.5px; font-weight:700; line-height:1.55}
+.pn.bad .ft{background:var(--amber-bg); color:var(--amber)}
+.pn.good .ft{background:var(--b50); color:var(--b700)}
+.arrow{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px}
+.arrow .ah{font-size:40px; color:var(--b600); font-weight:800; line-height:1}
+.arrow .al{font-size:12px; font-weight:800; color:var(--b700); writing-mode:vertical-rl; letter-spacing:.2em}
+c{color:#8098ad; font-style:italic}
+k{color:#ff9ec7} t{color:#7ee0b8} f{color:#8fd0ff} v{color:#ffd79a} s{color:#c3e389}
+hl{background:rgba(255,158,158,.22); border-bottom:2px solid #ff9e9e; border-radius:3px}
+hg{background:rgba(255,215,154,.24); border-bottom:2px solid #ffd79a; border-radius:3px}
+
+/* --- flow --- */
+.flow{display:grid; grid-template-columns:repeat(4,1fr); gap:10px}
+.st{background:#fff; border:2px solid var(--b200); border-radius:14px; padding:13px 11px 12px; text-align:center; position:relative}
+.st .sn{position:absolute; top:-11px; left:50%; transform:translateX(-50%); width:23px; height:23px;
+  border-radius:50%; background:var(--b700); color:#fff; font-size:12px; font-weight:800;
+  display:grid; place-items:center; border:3px solid #eaf2fa}
+.st svg{display:block; margin:5px auto 7px}
+.st h4{font-size:15px; font-weight:800; color:var(--b900); margin-bottom:3px}
+.st p{font-size:12.5px; line-height:1.55; color:var(--muted)}
+.st code{background:var(--b100); color:var(--b900); padding:1px 5px; border-radius:4px; font-size:11.5px;
+  font-family:"SFMono-Regular",Consolas,Menlo,monospace}
+
+/* --- aha --- */
+.aha{display:grid; grid-template-columns:auto 1fr; gap:15px; align-items:center;
+  background:#fff; border:2px dashed var(--b400); border-radius:16px; padding:14px 18px}
+.aha .fc{width:62px; height:62px; border-radius:50%; border:3px solid var(--b200); display:block}
+.aha .tx{font-size:15.5px; line-height:1.7}
+.aha .tx b{color:var(--b700)}
+.aha code{background:var(--code); color:#8fd0ff; padding:2px 7px; border-radius:5px; font-size:13.5px;
+  font-family:"SFMono-Regular",Consolas,Menlo,monospace}
+
+/* ===== FOOTER ===== */
+.ft-band{margin-top:auto; background:linear-gradient(112deg,#123e66,#2a6fae);
+  color:#fff; padding:22px 44px; display:flex; align-items:center; gap:26px}
+.ft-band img{width:114px; height:114px; flex:none; border-radius:20px;
+  border:4px solid rgba(255,255,255,.72); box-shadow:0 8px 22px rgba(5,22,40,.32); display:block}
+.ft-band .ftx{flex:1; min-width:0}
+.ft-band .lb{font-size:12px; letter-spacing:.26em; font-weight:800; opacity:.78; margin-bottom:7px}
+.ft-band .bg{font-size:29px; font-weight:800; line-height:1.45}
+.ft-band .bg b{color:#ffd88f}
+.ft-band .sm{margin-top:7px; font-size:14px; opacity:.85; line-height:1.6}
+.sig{position:absolute; right:14px; bottom:7px; font-size:10.5px; color:rgba(255,255,255,.5); letter-spacing:.1em}
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <div class="hd">
+    <img class="hd-img" src="{{HERO}}" alt="">
+    <div class="hd-tx">
+      <div class="eyebrow">LARAVEL / PHP ・ VISUAL ABSTRACT</div>
+      <h1>依存性注入（DI）</h1>
+      <div class="en">DEPENDENCY INJECTION</div>
+      <div class="thesis">使うものを、<b>自分で用意しない</b>。外から受け取る。</div>
+    </div>
+  </div>
+
+  <div class="bd">
+
+    <div>
+      <div class="row-h"><div class="nm">1</div><h2>言葉をバラすと、こうなる</h2>
+        <span class="hint">漢字が強そうなだけ</span></div>
+      <div class="words">
+        <div class="wc"><div class="t">依存性<span>DEPENDENCY</span></div>
+          <div class="d">その仕事に <b>どうしても必要な相棒</b></div></div>
+        <div class="op">＋</div>
+        <div class="wc"><div class="t">注入<span>INJECTION</span></div>
+          <div class="d">自分で取りに行かず <b>外から手渡し</b></div></div>
+        <div class="op">＝</div>
+        <div class="wres">必要なものを、<b>外から入れてもらう</b></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="row-h"><div class="nm">2</div><h2>同じ「記事を表示する」仕事を、2通りで</h2></div>
+      <div class="ba">
+        <div class="pn bad">
+          <div class="tg"><span>自分で買い出しに行く</span><em>BEFORE</em></div>
+          <div class="im"><img src="{{BEFORE}}" alt=""></div>
+          <div class="cd"><pre><k>public function</k> <f>show</f>(<v>$id</v>)
+{
+    <hl><v>$article</v> = <t>Article</t>::<f>findOrFail</f>(<v>$id</v>);</hl>
+    <c>// ↑ 探す仕事を自分で抱えている</c>
+    <k>return</k> <f>view</f>(<s>'articles.show'</s>, …);
+}</pre></div>
+          <div class="ft">本題の前に、材料集めで疲れ果てる</div>
+        </div>
+
+        <div class="arrow">
+          <div class="ah">▶</div>
+          <div class="al">注文に変える</div>
+        </div>
+
+        <div class="pn good">
+          <div class="tg"><span>注文して、届けてもらう</span><em>AFTER</em></div>
+          <div class="im"><img src="{{AFTER}}" alt=""></div>
+          <div class="cd"><pre><k>public function</k> <f>show</f>(<hg><t>Article</t> <v>$article</v></hg>)
+{
+    <c>// 記事はもう手元にある</c>
+
+    <k>return</k> <f>view</f>(<s>'articles.show'</s>, …);
+}</pre></div>
+          <div class="ft">探す行が消え、本来の仕事だけが残る</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="row-h"><div class="nm">3</div><h2>注文してから届くまで</h2>
+        <span class="hint">/articles/1 を開いたとき、裏側で起きていること</span></div>
+      <div class="flow">
+        <div class="st"><div class="sn">1</div>
+          <svg width="40" height="40" viewBox="0 0 46 46" fill="none">
+            <rect x="4" y="8" width="38" height="30" rx="5" fill="#dcebf8" stroke="#2a6fae" stroke-width="2.4"/>
+            <path d="M4 17h38" stroke="#2a6fae" stroke-width="2.4"/>
+            <circle cx="10" cy="12.5" r="1.7" fill="#2a6fae"/><circle cx="15.5" cy="12.5" r="1.7" fill="#2a6fae"/>
+            <rect x="11" y="23" width="24" height="4" rx="2" fill="#7cb2de"/>
+            <rect x="11" y="30" width="15" height="3.4" rx="1.7" fill="#bcdaf1"/></svg>
+          <h4>アクセス</h4><p><code>/articles/1</code> を開く</p></div>
+        <div class="st"><div class="sn">2</div>
+          <svg width="40" height="40" viewBox="0 0 46 46" fill="none">
+            <rect x="9" y="5" width="28" height="36" rx="4" fill="#fff" stroke="#2a6fae" stroke-width="2.4"/>
+            <rect x="14" y="12" width="18" height="3.4" rx="1.7" fill="#2a6fae"/>
+            <rect x="14" y="19" width="13" height="3" rx="1.5" fill="#bcdaf1"/>
+            <rect x="14" y="25" width="16" height="3" rx="1.5" fill="#bcdaf1"/>
+            <path d="M16 33.5l3.2 3.2 6.4-6.4" stroke="#2c7a5e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h4>注文票を読む</h4><p>型宣言を見て<br>「Article が要るのね」</p></div>
+        <div class="st"><div class="sn">3</div>
+          <svg width="40" height="40" viewBox="0 0 46 46" fill="none">
+            <path d="M8 11v24c0 3 6.7 5.5 15 5.5s15-2.5 15-5.5V11" fill="#eff6fc" stroke="#2a6fae" stroke-width="2.4"/>
+            <ellipse cx="23" cy="11" rx="15" ry="5.5" fill="#dcebf8" stroke="#2a6fae" stroke-width="2.4"/>
+            <path d="M8 21c0 3 6.7 5.5 15 5.5s15-2.5 15-5.5" stroke="#7cb2de" stroke-width="2.2"/>
+            <path d="M8 31c0 3 6.7 5.5 15 5.5s15-2.5 15-5.5" stroke="#7cb2de" stroke-width="2.2"/></svg>
+          <h4>用意する</h4><p>DB から <code>id = 1</code> の記事を取る</p></div>
+        <div class="st"><div class="sn">4</div>
+          <svg width="40" height="40" viewBox="0 0 46 46" fill="none">
+            <path d="M5 32h36" stroke="#2a6fae" stroke-width="2.8" stroke-linecap="round"/>
+            <path d="M10 32c0-7.2 5.8-13 13-13s13 5.8 13 13" fill="#dcebf8" stroke="#2a6fae" stroke-width="2.4"/>
+            <circle cx="23" cy="15.5" r="2.8" fill="#7cb2de" stroke="#2a6fae" stroke-width="2"/>
+            <path d="M14 38h18" stroke="#bcdaf1" stroke-width="2.6" stroke-linecap="round"/></svg>
+          <h4>手渡し</h4><p><code>$article</code> に入れて<br><code>show()</code> を呼ぶ</p></div>
+      </div>
+    </div>
+
+    <div class="aha">
+      <img class="fc" src="{{FACE}}" alt="">
+      <div class="tx">運び役は <b>サービスコンテナ</b>という執事。君は「何が欲しいか」を書くだけで、「どう用意するか」は全部あちらの仕事じゃ。<br>
+        ——　ちなみに <code>index(Request $request)</code> も同じ仕組み。<b>気づかぬうちに、ずっと使っておったのじゃよ。</b></div>
+    </div>
+
+  </div>
+
+  <div class="ft-band">
+    <img src="{{SUMMARY}}" alt="">
+    <div class="ftx">
+      <div class="lb">まとめ</div>
+      <div class="bg">「自分で取りに行く」のをやめて、「<b>注文する</b>」に変える。</div>
+      <div class="sm">むずかしいのは名前だけ。やっていることは、注文票を書いて待つことだけです。</div>
+    </div>
+    <div class="sig">memo-app 学習ノート ／ Laravel 13</div>
+  </div>
+
+</div>
+</body>
+</html>

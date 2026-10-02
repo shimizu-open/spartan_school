@@ -1,0 +1,49 @@
+name: memo-app
+
+services:
+  app:
+    build: ./infra/php
+    user: "1000:1000"
+    volumes:
+      - ./src:/data
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks: [memo-net]
+
+  web:
+    image: nginx:1.27-alpine
+    ports:
+      - "${WEB_LISTEN}:80"
+    volumes:
+      - ./src:/data
+      - ./infra/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on: [app]
+    restart: unless-stopped
+    networks: [memo-net]
+
+  db:
+    build: ./infra/mysql
+    ports:
+      - "127.0.0.1:${DB_PORT}:3306"
+    volumes:
+      - db-store:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      TZ: Asia/Tokyo
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${DB_ROOT_PASSWORD}"]
+      interval: 5s
+      retries: 30
+    restart: unless-stopped
+    networks: [memo-net]
+
+volumes:
+  db-store:
+
+networks:
+  memo-net:

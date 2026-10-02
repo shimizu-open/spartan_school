@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>依存性注入（DI）— 猫先生の解説</title>
+<style>
+:root{
+  --navy:#12314e; --b900:#1b4f7e; --b700:#2a6fae; --b600:#3b82c4;
+  --b400:#7cb2de; --b200:#bcdaf1; --b100:#dcebf8; --b50:#f0f7fd;
+  --paper:#ffffff; --bg:#e4eff9; --ink:#12314e; --muted:#5b7893;
+  --amber:#b8712c; --amber-bg:#fdf2e4; --amber-line:#edd3ae;
+  --green:#2c7a5e; --green-bg:#e8f6f0;
+  --code-bg:#0e2840; --line:#cfe1f2;
+  --shadow:0 2px 4px rgba(18,49,78,.06), 0 12px 32px rgba(18,49,78,.10);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Yu Gothic","Noto Sans JP",Meiryo,sans-serif;
+  line-height:1.9; font-size:16px; letter-spacing:.01em;
+}
+.wrap{max-width:960px; margin:0 auto; padding:0 16px 80px}
+
+/* ---------- hero ---------- */
+.hero{
+  background:linear-gradient(165deg,#1b4f7e 0%,#2a6fae 55%,#3b82c4 100%);
+  color:#fff; padding:44px 16px 52px; margin-bottom:34px;
+  border-radius:0 0 30px 30px; position:relative; overflow:hidden;
+}
+.hero::after{content:""; position:absolute; inset:0;
+  background:radial-gradient(circle at 78% 18%,rgba(255,255,255,.22),transparent 55%); pointer-events:none}
+.hero-in{max-width:928px; margin:0 auto; display:flex; gap:30px; align-items:center; position:relative; z-index:1}
+.hero-img{width:210px; height:210px; flex:none; border-radius:26px; display:block;
+  box-shadow:0 10px 34px rgba(8,28,48,.34); border:4px solid rgba(255,255,255,.75)}
+.hero-txt{min-width:0}
+.eyebrow{font-size:12px; letter-spacing:.22em; text-transform:uppercase; opacity:.82; margin:0 0 8px; font-weight:700}
+.hero h1{margin:0; font-size:40px; line-height:1.25; letter-spacing:.02em; font-weight:800}
+.hero .en{margin:6px 0 0; font-size:15px; opacity:.8; letter-spacing:.08em}
+.hero .lead{margin:16px 0 0; font-size:18px; line-height:1.85;
+  background:rgba(255,255,255,.14); border-left:4px solid rgba(255,255,255,.7);
+  padding:12px 16px; border-radius:0 12px 12px 0}
+.hero .lead b{font-weight:800}
+
+/* ---------- section ---------- */
+section{background:var(--paper); border-radius:20px; padding:30px 30px 34px;
+  margin:0 0 22px; box-shadow:var(--shadow)}
+.h{display:flex; align-items:center; gap:13px; margin:0 0 4px}
+.num{flex:none; width:34px; height:34px; border-radius:11px; background:var(--b700); color:#fff;
+  display:grid; place-items:center; font-size:14px; font-weight:800; font-variant-numeric:tabular-nums}
+h2{margin:0; font-size:23px; line-height:1.45; letter-spacing:.02em; font-weight:800}
+.sub{margin:2px 0 20px 47px; color:var(--muted); font-size:14px}
+p{margin:0 0 15px}
+section > p:last-child{margin-bottom:0}
+
+/* ---------- punchline ---------- */
+.punch{background:linear-gradient(135deg,var(--b50),var(--b100));
+  border:2px solid var(--b200); border-radius:18px; padding:26px 28px; text-align:center; margin:4px 0 0}
+.punch .l1{font-size:25px; font-weight:800; line-height:1.7; margin:0}
+.punch .l1 b{color:var(--b700); border-bottom:5px solid var(--b400); padding-bottom:1px}
+.punch .l2{margin:12px 0 0; color:var(--muted); font-size:15px}
+
+/* ---------- word split ---------- */
+.split{display:grid; grid-template-columns:1fr 34px 1fr; gap:14px; align-items:stretch; margin:0 0 18px}
+.wcard{background:var(--b50); border:1px solid var(--line); border-radius:16px; padding:19px 20px}
+.wcard .jp{font-size:21px; font-weight:800; color:var(--b900); margin:0}
+.wcard .en{font-size:12px; color:var(--muted); letter-spacing:.09em; margin:2px 0 11px}
+.wcard .df{margin:0; font-size:15px; line-height:1.85}
+.wcard .df b{color:var(--b700)}
+.wcard .ex{margin:11px 0 0; padding:10px 12px; background:#fff; border-radius:10px;
+  border:1px dashed var(--b200); font-size:13.5px; color:var(--muted); line-height:1.8}
+.plus{display:grid; place-items:center; font-size:26px; font-weight:800; color:var(--b400)}
+.equals{background:var(--navy); color:#fff; border-radius:16px; padding:18px 22px; text-align:center;
+  font-size:19px; font-weight:700; line-height:1.7}
+.equals b{color:#8fd0ff}
+
+/* ---------- before / after ---------- */
+.ba{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin:0 0 4px}
+.ba > *{min-width:0}
+.ba-order{grid-template-columns:200px 1fr; align-items:center}
+.panel{border-radius:18px; overflow:hidden; border:2px solid; display:flex; flex-direction:column}
+.panel.bad{border-color:var(--amber-line); background:var(--amber-bg)}
+.panel.good{border-color:var(--b200); background:var(--b50)}
+.panel .tag{padding:9px 16px; font-size:13px; font-weight:800; letter-spacing:.12em; color:#fff}
+.panel.bad .tag{background:var(--amber)}
+.panel.good .tag{background:var(--b700)}
+.panel img{width:100%; display:block; aspect-ratio:1/1; object-fit:cover}
+.panel .cap{padding:16px 18px 18px}
+.panel .cap h3{margin:0 0 7px; font-size:17px; font-weight:800}
+.panel.bad .cap h3{color:var(--amber)}
+.panel.good .cap h3{color:var(--b700)}
+.panel .cap p{margin:0; font-size:14.5px; line-height:1.85}
+
+/* ---------- code ---------- */
+pre{background:var(--code-bg); color:#dbeafe; border-radius:14px; padding:18px 20px; margin:0;
+  overflow-x:auto; font-size:13.5px; line-height:1.95;
+  font-family:"SFMono-Regular",Consolas,"Liberation Mono","Menlo","Courier New",monospace;
+  -webkit-overflow-scrolling:touch}
+pre .c{color:#7f9db8; font-style:italic}
+pre .k{color:#ff9ec7}
+pre .t{color:#7ee0b8}
+pre .f{color:#8fd0ff}
+pre .v{color:#ffd79a}
+pre .s{color:#c9e79a}
+pre .mark{background:rgba(255,215,154,.2); border-bottom:2px solid #ffd79a; border-radius:3px;
+  box-shadow:0 0 0 3px rgba(255,215,154,.2)}  /* padding は使わない：等幅の桁がズレるため */
+.codewrap{margin:0 0 14px}
+.codelabel{font-size:12.5px; font-weight:800; letter-spacing:.1em; color:var(--muted); margin:0 0 7px}
+.note{background:var(--b50); border-left:4px solid var(--b400); border-radius:0 12px 12px 0;
+  padding:13px 17px; font-size:14.5px; line-height:1.85; margin:0}
+.note.warn{background:var(--amber-bg); border-left-color:var(--amber)}
+.note b{color:var(--b700)}
+.note.warn b{color:var(--amber)}
+
+/* ---------- speech ---------- */
+.say{display:flex; gap:14px; align-items:flex-start; margin:20px 0 0}
+.say-face{width:62px; height:62px; flex:none; border-radius:50%; border:3px solid var(--b200);
+  background:var(--b100); display:block; object-fit:cover}
+.say-body{position:relative; background:var(--b900); color:#fff; border-radius:16px;
+  padding:14px 19px; font-size:15px; line-height:1.85; flex:1; min-width:0}
+.say-body::before{content:""; position:absolute; left:-9px; top:19px; width:0; height:0;
+  border:9px solid transparent; border-right-color:var(--b900); border-left:0}
+.say-body b{color:#8fd0ff}
+.say-name{font-size:11px; letter-spacing:.16em; opacity:.6; display:block; margin-bottom:3px; font-weight:700}
+
+/* ---------- flow ---------- */
+.flow{display:grid; grid-template-columns:repeat(4,1fr); gap:11px; margin:0 0 4px}
+.flow > *,.split > *,.bens > *{min-width:0}
+.step{background:var(--b50); border:1px solid var(--line); border-radius:16px; padding:17px 14px;
+  text-align:center; position:relative}
+.step .sn{position:absolute; top:-10px; left:50%; transform:translateX(-50%);
+  background:var(--b700); color:#fff; width:25px; height:25px; border-radius:50%;
+  display:grid; place-items:center; font-size:12px; font-weight:800; border:3px solid var(--paper)}
+.step svg{display:block; margin:9px auto 10px}
+.step h4{margin:0 0 5px; font-size:14.5px; font-weight:800; color:var(--b900)}
+.step p{margin:0; font-size:12.5px; line-height:1.75; color:var(--muted)}
+.step code{background:var(--b100); color:var(--b900); padding:1px 5px; border-radius:4px; font-size:11.5px}
+
+/* ---------- table ---------- */
+.tbl{width:100%; border-collapse:separate; border-spacing:0; font-size:14.5px;
+  border:1px solid var(--line); border-radius:14px; overflow:hidden}
+.tbl th{background:var(--b700); color:#fff; text-align:left; padding:11px 15px; font-size:13px; letter-spacing:.06em}
+.tbl td{padding:12px 15px; border-top:1px solid var(--line); vertical-align:top; background:#fff}
+.tbl tr:nth-child(even) td{background:var(--b50)}
+.tbl code{background:var(--code-bg); color:#8fd0ff; padding:2px 7px; border-radius:5px;
+  font-size:12.5px; white-space:nowrap;
+  font-family:"SFMono-Regular",Consolas,"Liberation Mono","Menlo",monospace}
+.scroll{overflow-x:auto; -webkit-overflow-scrolling:touch}
+
+/* ---------- benefits ---------- */
+.bens{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+.ben{background:var(--green-bg); border:1px solid #bfe2d3; border-radius:16px; padding:19px 18px}
+.ben .bi{width:38px; height:38px; border-radius:11px; background:var(--green); color:#fff;
+  display:grid; place-items:center; font-size:17px; font-weight:800; margin:0 0 11px}
+.ben h4{margin:0 0 6px; font-size:16px; font-weight:800; color:#1e5f48}
+.ben p{margin:0; font-size:14px; line-height:1.8; color:#33604f}
+
+/* ---------- final ---------- */
+.final{background:linear-gradient(150deg,var(--b900),var(--b700)); color:#fff;
+  border-radius:22px; padding:34px 30px; display:flex; gap:26px; align-items:center;
+  box-shadow:var(--shadow); margin:0 0 22px}
+.final img{width:158px; height:158px; flex:none; border-radius:22px;
+  border:4px solid rgba(255,255,255,.7); box-shadow:0 8px 26px rgba(8,28,48,.3); display:block}
+.final .ft{min-width:0}
+.final h2{font-size:15px; letter-spacing:.2em; opacity:.85; margin:0 0 13px; font-weight:700}
+.final .big{font-size:24px; font-weight:800; line-height:1.75; margin:0}
+.final .big b{color:#ffd79a}
+.final .small{margin:14px 0 0; font-size:14.5px; opacity:.88; line-height:1.85}
+
+/* ---------- appendix ---------- */
+.apx{background:#f6f9fc; border:1px dashed var(--b200); border-radius:18px; padding:24px 26px}
+.apx h3{margin:0 0 13px; font-size:15px; font-weight:800; color:var(--muted); letter-spacing:.1em}
+.apx ul{margin:0; padding-left:20px}
+.apx li{margin:0 0 11px; font-size:14.5px; line-height:1.85}
+.apx li:last-child{margin-bottom:0}
+.apx code{background:var(--code-bg); color:#8fd0ff; padding:2px 7px; border-radius:5px; font-size:12.5px;
+  font-family:"SFMono-Regular",Consolas,"Liberation Mono","Menlo",monospace}
+.apx b{color:var(--b700)}
+footer{text-align:center; color:var(--muted); font-size:12.5px; margin:26px 0 0; line-height:2}
+
+/* ---------- responsive ---------- */
+@media (max-width:780px){
+  .hero{padding:30px 16px 36px}
+  .hero-in{flex-direction:column; text-align:center; gap:20px}
+  .hero-img{width:152px; height:152px}
+  .hero h1{font-size:29px}
+  .hero .lead{text-align:left; font-size:16px}
+  section{padding:24px 19px 26px; border-radius:17px}
+  h2{font-size:19.5px}
+  .sub{margin-left:0}
+  .split{grid-template-columns:1fr; gap:11px}
+  .plus{padding:2px 0}
+  .ba,.ba-order{grid-template-columns:1fr}
+  .flow{grid-template-columns:1fr 1fr; gap:15px 11px}
+  .bens{grid-template-columns:1fr}
+  .final{flex-direction:column; text-align:center; padding:26px 20px}
+  .final .big{font-size:20px}
+  .punch .l1{font-size:20px}
+  .equals{font-size:16.5px}
+  pre{font-size:12.5px; padding:15px 16px}
+}
+@media (max-width:400px){ .flow{grid-template-columns:1fr} }
+
+/* ---------- dark ---------- */
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#15263a; --bg:#0c1928; --ink:#e3eefa; --muted:#93b0cc;
+    --b50:#1b3149; --line:#2b445f;
+  }
+}
+@media (prefers-color-scheme:dark){
+  :root{--b50:#1b3149; --b100:#22405d; --b200:#33587a; --amber-bg:#3a2c18; --amber-line:#6b5230;
+        --green-bg:#16382c; --shadow:0 2px 4px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.4)}
+  .tbl td{background:var(--paper)}
+  .tbl tr:nth-child(even) td{background:#1a2d44}
+  .apx{background:#132335}
+  .ben{border-color:#2d5a47}
+  .ben h4{color:#8fe0bd} .ben p{color:#b8dccb}
+  .wcard .ex{background:#12233a}
+  .panel.bad .cap h3{color:#e2a460}
+  .note.warn b{color:#e2a460}
+}
+@media print{ body{background:#fff} section{box-shadow:none; border:1px solid #ccc} }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-in">
+    <img class="hero-img" src="{{HERO}}" alt="指し棒を持って解説する紳士猫の先生">
+    <div class="hero-txt">
+      <p class="eyebrow">Laravel / PHP</p>
+      <h1>依存性注入（DI）</h1>
+      <p class="en">Dependency Injection</p>
+      <p class="lead">「使うものを、<b>自分で用意しない</b>」<br>——　たったそれだけの話です。</p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- 01 -->
+  <section>
+    <div class="h"><div class="num">01</div><h2>先に結論から</h2></div>
+    <p class="sub">この1行が分かれば、あとは全部おまけです</p>
+    <div class="punch">
+      <p class="l1">必要なものを <b>自分で作りに行かない</b>。<br>かわりに <b>外から受け取る</b>。</p>
+      <p class="l2">これが「依存性注入」と呼ばれているものの正体です</p>
+    </div>
+    <div class="say">
+      <img class="say-face" src="{{FACE}}" alt="猫先生">
+      <div class="say-body"><span class="say-name">猫先生</span>
+        名前がいかついだけじゃ。中身は拍子抜けするほど簡単じゃよ。<b>これだけ覚えて帰ればよい。</b></div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section>
+    <div class="h"><div class="num">02</div><h2>まず言葉をバラしてみる</h2></div>
+    <p class="sub">「依存性注入」は、2つの単語がくっついているだけです</p>
+    <div class="split">
+      <div class="wcard">
+        <p class="jp">依存性</p>
+        <p class="en">DEPENDENCY</p>
+        <p class="df">その仕事をするのに <b>どうしても必要なもの</b>。無いと仕事にならない相棒のこと。</p>
+        <p class="ex">記事ページを表示するには「記事データ」が要る。<br>→ 記事データが<b>依存性</b></p>
+      </div>
+      <div class="plus">＋</div>
+      <div class="wcard">
+        <p class="jp">注入</p>
+        <p class="en">INJECTION</p>
+        <p class="df">自分で取りに行くのではなく、<b>外から入れてもらう</b>こと。要するに手渡し。</p>
+        <p class="ex">記事データを自分で探さず、誰かに持ってきてもらう。<br>→ それが<b>注入</b></p>
+      </div>
+    </div>
+    <div class="equals">つなげると：<b>「必要なものを、外から入れてもらう」</b></div>
+    <div class="say">
+      <img class="say-face" src="{{FACE}}" alt="猫先生">
+      <div class="say-body"><span class="say-name">猫先生</span>
+        漢字が強そうなだけでのう。普段の言葉に直せば<b>「相棒」と「手渡し」</b>、それだけじゃ。</div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section>
+    <div class="h"><div class="num">03</div><h2>2つのやり方を見比べる</h2></div>
+    <p class="sub">同じ「記事を表示する」仕事を、2通りのやり方で</p>
+    <div class="ba">
+      <div class="panel bad">
+        <div class="tag">BEFORE ／ 自分で取りに行く</div>
+        <img src="{{BEFORE}}" alt="荷物を全部自分で抱えて困っている猫先生">
+        <div class="cap">
+          <h3>料理の前に疲れ果てる</h3>
+          <p>畑まで野菜を採りに行き、店で肉を買い、水を汲んでくる。<br>本題の料理を始める前にヘトヘトです。</p>
+        </div>
+      </div>
+      <div class="panel good">
+        <div class="tag">AFTER ／ 届けてもらう</div>
+        <img src="{{AFTER}}" alt="材料を差し出されて受け取るだけの猫先生">
+        <div class="cap">
+          <h3>座って待つだけ</h3>
+          <p>必要な材料が、お皿に乗って目の前に届きます。<br>あなたは料理だけに集中できます。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section>
+    <div class="h"><div class="num">04</div><h2>これをコードで見ると</h2></div>
+    <p class="sub">消えた2行に注目してください</p>
+
+    <div class="codewrap">
+      <p class="codelabel">BEFORE ／ 自分で取りに行く</p>
+<pre><span class="k">public function</span> <span class="f">show</span>(<span class="v">$id</span>)
+{
+    <span class="c">// ① まず自分で記事を探しに行く（これが「買い出し」）</span>
+    <span class="v">$article</span> = <span class="t">Article</span>::<span class="f">findOrFail</span>(<span class="v">$id</span>);
+
+    <span class="c">// ② やっと本題</span>
+    <span class="k">return</span> <span class="f">view</span>(<span class="s">'articles.show'</span>, <span class="f">compact</span>(<span class="s">'article'</span>));
+}</pre>
+    </div>
+    <p class="note warn">このメソッドの仕事は「記事を<b>表示する</b>」はずなのに、「記事を<b>探す</b>」という別の仕事まで抱え込んでいます。</p>
+
+    <div class="codewrap" style="margin-top:20px">
+      <p class="codelabel">AFTER ／ 届けてもらう</p>
+<pre><span class="k">public function</span> <span class="f">show</span>(<span class="mark"><span class="t">Article</span> <span class="v">$article</span></span>)
+{
+    <span class="c">// 記事はもう手元にある。本題だけ。</span>
+    <span class="k">return</span> <span class="f">view</span>(<span class="s">'articles.show'</span>, <span class="f">compact</span>(<span class="s">'article'</span>));
+}</pre>
+    </div>
+    <p class="note">「探す」行が丸ごと消えました。メソッドは<b>本来の仕事だけ</b>をしています。</p>
+
+    <div class="say">
+      <img class="say-face" src="{{FACE}}" alt="猫先生">
+      <div class="say-body"><span class="say-name">猫先生</span>
+        探しに行く足が消えたじゃろう。その足を<b>肩代わりしたのが Laravel</b> なのじゃ。</div>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section>
+    <div class="h"><div class="num">05</div><h2>どこで「注文」しているのか</h2></div>
+    <p class="sub">答え：引数に書いた型宣言が、そのまま注文票です</p>
+    <div class="ba ba-order">
+      <img src="{{ORDER}}" alt="白紙の注文票を掲げる猫先生" style="width:100%; border-radius:18px; border:2px solid var(--b200); display:block">
+      <div>
+<pre><span class="k">public function</span> <span class="f">show</span>(<span class="mark"><span class="t">Article</span></span> <span class="v">$article</span>)
+<span class="c">//                   ↑ ここが注文票</span></pre>
+        <p class="note" style="margin-top:14px">書いてあるのは「<b>Article をください</b>」だけ。<br><b>どうやって用意するかは一文字も書いていません。</b>書かなくていい、というのが DI です。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section>
+    <div class="h"><div class="num">06</div><h2>注文してから届くまで</h2></div>
+    <p class="sub">/articles/1 を開いたとき、裏側で起きていること</p>
+    <div class="flow">
+      <div class="step"><div class="sn">1</div>
+        <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
+          <rect x="4" y="8" width="38" height="30" rx="5" fill="#dcebf8" stroke="#2a6fae" stroke-width="2.2"/>
+          <path d="M4 17h38" stroke="#2a6fae" stroke-width="2.2"/>
+          <circle cx="10" cy="12.5" r="1.6" fill="#2a6fae"/><circle cx="15" cy="12.5" r="1.6" fill="#2a6fae"/>
+          <rect x="11" y="23" width="24" height="4" rx="2" fill="#7cb2de"/>
+          <rect x="11" y="30" width="15" height="3.4" rx="1.7" fill="#bcdaf1"/>
+        </svg>
+        <h4>アクセス</h4><p>ブラウザで <code>/articles/1</code> を開く</p></div>
+
+      <div class="step"><div class="sn">2</div>
+        <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
+          <rect x="9" y="5" width="28" height="36" rx="4" fill="#fff" stroke="#2a6fae" stroke-width="2.2"/>
+          <rect x="14" y="12" width="18" height="3.2" rx="1.6" fill="#2a6fae"/>
+          <rect x="14" y="19" width="13" height="2.8" rx="1.4" fill="#bcdaf1"/>
+          <rect x="14" y="25" width="16" height="2.8" rx="1.4" fill="#bcdaf1"/>
+          <path d="M16 33.5l3.2 3.2 6.4-6.4" stroke="#2c7a5e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h4>注文票を読む</h4><p>Laravel が型宣言を見て「Article が要るのね」と理解</p></div>
+
+      <div class="step"><div class="sn">3</div>
+        <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
+          <ellipse cx="23" cy="11" rx="15" ry="5.5" fill="#dcebf8" stroke="#2a6fae" stroke-width="2.2"/>
+          <path d="M8 11v24c0 3 6.7 5.5 15 5.5s15-2.5 15-5.5V11" stroke="#2a6fae" stroke-width="2.2" fill="#f0f7fd"/>
+          <ellipse cx="23" cy="11" rx="15" ry="5.5" fill="#dcebf8" stroke="#2a6fae" stroke-width="2.2"/>
+          <path d="M8 21c0 3 6.7 5.5 15 5.5s15-2.5 15-5.5" stroke="#7cb2de" stroke-width="2"/>
+          <path d="M8 31c0 3 6.7 5.5 15 5.5s15-2.5 15-5.5" stroke="#7cb2de" stroke-width="2"/>
+        </svg>
+        <h4>用意する</h4><p>DB から <code>id = 1</code> の記事を取ってくる</p></div>
+
+      <div class="step"><div class="sn">4</div>
+        <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
+          <path d="M6 32h34" stroke="#2a6fae" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M10 32c0-7.2 5.8-13 13-13s13 5.8 13 13" fill="#dcebf8" stroke="#2a6fae" stroke-width="2.2"/>
+          <circle cx="23" cy="15.5" r="2.6" fill="#7cb2de" stroke="#2a6fae" stroke-width="1.8"/>
+          <path d="M14 38h18" stroke="#bcdaf1" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+        <h4>手渡し</h4><p><code>$article</code> に入れて <code>show()</code> を呼ぶ</p></div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section>
+    <div class="h"><div class="num">07</div><h2>運んでいるのは誰？</h2></div>
+    <p class="sub">Laravel の中にいる「サービスコンテナ」という執事です</p>
+    <p>サービスコンテナの仕事は、たった1つだけ。</p>
+    <div class="punch" style="margin-bottom:18px">
+      <p class="l1">「欲しい」と言われたものを<br><b>用意して、渡す</b></p>
+    </div>
+    <div class="scroll">
+    <table class="tbl">
+      <tr><th style="width:30%">担当</th><th>やること</th></tr>
+      <tr><td><b>あなた</b></td><td><b>何が欲しいか</b>を書く（＝引数に型宣言を書く）</td></tr>
+      <tr><td><b>サービスコンテナ</b></td><td><b>どうやって用意するか</b>を全部引き受ける</td></tr>
+    </table>
+    </div>
+    <div class="say">
+      <img class="say-face" src="{{FACE}}" alt="猫先生">
+      <div class="say-body"><span class="say-name">猫先生</span>
+        君は注文するだけでよい。<b>作り方を知らなくてよい</b>のじゃ。これを分業という。</div>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section>
+    <div class="h"><div class="num">08</div><h2>実は、もう使っていました</h2></div>
+    <p class="sub">気づかないうちに、毎日お世話になっていたやつです</p>
+<pre><span class="k">public function</span> <span class="f">index</span>(<span class="mark"><span class="t">Request</span> <span class="v">$request</span></span>)
+{
+    <span class="v">$q</span> = <span class="v">$request</span>-&gt;<span class="f">query</span>(<span class="s">'q'</span>);   <span class="c">// 検索ワードが取れる</span>
+    <span class="c">// …以下省略</span>
+}</pre>
+    <p class="note" style="margin-top:14px"><code style="background:#0e2840;color:#8fd0ff;padding:2px 7px;border-radius:5px">Request $request</code> も、まったく同じ仕組みです。<br><b>$request を作るコードはどこにも書いていない</b>のに、中には送信されたデータが全部入っています。</p>
+    <div class="scroll" style="margin-top:18px">
+    <table class="tbl">
+      <tr><th style="width:34%">引数に書いたもの</th><th>実際に届くもの</th></tr>
+      <tr><td><code>Request $request</code></td><td>ブラウザから送信されたデータ一式（検索ワード、フォーム入力など）</td></tr>
+      <tr><td><code>Article $article</code></td><td>URL の番号に対応する記事 1 件</td></tr>
+    </table>
+    </div>
+    <div class="say">
+      <img class="say-face" src="{{FACE}}" alt="猫先生">
+      <div class="say-body"><span class="say-name">猫先生</span>
+        ほれ、<b>知らぬ間にずっと使っておった</b>じゃろう。新しい話を覚えたのではなく、名前を知っただけなのじゃ。</div>
+    </div>
+  </section>
+
+  <!-- 09 -->
+  <section>
+    <div class="h"><div class="num">09</div><h2>で、何が嬉しいの？</h2></div>
+    <p class="sub">3つあります</p>
+    <div class="bens">
+      <div class="ben"><div class="bi">1</div><h4>コードが短くなる</h4>
+        <p>「探す」「作る」の行がまるごと消えます。本題だけが残るので、見通しがよくなります。</p></div>
+      <div class="ben"><div class="bi">2</div><h4>読めば分かる</h4>
+        <p>引数を見るだけで「この処理は何に頼っているか」が一目で分かります。中身を読まなくて済みます。</p></div>
+      <div class="ben"><div class="bi">3</div><h4>差し替えられる</h4>
+        <p>テストのとき、本物の代わりにニセモノを渡せます。メソッドの中身は1文字も変えずに済みます。</p></div>
+    </div>
+  </section>
+
+  <!-- final -->
+  <div class="final">
+    <img src="{{SUMMARY}}" alt="腕を組んで得意げにうなずく猫先生">
+    <div class="ft">
+      <h2>まとめ</h2>
+      <p class="big">「自分で取りに行く」のをやめて、<br>「<b>注文する</b>」に変える。<br>それが依存性注入。</p>
+      <p class="small">むずかしいのは名前だけでした。やっていることは、注文票を書いて待つことだけです。</p>
+    </div>
+  </div>
+
+  <!-- appendix -->
+  <div class="apx">
+    <h3>補足：正確に言うと</h3>
+    <ul>
+      <li><code>Article $article</code> のように<b>モデル</b>を受け取る仕組みには、「<b>ルートモデルバインディング</b>」という専用の名前もついています。DI の土台の上に乗った、Laravel 独自の便利機能です。</li>
+      <li><code>Request $request</code> のほうが、より素直な DI の例です。こちらは Laravel に限らず、多くのフレームワークで見かける形です。</li>
+      <li>どちらも「<b>引数の型宣言を見て、Laravel が用意して渡す</b>」という点はまったく同じです。まずはここだけ押さえておけば十分です。</li>
+    </ul>
+  </div>
+
+  <footer>
+    依存性注入（Dependency Injection）／ Laravel 13 ・ PHP<br>
+    memo-app 学習ノート
+  </footer>
+</div>
+</body>
+</html>

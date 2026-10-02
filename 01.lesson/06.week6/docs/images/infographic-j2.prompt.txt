@@ -1,0 +1,95 @@
+Use case: infographic-diagram. Create exactly ONE finished Japanese educational infographic as a carefully revised edition of the supplied infographic-j.png. Landscape 3:2, high resolution, preferably 3072 × 2048. This is an image-generation/editing task, not a text answer.
+
+INPUT IMAGE ROLES, in supplied path order:
+1. infographic-j.png: primary edit target and precise two-row layout reference. Preserve the restaurant, panel layout, expressive blue cats, rounded thin frames, short captions, white callout cards with blue leader lines and dot endpoints, thick watercolor arrows, and lettering scale. Correct and refine it according to the complete specification below.
+2. infographic-i.png: illustration-style reference for the restaurant, large expressive cats, white leader-line labels and thick arrows.
+3. _style-clean.png: watercolor medium, white/soft cream ground, pale restrained saturation, light airy page.
+4. _style-dense.png: reference ONLY for finely drawn environmental details, not its dense text layout or topic.
+5. _ref-cat.jpg: protagonist identity: matching blue fur, white muzzle and prominent white forehead hair, white chest and paws, large expressive blue-black eyes, pink nose, blue formal clothes and bow tie. Keep the SAME protagonist identifiable throughout both rows. All characters are cats.
+
+PRIMARY OBJECTIVE:
+By looking at the pictures alone, the viewer can compare doing the fetching themselves in the upper row with ordering at their seat and receiving the result in the lower row, in the SAME elegant restaurant. Illustration occupies about two thirds of the whole page. Cats must be large enough for their expressions to be easy to read. Preserve the beautiful watercolor storybook illustration style of the references; white to pale cream background, soft edges, delicate watercolor paper texture, muted blues, light warm wood, pale gold and soft green foliage. Richly observed restaurant and kitchen details without visual clutter behind lettering.
+
+LAYOUT:
+Compact full-width header, then two aligned horizontal rows. Each row consists of a narrow left vertical label, THREE illustrated story panels connected left-to-right by thick hand-painted arrows, and a SMALL code card at the far right. Upper row frames, title washes and arrows are pale red; lower row pale blue. The story panels are larger than the code cards. Keep generous clean pale areas for accurate, legible text. Do not add bullet lists. Only the specified brief captions, callout labels, headings, code and footnote. Preserve the supplied infographic-j.png overall panel layout. No overlapping lettering, no cut-off text, no invented text.
+
+HEADER, exact text:
+Large navy serif: Dependency Injection
+Japanese directly below: 依存性注入（DI）＝ 自分で厨房に行くか、席で注文するか
+Thin pale band, three compact definitions in one line, exact:
+コントローラ＝ページを見せてと言われたときに動く処理　／　引数＝カッコの中、材料を書く場所　／　型＝「これは記事」という名札
+
+UPPER ROW:
+Left narrow vertical-style heading card:
+これまで
+自分で取りに行く
+
+Upper panel 1 heading: 厨房へ行く
+Scene: The protagonist wearing an apron has left its restaurant seat and is itself pushing open the swinging kitchen doors to enter. Worried facial expression. Show dining tables behind the cat so the self-fetching action is obvious.
+Caption, exact: 自分で取りに行く。
+
+Upper panel 2 heading: 自分で探す
+Scene: In the kitchen the SAME apron-wearing protagonist leans over a BLUE CYLINDRICAL DATABASE BARREL WITH THREE STACKED TIERS, rummaging inside for paper documents, sweating, visibly struggling. Barrel label: articles
+White callout card with dark blue leader line, exact: 厨房 ＝ データベース
+Caption, exact: どこにあるか自分で探す。
+
+Upper panel 3 heading: やっと本題
+Scene: The SAME cat comes back toward its restaurant seat with both arms completely occupied by a wooden crate and piles of papers. Exhausted, drooping shoulders, panting, sweating, burdened expression.
+Caption, exact: 探す仕事まで抱えていた。
+
+Upper right SMALL code card: light red small header これまで
+Typeset exact PHP below using readable monospaced lettering and straight ASCII single quotes, preserving braces, dollar signs, ::, parentheses and semicolons:
+public function show($id)
+{
+    $article = Article::findOrFail($id);
+    return view('articles.show');
+}
+Under the card, exact: 探す1行を、自分で書いていた。
+
+BETWEEN ROWS:
+A large hand-drawn blue arrow points diagonally down-right, linking the comparison. Above it place the exact short sentence:
+カッコに型を書くだけで、ここが変わる
+Keep this sentence clear and away from panel borders.
+
+LOWER ROW:
+Left narrow vertical-style heading card:
+DI
+注文して受け取る
+
+Lower panel 1 heading: 注文票を書く
+Scene: The SAME protagonist, now wearing its elegant blue formal suit and bow tie from the cat identity reference, sits happily at a round restaurant table, handwriting ONLY Article on a small order slip with a pen. Smiling and relaxed. The order slip contains the single readable word Article.
+White callout card with leader line pointing to the order slip, exact:
+注文票 ＝ 引数に書く型
+Caption, exact: 欲しいものの名前を書くだけ。
+
+Lower panel 2 heading: 執事が用意する
+Scene: In the kitchen a blue butler cat in a black tailcoat, white shirt and bow tie reads the small order slip in one paw while using the other paw to take a glowing document from the blue three-tier cylindrical barrel labeled articles. Combine reading and retrieving in ONE coherent panel. The protagonist stays seated in the lower-row story; it is the butler who does the work.
+White callout card with a leader line pointing to the butler, exact, using line breaks if needed:
+執事 ＝ サービスコンテナ
+（Laravel の中にいる係）
+Caption, exact: 読んで、探して、用意してくれる。
+
+Lower panel 3 heading: 席に届く
+Scene: At the protagonist's restaurant table a polished silver cloche rests on a plate. The butler lifts the lid, revealing a glowing paper document. The seated protagonist throws both paws wide, looking delighted. It has stayed in its chair. The document may have the number 1 at the top, consistent with the reference.
+White callout card pointing to the delivered document, exact:
+届いた料理 ＝ $article
+（記事がもう入っている）
+Caption, exact: 受け取るだけ。探しに行かなくていい。
+
+Lower right SMALL code card: light blue small header DI
+Typeset exact PHP below, preserving all characters and using straight ASCII single quotes:
+public function show(Article $article)
+{
+    return view('articles.show');
+}
+Under the card, exact: 探す1行が消えた。
+
+FOOTER:
+Small pale-yellow pinned note on the left, the following exact two sentences:
+※ 記事を番号から探す部分は「ルートモデルバインディング」という仕組み。
+　 index(Request $request) も同じ考え方。
+On the right, one handwritten-style line, exact:
+自分で取りに行くのをやめて、注文する。
+
+TEXT QUALITY IS CRITICAL:
+Use the exact supplied wording without any rephrasing. Text should be crisp, large enough to read, with correctly formed native Japanese kanji, hiragana and katakana. Every kanji stroke and left/right radical must be correct. Specifically, the butler term must ALWAYS be 執事, written correctly as 執 + 事. NEVER use 給仕 anywhere, even if that word exists in an input image. Code quotes must be straight half-width ASCII single quotation marks ', never curly quotes. Do not omit or mutate any code character. No microscopic text, no gibberish, no typo, no merged or malformed glyphs. Elegant navy serif titles, readable Japanese serif captions, compact neat monospaced code; preserve the reference lettering hierarchy. No humans, no extra panels, no dark saturated overall background, no logos or watermark. Deliver one coherent polished landscape infographic.

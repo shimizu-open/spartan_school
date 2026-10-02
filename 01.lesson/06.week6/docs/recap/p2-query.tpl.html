@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1240">
+<title>クエリの組み立てと戻り値</title>
+<style>
+{{CSS}}
+.steps3{display:grid; grid-template-rows:repeat(3,auto); gap:9px}
+.sp{display:grid; grid-template-columns:44px 1fr; gap:12px; align-items:center; background:#fff;
+  border:2px solid var(--b200); border-radius:14px; padding:11px 14px}
+.sp .no{width:44px; height:44px; border-radius:12px; background:var(--b700); color:#fff; font-weight:800;
+  display:grid; place-items:center; font-size:15px; line-height:1.1; text-align:center}
+.sp h4{font-size:16px; font-weight:800; color:var(--b900); margin-bottom:2px}
+.sp p{font-size:13.5px; line-height:1.6}
+.sp p b{color:var(--b700)}
+.sp code{background:var(--b100); color:var(--b900); padding:1px 5px; border-radius:4px; font-size:12.5px}
+.order{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:5px}
+.order span{background:var(--b50); border:1.5px solid var(--b200); border-radius:8px; padding:2px 8px; font-size:12px; font-weight:700; color:var(--b900)}
+.order i{font-style:normal; color:var(--b400); font-weight:800}
+.shape{display:inline-flex; align-items:center; gap:6px}
+.shape svg{flex:none}
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <div class="hd">
+    <img class="hd-img" src="{{IMG:s2-hero}}" alt="">
+    <div class="hd-tx">
+      <div class="eyebrow">LARAVEL / PHP ・ VISUAL ABSTRACT 2/3</div>
+      <h1>クエリは「メモ → 清書 → 実行」</h1>
+      <div class="en">QUERY BUILDER ・ RETURN TYPES</div>
+      <div class="thesis">書いた順ではなく、<b>決まった形に組み立てられる</b>。返ってくる形も、メソッドで決まる。</div>
+    </div>
+  </div>
+
+  <div class="bd">
+
+    <div>
+      <div class="row-h"><div class="nm">1</div><h2>メソッドをつなげている間、SQL はまだ無い</h2>
+        <span class="hint">注文票にメモを溜めて、最後に清書する</span></div>
+      <div class="side">
+        <div class="pic" style="background:#c4e2fc"><img src="{{IMG:s2-memo}}" alt="" style="object-fit:contain"></div>
+        <div class="rt">
+          <div class="steps3">
+            <div class="sp"><div class="no">メモ</div><div>
+              <h4>条件を溜めるだけ</h4>
+              <p><code>where()</code> や <code>orderBy()</code> は、条件を<b>内部の一覧に書き足す</b>だけ。この時点では DB に何も聞いていない。</p></div></div>
+            <div class="sp"><div class="no">清書</div><div>
+              <h4>SQL の文法どおりに並べ直す</h4>
+              <p>メモを<b>決まった順番</b>に当てはめて1つの文章にする。書いた順は関係ない。</p>
+              <div class="order"><span>select</span><i>→</i><span>from</span><i>→</i><span>where</span><i>→</i><span>order by</span><i>→</i><span>limit</span></div></div></div>
+            <div class="sp"><div class="no">実行</div><div>
+              <h4>穴あきの文と、値を別々に渡す</h4>
+              <p>値の場所は <code>?</code>。値は直前に DB 向けに整えられる（例：<b>真偽値は 1 / 0 の数</b>になる）。</p></div></div>
+          </div>
+          <div class="codebox"><pre><t>Model</t>::<f>where</f>(…)-&gt;<f>orderBy</f>(…)   <c>// メモを溜める</c>
+     -&gt;<f>toSql</f>();                 <c>// 清書を見るだけ（実行しない）</c>
+<c>// → select * from `表` where `列` = ? order by `列` desc</c>
+     -&gt;<f>getBindings</f>();           <c>// ? に入る予定の値</c></pre></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="row-h"><div class="nm">2</div><h2>返ってくる「形」が、メソッドごとに違う</h2>
+        <span class="hint">箱で渡すか、1個で渡すか、値だけ渡すか</span></div>
+      <div class="side">
+        <div class="pic"><img src="{{IMG:s2-return}}" alt=""></div>
+        <div class="rt">
+          <table class="tb">
+            <tr><th>メソッド</th><th>返ってくるもの</th><th>見つからないとき</th><th>中でやっていること</th></tr>
+            <tr><td class="k"><code>get()</code></td><td><b>箱</b>（Collection）に入ったモデル</td><td><span class="tag ok">空の箱</span></td><td>条件に合う全部を取る</td></tr>
+            <tr><td class="k"><code>first()</code></td><td>モデル <b>1個</b></td><td><span class="tag ng">null</span></td><td>1件に絞って <code>get()</code> → 先頭を取り出す</td></tr>
+            <tr><td class="k"><code>find()</code></td><td>モデル <b>1個</b>（主キーで探す）</td><td><span class="tag ng">null</span></td><td>主キーの条件を足して <code>first()</code></td></tr>
+            <tr><td class="k"><code>pluck(列)</code></td><td>その列の<b>値だけ</b>の箱</td><td><span class="tag ok">空の箱</span></td><td>モデルは作らない。その列だけ取る</td></tr>
+          </table>
+          <div class="cards c3">
+            <div class="cd3 warn"><div class="t"><i>!</i>箱に列名は無い</div>
+              <div class="d">箱に <b>-&gt;列名</b> は使えない。<b>pluck</b> で抜き出すか、foreach で1個ずつ。</div></div>
+            <div class="cd3 warn"><div class="t"><i>!</i>null に要注意</div>
+              <div class="d">1個で返るものは、無いと <b>null</b>。確認するか <b>findOrFail()</b> で 404 に。</div></div>
+            <div class="cd3"><div class="t"><i>i</i>配列を渡すと箱</div>
+              <div class="d"><b>find()</b> に複数の主キーを渡すと、複数件になるので<b>箱</b>で返る。</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="row-h"><div class="nm">3</div><h2>実行の瞬間に、裏で起きていること</h2>
+        <span class="hint">get() や first() を呼んだとき</span></div>
+      <div class="flow f4">
+        <div class="st"><div class="sn">1</div>
+          <svg width="40" height="40" viewBox="0 0 46 46" fill="none">
+            <rect x="7" y="6" width="32" height="34" rx="4" fill="#fff" stroke="#2a6fae" stroke-width="2.4"/>
+            <rect x="12" y="13" width="22" height="3.4" rx="1.7" fill="#2a6fae"/>
+            <rect x="12" y="21" width="9" height="7" rx="1.5" fill="#dcebf8" stroke="#2a6fae" stroke-width="1.8" stroke-dasharray="2.5 2"/>
+            <rect x="24" y="21" width="10" height="3" rx="1.5" fill="#bcdaf1"/>
+            <rect x="12" y="32" width="16" height="3" rx="1.5" fill="#bcdaf1"/></svg>
+          <h4>清書する</h4><p>文法係がメモを<b>決まった順</b>に並べ、値の場所を <code>?</code> にする</p></div>
+        <div class="st"><div class="sn">2</div>
+          <svg width="40" height="40" viewBox="0 0 46 46" fill="none">
+            <rect x="5" y="15" width="14" height="14" rx="3" fill="#ffd79a" stroke="#b06a21" stroke-width="2.2"/>
+            <path d="M21 22h6" stroke="#7cb2de" stroke-width="2.6" stroke-linecap="round"/><path d="M25 18.5l3.5 3.5-3.5 3.5" stroke="#7cb2de" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="29" y="15" width="12" height="14" rx="3" fill="#c3e389" stroke="#2c7a5e" stroke-width="2.2"/></svg>
+          <h4>値を DB 向けに整える</h4><p>真偽値は<b>数</b>に、日時は<b>文字列</b>に。PHP と DB の違いを吸収</p></div>
+        <div class="st"><div class="sn">3</div>
+          <svg width="40" height="40" viewBox="0 0 46 46" fill="none">
+            <rect x="7" y="6" width="32" height="34" rx="4" fill="#fff" stroke="#2a6fae" stroke-width="2.4"/>
+            <rect x="12" y="13" width="22" height="3.4" rx="1.7" fill="#2a6fae"/>
+            <rect x="12" y="21" width="9" height="7" rx="1.5" fill="#ffd79a" stroke="#b06a21" stroke-width="1.8"/>
+            <rect x="24" y="21" width="10" height="3" rx="1.5" fill="#bcdaf1"/>
+            <rect x="12" y="32" width="16" height="3" rx="1.5" fill="#bcdaf1"/></svg>
+          <h4>穴に値をセットして実行</h4><p>プリペアドステートメントで、文と値を<b>別々に</b>渡す</p></div>
+        <div class="st"><div class="sn">4</div>
+          <svg width="40" height="40" viewBox="0 0 46 46" fill="none">
+            <path d="M7 17h32l-3 21H10z" fill="#dcebf8" stroke="#2a6fae" stroke-width="2.4" stroke-linejoin="round"/>
+            <path d="M14 17l5-9M32 17l-5-9" stroke="#2a6fae" stroke-width="2.4" stroke-linecap="round"/>
+            <rect x="14" y="22" width="5" height="11" rx="1" fill="#7cb2de"/><rect x="21" y="22" width="5" height="11" rx="1" fill="#7cb2de"/><rect x="28" y="22" width="5" height="11" rx="1" fill="#7cb2de"/></svg>
+          <h4>結果を形にして返す</h4><p>行をモデルにして<b>箱</b>へ。1個で返すものは、そこから<b>先頭を取り出す</b></p></div>
+      </div>
+    </div>
+
+    <div class="aha">
+      <div class="fc"><img src="{{IMG:s2-hero}}" alt=""></div>
+      <div class="tx">1件か複数件かを決めているのは、DB ではなく <b>Laravel の作り</b>。DB から取ってくる処理は <code>get()</code> の1か所だけで、<br>
+        <code>first()</code> も <code>find()</code> も、<b>箱の先頭を取り出して渡す一手間</b>を足しているだけなのじゃ。箱が空なら、取り出せずに null。</div>
+    </div>
+
+  </div>
+
+  <div class="ft-band">
+    <div class="fimg"><img src="{{IMG:s2-return}}" alt=""></div>
+    <div class="ftx">
+      <div class="lb">まとめ</div>
+      <div class="bg">メモを溜め、清書して、<b>1回だけ聞きに行く</b>。</div>
+      <div class="sm">SQL が作られるのは最後の瞬間。値は <code>?</code> と別便で届く。返り値は「箱」「1個」「値の箱」の3つの形を見分ける。</div>
+    </div>
+    <div class="sig">memo-app 学習ノート ／ Laravel</div>
+  </div>
+
+</div>
+</body>
+</html>

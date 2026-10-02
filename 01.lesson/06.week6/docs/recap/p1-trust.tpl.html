@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1240">
+<title>外から来たものは信用しない</title>
+<style>
+{{CSS}}
+.pn .im{height:318px}
+.two-guard{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+.gd{background:#fff; border:2px solid var(--b200); border-radius:16px; padding:14px 16px 14px}
+.gd h3{font-size:17px; font-weight:800; color:var(--b900); display:flex; align-items:center; gap:9px; margin-bottom:8px}
+.gd h3 .pill{font-size:11.5px; background:var(--b700); color:#fff; padding:3px 9px; border-radius:20px; letter-spacing:.05em}
+.gd .q{font-size:14px; line-height:1.6; margin-bottom:9px}
+.gd .q b{color:var(--red)}
+.gd .q strong{color:var(--green)}
+.cmp{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.cmp > div{border-radius:10px; padding:8px 10px; font-size:12.5px; line-height:1.55}
+.cmp .n{background:var(--red-bg); color:#6d2a24}
+.cmp .o{background:var(--green-bg); color:#1d5540}
+.cmp .h{font-weight:800; font-size:12.5px; margin-bottom:4px; display:block}
+.cmp code{background:rgba(255,255,255,.7); padding:0 4px; border-radius:4px; font-size:11.5px}
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <div class="hd">
+    <img class="hd-img" src="{{IMG:s1-hero}}" alt="">
+    <div class="hd-tx">
+      <div class="eyebrow">LARAVEL / PHP ・ VISUAL ABSTRACT 1/3</div>
+      <h1>外から来たものは、信用しない</h1>
+      <div class="en">MASS ASSIGNMENT ・ SQL INJECTION</div>
+      <div class="thesis">「画面に無い」は守りではない。<b>受け取る枠を、先に自分で決める。</b></div>
+    </div>
+  </div>
+
+  <div class="bd">
+
+    <div>
+      <div class="row-h"><div class="nm">1</div><h2>前提：フォームは「お願い」でしかない</h2>
+        <span class="hint">知らないと、ここで油断する</span></div>
+      <div class="cards c3">
+        <div class="cd3"><div class="t"><i>1</i>送信内容は、利用者の手元で作られる</div>
+          <div class="d">ブラウザが組み立てた文字を、サーバーは<b>受け取るだけ</b>。中身を選ぶ権利はない。</div></div>
+        <div class="cd3"><div class="t"><i>2</i>項目も値も、いくらでも書き換えられる</div>
+          <div class="d">開発者ツールで欄を足す、コマンドで直接送る。<b>特別な技術はいらない</b>。</div></div>
+        <div class="cd3 warn"><div class="t"><i>!</i>だから、こう考える</div>
+          <div class="d">「欄を置いていない項目は届かない」は<b>成り立たない</b>。何が届いてもよい作りにする。</div></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="row-h"><div class="nm">2</div><h2>列の守り：どの列に書くかを、外に決めさせない</h2>
+        <span class="hint">マスアサインメント（一括代入）</span></div>
+      <div class="ba">
+        <div class="pn bad">
+          <div class="tg"><span>届いたものを、全部書き写す</span><em>DANGER</em></div>
+          <div class="im"><img src="{{IMG:s1-bad}}" alt="" style="object-position:50% 64%"></div>
+          <div class="cd"><pre><hl><t>Model</t>::<f>create</f>(<v>$request</v>-&gt;<f>all</f>());</hl>
+<c>// 届いた「項目名」が、そのまま「列名」になる</c>
+<c>// 画面に欄が無くても、DBに列があれば書き込まれる</c></pre></div>
+          <div class="ft">権限のような「利用者に触らせない列」まで上書きされる</div>
+        </div>
+
+        <div class="arrow">
+          <div class="ah">▶</div>
+          <div class="al">枠を決める</div>
+        </div>
+
+        <div class="pn good">
+          <div class="tg"><span>枠の中だけ、書き写す</span><em>SAFE</em></div>
+          <div class="im"><img src="{{IMG:s1-good}}" alt="" style="object-position:50% 64%"></div>
+          <div class="cd"><pre><k>protected</k> <v>$fillable</v> = [<c>/* 許可する列だけ */</c>];
+<t>Model</t>::<f>create</f>(<v>$request</v>-&gt;<f>validated</f>());
+<c>// 枠に無い項目は、届いても黙って捨てられる</c></pre></div>
+          <div class="ft">ホワイトリスト：書いた列「だけ」を受け入れる</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="row-h"><div class="nm">3</div><h2>同じ考え方が、もう1か所に出てくる</h2>
+        <span class="hint">列の枠と、命令の枠</span></div>
+      <div class="two-guard">
+        <div class="gd">
+          <h3><span class="pill">列の枠</span>ホワイトリスト <code class="inl">$fillable</code></h3>
+          <div class="q">守るもの：<b>どの列に書くか</b>を、外から決めさせない。</div>
+          <div class="cmp">
+            <div class="n"><span class="h">ブラックリスト <code>$guarded</code></span>
+              書き忘れた列は<b>許可</b>される。後から列を足すたびに穴になりうる。</div>
+            <div class="o"><span class="h">ホワイトリスト <code>$fillable</code></span>
+              書き忘れた列は<b>拒否</b>される。失敗しても安全な側に倒れる。</div>
+          </div>
+        </div>
+        <div class="gd">
+          <h3><span class="pill">命令の枠</span>プリペアドステートメント</h3>
+          <div class="q">守るもの：<b>SQL の命令の形</b>を、外から変えさせない。</div>
+          <div class="cmp">
+            <div class="n"><span class="h">入力を文章につなげる</span>
+              命令を読む<b>前</b>に入力が混ざる。記号で値の枠を閉じられ、続きが命令として読まれる。</div>
+            <div class="o"><span class="h"><code>?</code> で穴を空け、値は別に渡す</span>
+              命令を読んで形を確定した<b>後</b>に値が届く。何が来ても「ただの文字」。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="row-h"><div class="nm">4</div><h2>プリペアドステートメントの流れ</h2>
+        <span class="hint">データベース自体の機能。Laravel 以外でも同じ</span></div>
+      <div class="flow f4">
+        <div class="st"><div class="sn">1</div>
+          <svg width="40" height="40" viewBox="0 0 46 46" fill="none">
+            <rect x="7" y="6" width="32" height="34" rx="4" fill="#fff" stroke="#2a6fae" stroke-width="2.4"/>
+            <rect x="12" y="13" width="22" height="3.4" rx="1.7" fill="#2a6fae"/>
+            <rect x="12" y="21" width="9" height="7" rx="1.5" fill="#dcebf8" stroke="#2a6fae" stroke-width="1.8" stroke-dasharray="2.5 2"/>
+            <rect x="24" y="21" width="10" height="3" rx="1.5" fill="#bcdaf1"/>
+            <rect x="12" y="32" width="16" height="3" rx="1.5" fill="#bcdaf1"/></svg>
+          <h4>穴あきの命令文を送る</h4><p>値の場所は <code>?</code> にしておく</p></div>
+        <div class="st"><div class="sn">2</div>
+          <svg width="40" height="40" viewBox="0 0 46 46" fill="none">
+            <rect x="9" y="17" width="28" height="22" rx="4" fill="#dcebf8" stroke="#2a6fae" stroke-width="2.4"/>
+            <path d="M15 17v-5a8 8 0 0 1 16 0v5" stroke="#2a6fae" stroke-width="2.4"/>
+            <circle cx="23" cy="27" r="3" fill="#2a6fae"/><path d="M23 29v4" stroke="#2a6fae" stroke-width="2.4" stroke-linecap="round"/></svg>
+          <h4>DB が命令の形を確定</h4><p>ここで意味を読み終える。<b>以後、形は変わらない</b></p></div>
+        <div class="st"><div class="sn">3</div>
+          <svg width="40" height="40" viewBox="0 0 46 46" fill="none">
+            <rect x="6" y="15" width="14" height="14" rx="3" fill="#ffd79a" stroke="#b06a21" stroke-width="2.2"/>
+            <rect x="26" y="15" width="14" height="14" rx="3" fill="#c3e389" stroke="#2c7a5e" stroke-width="2.2"/>
+            <path d="M6 37h34" stroke="#bcdaf1" stroke-width="2.6" stroke-linecap="round"/></svg>
+          <h4>値を別に送る</h4><p>入力は、命令文とは<b>別の便</b>で届く</p></div>
+        <div class="st"><div class="sn">4</div>
+          <svg width="40" height="40" viewBox="0 0 46 46" fill="none">
+            <rect x="7" y="6" width="32" height="34" rx="4" fill="#fff" stroke="#2a6fae" stroke-width="2.4"/>
+            <rect x="12" y="13" width="22" height="3.4" rx="1.7" fill="#2a6fae"/>
+            <rect x="12" y="21" width="9" height="7" rx="1.5" fill="#ffd79a" stroke="#b06a21" stroke-width="1.8"/>
+            <rect x="24" y="21" width="10" height="3" rx="1.5" fill="#bcdaf1"/>
+            <path d="M15 34.5l3 3 6-6" stroke="#2c7a5e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h4>穴にはめて実行</h4><p>記号も命令も、<b>ただの文字</b>として扱われる</p></div>
+      </div>
+    </div>
+
+    <div class="aha">
+      <div class="fc"><img src="{{IMG:s1-hero}}" alt=""></div>
+      <div class="tx">1つずつ代入する書き方は、<b>コードに書いた行そのものがホワイトリスト</b>。書いていない列には触れないので、DB の<b>初期値</b>がそのまま入る。<br>
+        ——　Laravel の <code>where()</code> は自動で穴あきにしてくれる。危ないのは、<b>自分で文字をつなげて SQL を書いたとき</b>じゃ。</div>
+    </div>
+
+  </div>
+
+  <div class="ft-band">
+    <div class="fimg"><img src="{{IMG:s1-good}}" alt=""></div>
+    <div class="ftx">
+      <div class="lb">まとめ</div>
+      <div class="bg">届いたものを信じない。<b>受け取る枠</b>を、先に決めておく。</div>
+      <div class="sm">列の枠は <code>$fillable</code>、命令の枠はプリペアドステートメント。どちらも「形はこちらが決め、外からは中身だけ」。</div>
+    </div>
+    <div class="sig">memo-app 学習ノート ／ Laravel</div>
+  </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1240">
+<title>やり直せる設計</title>
+<style>
+{{CSS}}
+.pn .im{height:340px}
+.bd{justify-content:space-evenly}
+.mig{display:grid; grid-template-columns:330px 1fr; gap:14px; align-items:stretch}
+.loop{background:#fff; border:2px solid var(--b200); border-radius:16px; padding:12px 14px; display:flex; flex-direction:column; align-items:center; justify-content:center}
+.loop .cap{font-size:13.5px; line-height:1.6; text-align:center; margin-top:4px}
+.loop .cap b{color:var(--b700)}
+.need{display:grid; grid-template-columns:1fr 30px 1fr 34px 1.1fr; gap:10px; align-items:center}
+.op{font-size:25px; font-weight:800; color:var(--b400); text-align:center}
+.res{background:var(--navy); color:#fff; border-radius:14px; padding:14px 16px; font-size:17px; font-weight:800; line-height:1.55; text-align:center}
+.res b{color:#8fd0ff}
+.miss{display:grid; grid-template-columns:1fr 1fr 1.2fr; gap:10px; margin-top:10px}
+.door{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:0}
+.dr{border-radius:12px; padding:10px 13px; font-size:13.5px; line-height:1.6}
+.dr .h{font-weight:800; font-size:14px; display:block; margin-bottom:3px}
+.dr code{background:rgba(255,255,255,.75); padding:1px 5px; border-radius:4px; font-size:12.5px}
+.dr.o{background:var(--green-bg); color:#1d5540}
+.dr.n{background:var(--red-bg); color:#6d2a24}
+.chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+.chips span{background:#fff; border:1.5px solid var(--b200); border-radius:9px; padding:4px 10px; font-size:12.5px}
+.chips code{color:var(--b700); font-weight:700; font-size:12.5px; margin-right:5px}
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <div class="hd">
+    <img class="hd-img" src="{{IMG:s3-hero}}" alt="">
+    <div class="hd-tx">
+      <div class="eyebrow">LARAVEL / PHP ・ VISUAL ABSTRACT 3/3</div>
+      <h1>やり直せる設計</h1>
+      <div class="en">MIGRATION ROLLBACK ・ SOFT DELETES</div>
+      <div class="thesis">作る前に、<b>戻し方</b>を書いておく。消す前に、<b>残し方</b>を決めておく。</div>
+    </div>
+  </div>
+
+  <div class="bd">
+
+    <div>
+      <div class="row-h"><div class="nm">1</div><h2>マイグレーションは「行き」と「帰り」の対</h2>
+        <span class="hint">down() が正しいかは、往復させて確かめる</span></div>
+      <div class="mig">
+        <div class="loop">
+          <svg width="290" height="150" viewBox="0 0 290 150" fill="none">
+            <rect x="8" y="48" width="92" height="54" rx="12" fill="#eff6fc" stroke="#7cb2de" stroke-width="2.4"/>
+            <text x="54" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#17456f" font-family="Noto Sans JP,sans-serif">変更前</text>
+            <rect x="190" y="48" width="92" height="54" rx="12" fill="#dcebf8" stroke="#2a6fae" stroke-width="2.4"/>
+            <text x="236" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#17456f" font-family="Noto Sans JP,sans-serif">変更後</text>
+            <path d="M100 58 C135 18,155 18,188 58" stroke="#2a6fae" stroke-width="3" fill="none"/>
+            <path d="M188 58 l-11 -3 l6 -8" stroke="#2a6fae" stroke-width="3" fill="none" stroke-linejoin="round"/>
+            <text x="145" y="22" text-anchor="middle" font-size="15" font-weight="800" fill="#2a6fae" font-family="DejaVu Sans Mono,monospace">up()</text>
+            <path d="M190 92 C155 132,135 132,102 92" stroke="#b06a21" stroke-width="3" fill="none"/>
+            <path d="M102 92 l11 3 l-6 8" stroke="#b06a21" stroke-width="3" fill="none" stroke-linejoin="round"/>
+            <text x="145" y="142" text-anchor="middle" font-size="15" font-weight="800" fill="#b06a21" font-family="DejaVu Sans Mono,monospace">down()</text>
+          </svg>
+          <div class="cap">up() の変更を、down() で<b>ちょうど元に戻す</b>。<br>足した列は消す、作った表は消す。</div>
+        </div>
+        <table class="tb">
+          <tr><th>コマンド</th><th>やること</th><th>down() の確認</th></tr>
+          <tr><td class="k"><code>migrate:rollback</code></td><td>直近のまとまりの <b>down()</b> だけ実行。<code>--step</code> で数を指定</td><td><span class="tag ok">1つずつ確かめる</span></td></tr>
+          <tr class="hi"><td class="k"><code>migrate:refresh</code></td><td>全部 <b>down()</b> → 全部 <b>up()</b>。エラーなく往復できれば対になっている</td><td><span class="tag ok">まとめて確かめる</span></td></tr>
+          <tr><td class="k"><code>migrate:fresh</code></td><td>down() を<b>呼ばずに</b>全テーブルを削除 → 全部 up()</td><td><span class="tag ng">確認にならない</span></td></tr>
+          <tr><td class="k"><code>migrate:status</code></td><td>どれが実行済みで、どれが未実行かを一覧で見る</td><td><span class="tag mid">結果の確認に</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div class="row-h"><div class="nm">2</div><h2>同じ削除コードでも、意味が2通りある</h2>
+        <span class="hint">初期状態は物理削除</span></div>
+      <div class="ba">
+        <div class="pn bad">
+          <div class="tg"><span>物理削除：行そのものを消す</span><em>DELETE</em></div>
+          <div class="im"><img src="{{IMG:s3-shred}}" alt="" style="object-position:50% 40%"></div>
+          <div class="cd"><pre><v>$model</v>-&gt;<f>delete</f>();
+<c>// → delete from `表` where …</c>
+<c>// 初期状態はこちら。二度と戻せない</c></pre></div>
+          <div class="ft">シュレッダーにかける。復元はできない</div>
+        </div>
+
+        <div class="arrow">
+          <div class="ah">▶</div>
+          <div class="al">印をつけて残す</div>
+        </div>
+
+        <div class="pn good">
+          <div class="tg"><span>論理削除：「消した」印をつける</span><em>SOFT DELETE</em></div>
+          <div class="im"><img src="{{IMG:s3-archive}}" alt="" style="object-position:50% 72%"></div>
+          <div class="cd"><pre><v>$model</v>-&gt;<f>delete</f>();   <c>// 書き方は同じ</c>
+<c>// → update `表` set `deleted_at` = 現在時刻</c>
+<c>// 普段の検索からは自動で外れ、あとで戻せる</c></pre></div>
+          <div class="ft">保管箱にしまう。必要なら取り出せる</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="row-h"><div class="nm">3</div><h2>論理削除が成り立つ条件</h2>
+        <span class="hint">欄と係、両方そろって初めて動く</span></div>
+      <div class="need">
+        <div class="cd3"><div class="t"><i>欄</i>印を書く場所</div>
+          <div class="d">マイグレーションで <b>deleted_at</b> 列を足す（<code class="inl">softDeletes()</code>）</div></div>
+        <div class="op">＋</div>
+        <div class="cd3"><div class="t"><i>係</i>印を書く人</div>
+          <div class="d">モデルに <b>SoftDeletes</b> を付ける。削除を「印つけ」に差し替える</div></div>
+        <div class="op">＝</div>
+        <div class="res">削除のコードは<b>そのまま</b>で、<br>論理削除に変わる</div>
+      </div>
+      <div class="miss">
+        <div class="dr n"><span class="h">係だけ（欄が無い）</span>印を書く場所が無く、<b>列が無いエラー</b>で止まる</div>
+        <div class="dr n"><span class="h">欄だけ（係がいない）</span>誰も印を書かないので、<b>物理削除のまま</b></div>
+        <div class="dr n"><span class="h">裏口 <code>DB::table()</code></span>モデル（係）を通らないので、<b>係がいても物理削除</b>になる</div>
+      </div>
+      <div class="chips">
+        <span><code>withTrashed()</code>削除済みも含めて取る</span>
+        <span><code>onlyTrashed()</code>削除済みだけ取る</span>
+        <span><code>restore()</code>印を消して復元</span>
+        <span><code>forceDelete()</code>論理削除モードでも本当に消す</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="ft-band">
+    <div class="fimg"><img src="{{IMG:s3-archive}}" alt=""></div>
+    <div class="ftx">
+      <div class="lb">まとめ</div>
+      <div class="bg">「消す」「変える」の前に、<b>戻る道</b>を用意しておく。</div>
+      <div class="sm">構造の戻り道は <code>down()</code>、データの戻り道は論理削除。どちらも、往復できるかを実際に試して確かめる。</div>
+    </div>
+    <div class="sig">memo-app 学習ノート ／ Laravel</div>
+  </div>
+
+</div>
+</body>
+</html>

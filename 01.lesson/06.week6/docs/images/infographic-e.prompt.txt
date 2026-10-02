@@ -1,0 +1,112 @@
+Use case: infographic-diagram.
+Create ONE finished Japanese educational infographic poster, landscape, exact 4:3 aspect ratio, preferably 3072 × 2304 pixels or the highest available resolution in 4:3. This is a new poster using TWO visual references.
+
+REFERENCE ROLES:
+Image 1 (_ref-poster.png) is the VERY CLOSE visual style, palette, illustration density, typography hierarchy, hand-drawn panel border, and overall composition reference. Match it as closely as possible: beautiful detailed Japanese watercolor educational poster, soft cream textured paper, pale sky blue washes, leafy yellow-green vines, wooden fences and signs, potted plants, neatly stacked books, cheerful ink-outlined watercolor characters, rich but harmonious detail at the edges, navy text, neatly arranged many readable Japanese explanations, four rounded hand-drawn panels. Do not retain its old Laravel database lesson content.
+Image 2 (_ref-cat.jpg) is the CHARACTER IDENTITY reference. Every cat is this same blue gentleman cat: blue fur, white muzzle and chest, distinctive sweeping white forehead tuft, large shiny blue eyes, pink nose, round friendly face, white paws. Four appearances total, exactly ONE in each STEP, changing outfit and props to match role, preserving the same identity. Render him in the watercolor medium of reference 1.
+
+PRIMARY PURPOSE: A total programming beginner should understand dependency injection by reading this one poster. Include ALL of the exact Japanese copy below, with absolutely clear, correct characters. No garbled or invented glyphs, no misspellings, no missing text, no random background text. Set body text in crisp legible dark navy Japanese printed type, titles bold and attractive. Only small handwritten slogans use readable hand lettering. Have good spacing, do not overlap text or cover it with characters/props/arrows. Print all code punctuation, dollar signs, braces and case correctly with crisp monospace lettering.
+
+LAYOUT:
+Top header centered. Small wood sign top left; small handwritten slogan top right. Four substantial panels surround a circular central restaurant analogy sign. STEP 1 upper LEFT in BLUE, STEP 2 upper RIGHT in RED, STEP 3 lower RIGHT in GREEN, STEP 4 lower LEFT in ORANGE. The number order is CLOCKWISE, specifically 1 → 2 → 3 → 4. All four have large prominent colored number circles, and a heading displaying the exact STEP title. Wide thick hand-painted navigation arrows must unmistakably connect STEP 1 to STEP 2 across the upper middle, STEP 2 down to STEP 3 on the right, STEP 3 leftwards to STEP 4 across the lower middle. Arrowheads point only toward the next step. Route arrows go through gutters or along panel margins without colliding with text. The center analogy is modest in size so panels can fit all of the information. Slightly larger lower panels to accommodate the text. Bottom band holds three compact horizontal glossary cards. Final handwritten statement at the very bottom. Comfortable edge margins, no cropping.
+
+TITLE AT TOP CENTER, exact:
+依存性注入（DI）ってなに？
+Subtitle:
+はじめての人のための、4ステップ
+
+Wooden sign upper left, three lines:
+まずは
+STEP 1 から
+読んでね
+
+Handwritten slogan upper right:
+むずかしいのは、名前だけ。
+
+STEP 1 / TOP LEFT / BLUE:
+Large blue circle with white 1.
+Heading: STEP 1　言葉を3つだけ
+Subheading: これさえ知っていれば読めます
+Three icon-led items, each may wrap naturally into lines but keep wording verbatim:
+コントローラ ＝ ページを見せてと言われたときに動く処理
+引数（ひきすう） ＝ 処理に渡す材料を書く場所。カッコの中のこと
+型（かた） ＝「これは記事」という種類の名札
+Cat role: gentleman cat in detective attire holding a magnifying glass. Place cat on panel outer left or corner, keeping it away from definition text.
+
+STEP 2 / TOP RIGHT / RED:
+Large red circle with white 2.
+Heading: STEP 2　これまでのやり方
+Subheading: 材料を自分で取りに行く
+Red hand-drawn code frame with this EXACT code:
+public function show($id)
+{
+    $article = Article::findOrFail($id);
+    return view('articles.show');
+}
+A red explanatory arrow points precisely to the "$article = Article::findOrFail($id);" line (the article lookup line), from a speech bubble containing:
+この1行で、記事を自分で探している
+Body:
+ページを見せる処理なのに、探す仕事まで抱えている。
+Cat role: same blue gentleman cat in waistcoat, struggling to hold several parcels, sweating, worried face. Position by panel outer right.
+
+STEP 3 / BOTTOM RIGHT / GREEN:
+Large green circle with white 3.
+Heading: STEP 3　DIのやり方
+Subheading: カッコに型を書くだけ
+Green hand-drawn code frame with this EXACT code:
+public function show(Article $article)
+{
+    return view('articles.show');
+}
+A green explanatory arrow points precisely to "(Article $article)" in the function signature, from a speech bubble containing:
+$article には記事がもう入っている
+Body:
+探す1行が消えた。本来の仕事だけが残る。
+Small heading:
+うれしいこと
+Three green checkmarked benefits, ALL must appear; wrap long lines if necessary:
+コードが短くなる
+カッコを見るだけで、何に頼っているか分かる
+テストのとき、中身を差し替えられる（テスト＝正しく動くか試すこと）
+Cat role: same blue gentleman cat in smart blue suit with bowtie, visibly relieved, smiling and receiving a silver serving plate. Keep illustration compact enough to preserve the text.
+
+STEP 4 / BOTTOM LEFT / ORANGE:
+Large orange circle with white 4.
+Heading: STEP 4　誰が運んでいるの？
+Subheading: Laravelの中にいる執事
+Body, verbatim with natural line wrapping:
+Laravel（PHPのフレームワーク）には「サービスコンテナ」という係がいる。カッコの型を見て、中身を用意して渡してくれる。
+Four SMALL illustrated rectangular boxes horizontally left-to-right, with small arrows BETWEEN boxes:
+カッコの型を読む → 記事をDBから探す → 中身を入れる → 処理を呼ぶ
+Small but clear note below those boxes, preserve exact terms:
+※記事を番号から探す部分は「ルートモデルバインディング」という仕組み。/articles/{article} の設定が要る。
+Three separate glossary lines beneath the note:
+PHP＝プログラムを書く言葉
+フレームワーク＝アプリ作りの土台
+DB＝データの保管場所
+Cat role: same blue gentleman cat as a butler in an elegant tailcoat, bowtie and white gloves, holding a silver tray. Put him at panel outer left, and keep notes legible.
+
+CENTER / ENCIRCLED BY THE FOUR STEPS:
+An elegant hand-drawn ROUND sign or cream paper medallion with a small restaurant place-setting motif. No fifth cat. Readable exact text:
+たとえるなら
+自分で厨房に入って作る ＝ STEP 2
+席で注文して待つ ＝ STEP 3
+注文票に書くのは「品名」だけ。作り方は書かなくていい。
+Use line breaks if needed to fit the round sign; preserve text verbatim. All text inside this sign must be comfortably legible.
+
+BOTTOM GLOSSARY BAND:
+Band heading:
+ことばの意味
+Three small cards SIDE BY SIDE, left to right. Use bold term and clear explanation, with tasteful watercolor icons and hand-drawn borders.
+Card 1 exact:
+依存性 ＝ 仕事に必要な材料（例：記事データ）
+Card 2 exact:
+注入 ＝ 外から入れてもらうこと
+Card 3 exact:
+依存性注入 ＝ 必要な材料を、外から入れてもらう
+
+VERY BOTTOM, centered, large legible handwritten navy text:
+自分で取りに行くのをやめて、注文する。
+
+QUALITY AND INVARIANTS:
+Faithfully resemble image 1's charming dense watercolor poster with garden, wooden fence, lush soft greenery, books, painterly edge textures, hand-drawn frames, crisp dark blue text. Do not produce a flat modern UI or a sparse slide. Keep the palette specified: 1 blue, 2 red, 3 green, 4 orange. The four cats share image 2's identity. Prioritize the exact Japanese wording and code above all ornamental detail. Every heading, explanation, benefit, footnote and glossary card must appear completely and only in its correct section. No watermark. All text and illustrations must stay inside the image.
