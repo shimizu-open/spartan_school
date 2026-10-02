@@ -28,8 +28,17 @@ npm run build
 
 基本構成と責務は `docs/STRUCTURE.md` に従います。ビルドを一コマンドにまとめるため、
 定義済みツリーとの差分として `web/scripts/build.js` を追加しています。このスクリプトは
-`lines.json` の ES module 化、静的ファイルと自己ホストフォントのコピー、JavaScript の
-配置を担当します。Tailwind CSS の生成は npm script から CLI を直接実行します。
+`lines.json` の ES module 化、静的ファイルの配置、Tailwind CSS の生成、fontsource からの
+`@font-face` 生成と自己ホストフォントのコピー、JavaScript の圧縮を担当します。
+
+`npm run build` で生成した配信物のサイズ内訳は次のとおりです。フォント本体は
+`unicode-range` で分割されているため、ブラウザは画面内の文字に必要な `woff2` サブセットだけを取得します。
+
+| 区分 | 対象 | ファイル数 | 非圧縮サイズ | gzip サイズ |
+|---|---|---:|---:|---:|
+| アプリ本体 | `dist/`（`assets/fonts.css` と `fonts/` を除く） | 17 | 69,375 bytes | 25,882 bytes |
+| フォント定義 | `dist/assets/fonts.css` | 1（`@font-face` 243 件） | 189,405 bytes | 57,645 bytes |
+| フォント本体 | `dist/fonts/*.woff2` | 243 | 4,053,072 bytes | 圧縮済み形式のため対象外 |
 
 AWS 用 JSON 内の `<ACCOUNT_ID>`、`<DISTRIBUTION_ID>`、`<OWNER>` と、GitHub Actions
 Secrets / Variables はデプロイ先に合わせて設定してください。

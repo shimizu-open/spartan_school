@@ -129,6 +129,8 @@ frame-ancestors 'none'
 | `/assets/*` | `public, max-age=3600` |
 | `/*.png`, `/*.svg` | `public, max-age=86400` |
 
+`styles.css` と `fonts.css` はどちらも `/assets/*` の規則に含まれる。
+
 資産名にコンテンツハッシュを付けない場合、デプロイごとに `/*` を invalidation する。デプロイ頻度が低いので費用上の問題はない（月 1,000 パスまで無料）。
 ファイル名へのコンテンツハッシュ付与は P1 の期間中の課題とし、そのとき `/assets/*` を `max-age=31536000, immutable` に切り替える。
 

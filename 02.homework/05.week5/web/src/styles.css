@@ -1,90 +1,76 @@
+/* ============================================================================
+   styles.css — 見た目の「定義」だけを書くファイル
+   ----------------------------------------------------------------------------
+   個々の部品の見た目はここには書かない。ここにあるのは「名前と値の対応表」
+   (@theme)だけで、部品側は HTML/JS の class="text-sumi" のように名前で指定する。
+   その名前を本物の CSS に変換するのが Tailwind(ビルド時に一度だけ動く)。
+   色を変えたいときは、この対応表の1か所を直せば全画面に効く。
+   ※ このコメントはビルド時の --minify で削除され、配信ファイルには残らない。
+   ============================================================================ */
+
 @import "tailwindcss";
 
+/* Tailwind への指示:「この2か所のファイルを読んで、
+   実際に登場した名前のぶんだけ CSS を生成せよ」(使わない分は作らない) */
 @source "./index.html";
 @source "./app/**/*.js";
 
-@font-face {
-  font-family: "Zen Old Mincho";
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url("../fonts/zen-old-mincho-latin-400-normal.woff2") format("woff2");
-  unicode-range: U+0000-024F, U+2000-206F;
-}
-
-@font-face {
-  font-family: "Zen Old Mincho";
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url("../fonts/zen-old-mincho-japanese-400-normal.woff2") format("woff2");
-  unicode-range: U+3000-30FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
-}
-
-@font-face {
-  font-family: "Zen Kaku Gothic New";
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url("../fonts/zen-kaku-gothic-new-latin-400-normal.woff2") format("woff2");
-  unicode-range: U+0000-024F, U+2000-206F;
-}
-
-@font-face {
-  font-family: "Zen Kaku Gothic New";
-  font-style: normal;
-  font-display: swap;
-  font-weight: 400;
-  src: url("../fonts/zen-kaku-gothic-new-japanese-400-normal.woff2") format("woff2");
-  unicode-range: U+3000-30FF, U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF, U+FF00-FFEF;
-}
+/* @font-face はビルド時に fontsource から生成し、fonts.css へ分離する。 */
 
 @theme {
-  --color-sushi: #eef1f1;
-  --color-men: #fafcfc;
-  --color-kei: #dde3e3;
-  --color-sumi: #333c40;
-  --color-nibi: #616c74;
-  --color-ai: #33566e;
-  --color-seiji: #3e6b63;
-  --color-kin: #85631f;
-  --color-ai-usu: #e6ecef;
-  --color-seiji-usu: #e5eceb;
+  /* --- 色(名前は日本の伝統色。名前に使い道を語らせる) --- */
+  --color-sushi: #eef1f1;      /* 鶯(ページ全体の背景) */
+  --color-men: #fafcfc;        /* 綿(カードや面の紙色) */
+  --color-kei: #dde3e3;        /* 罫(枠線・下線) */
+  --color-sumi: #333c40;       /* 墨(本文の文字色) */
+  --color-nibi: #616c74;       /* 鈍(説明・ラベルの控えめな文字) */
+  --color-ai: #33566e;         /* 藍(主色。ボタン・フォーカス) */
+  --color-seiji: #3e6b63;      /* 青磁(月に一度の外出「ひとつ」専用) */
+  --color-kin: #85631f;        /* 金(60日開放の「読み返せます」専用) */
+  --color-ai-usu: #e6ecef;     /* 藍の薄い版(記録カードの背景) */
+  --color-seiji-usu: #e5eceb;  /* 青磁の薄い版(外出カードの背景) */
+  /* --- 書体(自分の言葉=明朝、アプリの都合の文字=ゴシック、で区別する) --- */
   --font-mincho: "Zen Old Mincho", serif;
   --font-gothic: "Zen Kaku Gothic New", sans-serif;
+  /* --- 文字サイズ(-md はタブレット以上で少し大きくする用) --- */
   --text-logo: 1.625rem;
   --text-logo-md: 1.875rem;
-  --text-record: 1.0625rem;
+  --text-record: 1.0625rem;    /* 記録の本文 */
   --text-record-md: 1.125rem;
-  --text-ui: 0.8125rem;
+  --text-ui: 0.8125rem;        /* ボタン・ラベル */
   --text-ui-md: 0.875rem;
-  --text-note: 0.75rem;
-  --text-line: 0.875rem;
+  --text-note: 0.75rem;        /* 補足の小さな文字 */
+  --text-line: 0.875rem;       /* 今日の一言 */
   --text-line-md: 0.9375rem;
-  --leading-record: 2.05;
+  /* --- 行間・字間 --- */
+  --leading-record: 2.05;      /* 記録はゆったりした行間で */
   --tracking-logo: 0.32em;
   --tracking-date: 0.22em;
-  --spacing-touch: 2.75rem;
-  --spacing-button: 3.25rem;
-  --spacing-content: 35rem;
+  /* --- 寸法 --- */
+  --spacing-touch: 2.75rem;    /* 指で押すものの最小寸法(44px)。これ未満のボタンを作らせない */
+  --spacing-button: 3.25rem;   /* 主ボタンの高さ */
+  --spacing-content: 35rem;    /* 本文の最大幅 */
   --spacing-content-md: 38.75rem;
   --container-onboarding: 30rem;
-  --animate-settle: settle 0.4s cubic-bezier(.16,.84,.44,1);
-  --animate-reveal: reveal 0.4s ease 0.2s both;
-  --animate-unlock: unlock 6s ease-in-out infinite;
+  /* --- 動き(静かな3つだけ。派手な動きは定義自体が無い) --- */
+  --animate-settle: settle 0.4s cubic-bezier(.16,.84,.44,1);  /* 記録カードがそっと降りる */
+  --animate-reveal: reveal 0.4s ease 0.2s both;               /* 一言がゆっくり現れる */
+  --animate-unlock: unlock 6s ease-in-out infinite;           /* 読み返せますが息をする */
   @keyframes settle {
-    from { opacity: 0; transform: translateY(-0.5rem); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(-0.5rem); }  /* 透明で少し上から */
+    to { opacity: 1; transform: translateY(0); }          /* 0.4秒かけて定位置へ */
   }
   @keyframes reveal {
     from { opacity: 0; }
     to { opacity: 1; }
   }
   @keyframes unlock {
-    50% { opacity: 0.68; }
+    50% { opacity: 0.68; }   /* 6秒かけて薄くなって戻る(明滅) */
   }
 }
 
+/* shard(かけら) = カードやボタンの右下の角を斜めに欠けさせる、唯一の装飾。
+   アプリ名「かけら」と favicon の欠けた正方形と同じ意匠。 */
 @utility shard {
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%);
 }
@@ -93,12 +79,16 @@
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%);
 }
 
+/* スマホ下部のホームバー領域(セーフエリア)ぶんの余白を足す道具 */
 @utility pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* short: = 高さが低い画面(横持ちスマホ等)のときだけ効く指定を書くための変種 */
 @custom-variant short (@media (max-height: 499px));
 
+/* ダークモード:端末が「暗い表示」設定のとき、色の対応表を丸ごと差し替える。
+   名前で指定する方式のおかげで、各画面のコードは1文字も変えずに済む。 */
 @media (prefers-color-scheme: dark) {
   :root {
     --color-sushi: #262b2c;

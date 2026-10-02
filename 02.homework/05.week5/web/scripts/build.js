@@ -1,16 +1,48 @@
+import { execFile } from "node:child_process";
 import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = resolve(root, "dist");
 const src = resolve(root, "src");
+const run = promisify(execFile);
+const fontFamilies = ["zen-old-mincho", "zen-kaku-gothic-new"];
 
 await rm(dist, { recursive: true, force: true });
 await mkdir(resolve(dist, "assets/app/data"), { recursive: true });
 await cp(resolve(src, "index.html"), resolve(dist, "index.html"));
 await cp(resolve(src, "app"), resolve(dist, "assets/app"), { recursive: true });
 await cp(resolve(root, "public"), dist, { recursive: true });
+
+const fontFaceGroups = await Promise.all(fontFamilies.map(async (family) => {
+  const packageRoot = resolve(root, "node_modules/@fontsource", family);
+  const source = await readFile(resolve(packageRoot, "400.css"), "utf8");
+  const blocks = source.match(/@font-face\s*\{[^}]+\}/g) ?? [];
+  if (blocks.length === 0) throw new Error(`No @font-face blocks found for ${family}`);
+
+  const css = blocks.join("\n").replace(
+    /src:\s*url\(\.\/files\/([^)]+\.woff2)\)\s*format\((['"])woff2\2\),\s*url\(\.\/files\/[^)]+\.woff\)\s*format\((['"])woff\3\);/g,
+    "src: url(../fonts/$1) format('woff2');",
+  );
+  if (css.includes("./files/") || css.includes("format('woff')")) {
+    throw new Error(`Failed to remove the woff fallback for ${family}`);
+  }
+
+  return { css, family, packageRoot };
+}));
+
+const fontFaces = fontFaceGroups.map(({ css }) => css).join("\n");
+const fontFiles = [...fontFaces.matchAll(/url\(\.\.\/fonts\/([^)]+\.woff2)\)/g)]
+  .map((match) => match[1]);
+await rm(resolve(dist, "fonts"), { recursive: true, force: true });
+await mkdir(resolve(dist, "fonts"), { recursive: true });
+await Promise.all(fontFiles.map((file) => {
+  const group = fontFaceGroups.find(({ family }) => file.startsWith(`${family}-`));
+  if (!group) throw new Error(`No font package found for ${file}`);
+  return cp(resolve(group.packageRoot, "files", file), resolve(dist, "fonts", file));
+}));
 
 const lines = JSON.parse(await readFile(resolve(src, "data/lines.json"), "utf8"));
 const orderedLines = Object.entries(lines).sort(([left], [right]) => left.localeCompare(right));
@@ -113,3 +145,15 @@ async function minifyTree(directory) {
 }
 
 await minifyTree(resolve(dist, "assets/app"));
+
+const tailwindCssPath = resolve(dist, "assets/styles.css");
+await run(
+  resolve(root, "node_modules/.bin/tailwindcss"),
+  ["-i", resolve(src, "styles.css"), "-o", tailwindCssPath, "--minify"],
+  { cwd: root },
+);
+const tailwindCss = await readFile(tailwindCssPath, "utf8");
+if (Buffer.byteLength(tailwindCss) > 20 * 1024) {
+  throw new Error(`Tailwind CSS exceeds 20 KB: ${Buffer.byteLength(tailwindCss)} bytes`);
+}
+await writeFile(resolve(dist, "assets/fonts.css"), `${fontFaces}\n`);

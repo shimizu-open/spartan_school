@@ -5,7 +5,7 @@
   "description": "拾って、とっておくための静的 Web アプリ",
   "type": "module",
   "scripts": {
-    "build": "node scripts/build.js && tailwindcss -i src/styles.css -o dist/assets/styles.css --minify"
+    "build": "node scripts/build.js"
   },
   "license": "UNLICENSED",
   "devDependencies": {
