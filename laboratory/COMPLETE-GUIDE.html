@@ -1,0 +1,3827 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>学習サイトを作るための完全ガイド</title>
+<style>
+:root{
+  --bg:#faf7f0; --fg:#23201a; --muted:#6b6355; --line:#ddd5c4;
+  --card:#fffdf8; --accent:#7a4b2a; --accent2:#2f5d4f;
+  --warn-bg:#fdf2e6; --warn-line:#c9832f;
+  --danger-bg:#fcecec; --danger-line:#b03a3a;
+  --info-bg:#eef3f6; --info-line:#3a6b8f;
+  --good-bg:#eef5ef; --good-line:#3d7a52;
+  --code-bg:#f2ede1; --code-fg:#3a3228;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono","Courier New",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",YuGothic,Meiryo,"Noto Sans JP",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#14120f; --fg:#e8e3d8; --muted:#a49b8a; --line:#332e26;
+    --card:#1c1915; --accent:#d9a06a; --accent2:#7fbfa8;
+    --warn-bg:#2a2015; --warn-line:#c9832f;
+    --danger-bg:#2c1717; --danger-line:#d06b6b;
+    --info-bg:#16212a; --info-line:#6fa8d0;
+    --good-bg:#16221a; --good-line:#6fb383;
+    --code-bg:#211d18; --code-fg:#ddd6c8;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:1rem}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:var(--sans); font-size:16px; line-height:1.9;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{display:grid; grid-template-columns:300px minmax(0,1fr); gap:0; max-width:1500px; margin:0 auto}
+@media (max-width:1000px){ .wrap{grid-template-columns:1fr} }
+
+/* ---- TOC ---- */
+nav.toc{
+  position:sticky; top:0; align-self:start; max-height:100vh; overflow-y:auto;
+  padding:1.5rem 1rem 3rem 1.5rem; border-right:1px solid var(--line); font-size:.82rem; line-height:1.65;
+}
+@media (max-width:1000px){
+  nav.toc{position:static; max-height:none; border-right:0; border-bottom:1px solid var(--line)}
+}
+nav.toc h2{font-size:.75rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:1.4rem 0 .5rem}
+nav.toc h2:first-child{margin-top:0}
+nav.toc a{display:block; color:var(--fg); text-decoration:none; padding:.18rem 0 .18rem .6rem; border-left:2px solid transparent}
+nav.toc a:hover{border-left-color:var(--accent); color:var(--accent)}
+nav.toc a.sub{padding-left:1.5rem; color:var(--muted); font-size:.95em}
+
+main{padding:2.5rem 2.2rem 6rem; min-width:0}
+@media (max-width:640px){ main{padding:1.5rem 1.1rem 4rem} }
+
+h1{font-size:2rem; line-height:1.45; margin:0 0 .4rem; letter-spacing:.01em}
+.lede{color:var(--muted); font-size:1rem; margin:0 0 2.5rem; padding-bottom:1.5rem; border-bottom:2px solid var(--line)}
+h2{
+  font-size:1.45rem; line-height:1.5; margin:4rem 0 1.2rem; padding-top:1.2rem;
+  border-top:2px solid var(--line);
+}
+h2 .num{color:var(--accent); font-family:var(--mono); font-size:.8em; margin-right:.5rem}
+h3{font-size:1.12rem; margin:2.6rem 0 .8rem; color:var(--accent)}
+h4{font-size:1rem; margin:1.8rem 0 .5rem}
+p{margin:.9rem 0}
+ul,ol{padding-left:1.4rem; margin:.9rem 0}
+li{margin:.35rem 0}
+strong{font-weight:700}
+a{color:var(--accent)}
+hr{border:0; border-top:1px solid var(--line); margin:2.5rem 0}
+
+code{font-family:var(--mono); font-size:.86em; background:var(--code-bg); color:var(--code-fg); padding:.12em .38em; border-radius:3px}
+pre{background:var(--code-bg); color:var(--code-fg); padding:1rem 1.1rem; border-radius:6px; overflow-x:auto; font-size:.82rem; line-height:1.7; border:1px solid var(--line)}
+pre code{background:none; padding:0; font-size:1em}
+
+.tw{overflow-x:auto; margin:1.2rem 0; border:1px solid var(--line); border-radius:6px}
+table{border-collapse:collapse; width:100%; font-size:.86rem; background:var(--card)}
+th,td{padding:.55rem .7rem; text-align:left; border-bottom:1px solid var(--line); vertical-align:top}
+th{background:var(--code-bg); font-weight:700; white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right; font-family:var(--mono)}
+
+.box{border-left:4px solid var(--info-line); background:var(--info-bg); padding:.9rem 1.1rem; margin:1.4rem 0; border-radius:0 5px 5px 0}
+.box p:first-child{margin-top:0} .box p:last-child{margin-bottom:0}
+.box .t{font-weight:700; display:block; margin-bottom:.35rem; font-size:.9rem; letter-spacing:.03em}
+.box.term{border-left-color:var(--accent2); background:var(--good-bg)}
+.box.warn{border-left-color:var(--warn-line); background:var(--warn-bg)}
+.box.danger{border-left-color:var(--danger-line); background:var(--danger-bg)}
+.box.why{border-left-color:var(--accent); background:var(--code-bg)}
+
+.tag{display:inline-block; font-size:.7rem; font-family:var(--mono); padding:.1rem .45rem; border-radius:3px; border:1px solid var(--line); background:var(--card); color:var(--muted); vertical-align:middle}
+.ok{color:var(--good-line); font-weight:700}
+.ng{color:var(--danger-line); font-weight:700}
+.q{color:var(--warn-line); font-weight:700}
+
+.mini{font-size:.85rem; color:var(--muted)}
+.card{background:var(--card); border:1px solid var(--line); border-radius:6px; padding:1.1rem 1.2rem; margin:1.2rem 0}
+.cols{display:grid; grid-template-columns:1fr 1fr; gap:1rem}
+@media (max-width:760px){ .cols{grid-template-columns:1fr} }
+.toplink{font-size:.75rem; color:var(--muted); text-decoration:none; float:right; font-weight:400}
+figure{margin:1.4rem 0; text-align:center}
+figcaption{font-size:.8rem; color:var(--muted); margin-top:.5rem}
+svg{max-width:100%; height:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="toc">
+<h2>はじめに</h2>
+<a href="#p0">0. この資料の読み方</a>
+<a href="#p1">1. 何が起きていたのか</a>
+
+<h2>基礎</h2>
+<a href="#p2">2. 前提となる用語をすべて</a>
+<a href="#p2-1" class="sub">2.1 OSSとライセンス</a>
+<a href="#p2-2" class="sub">2.2 静的と動的</a>
+<a href="#p2-3" class="sub">2.3 ビルドとは</a>
+<a href="#p2-4" class="sub">2.4 Markdownとfrontmatter</a>
+<a href="#p2-5" class="sub">2.5 データの保存場所</a>
+<a href="#p2-6" class="sub">2.6 ドメインモデルとは</a>
+<a href="#p2-7" class="sub">2.7 配信と圧縮</a>
+<a href="#p3">3. 知らなかったから起きたこと</a>
+
+<h2>本題：学習サイト</h2>
+<a href="#p4">4. 学習サイトの正体</a>
+<a href="#p4-1" class="sub">4.1 二つのモデル</a>
+<a href="#p4-2" class="sub">4.2 出版モデル</a>
+<a href="#p4-3" class="sub">4.3 学習状態モデル</a>
+<a href="#p5">5. 世界のLMSが持つ概念</a>
+<a href="#p6">6. 教育の標準規格</a>
+<a href="#p7">7. 最小ドメインモデル</a>
+<a href="#p8">8. 演習と正誤判定</a>
+<a href="#p8-1" class="sub">8.1 状態一致の原理</a>
+<a href="#p8-2" class="sub">8.2 Exercismの設計</a>
+<a href="#p8-3" class="sub">8.3 Gitの判定</a>
+<a href="#p9">9. アーキテクチャ</a>
+<a href="#p9-1" class="sub">9.1 三案の比較</a>
+<a href="#p9-2" class="sub">9.2 ディレクトリ設計</a>
+<a href="#p9-3" class="sub">9.3 frontmatter全解説</a>
+<a href="#p9-4" class="sub">9.4 進捗データ全解説</a>
+<a href="#p9-5" class="sub">9.5 間隔反復（SRS）</a>
+<a href="#p10">10. 既製品は使えるか</a>
+<a href="#p11">11. 資産の当てはめ</a>
+
+<h2>技術リファレンス</h2>
+<a href="#p12">12. 自作の検証結果</a>
+<a href="#p12-1" class="sub">12.1 minifierは危険</a>
+<a href="#p12-2" class="sub">12.2 圧縮は逆効果だった</a>
+<a href="#p12-3" class="sub">12.3 実在したバグ</a>
+<a href="#p12-4" class="sub">12.4 画像69MB</a>
+<a href="#p12-5" class="sub">12.5 フォント243個</a>
+<a href="#p13">13. 図解と日本語</a>
+<a href="#p14">14. インフラと運営</a>
+
+<h2>おわりに</h2>
+<a href="#p15">15. 何から手を付けるか</a>
+<a href="#p16">16. 用語集</a>
+<a href="#p17">17. この資料の信頼度</a>
+</nav>
+
+<main>
+
+<h1>学習サイトを作るための完全ガイド</h1>
+<p class="lede">
+「何を知らないのかすら分からない」状態から読めるように書いた資料です。<br>
+専門用語はすべて、初めて出てきた場所で説明します。飛ばさずに順番に読めば、
+最後には「学習サイトとは何でできているのか」「自分は何を作ればいいのか」が
+自分の言葉で説明できるようになります。<br>
+<span class="mini">2026-08-25 作成 ／ 調査対象リポジトリ: <code>/home/shimizu/study/spartan_school</code></span>
+</p>
+
+
+<h2 id="p0"><span class="num">0</span>この資料の読み方<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<h3>0.1 なぜこの資料を書いたか</h3>
+
+<p>
+あなたはこう言いました。
+</p>
+
+<div class="box">
+<span class="t">出発点となった問題意識</span>
+<p>
+「そもそもゼロから作らないで、良い感じの OSS、ライブラリー、ユーティリティとか
+他の人が公開してるもの色々あると思うからそれ探して来たほうが良かったな」
+</p>
+<p>
+「学習サイトを作るということが目的。<strong>そういうのを調べることにより、
+学習サイトを作るにはどのような要素・機能・ルール・処理等々が必要かを把握できるでしょ</strong>」
+</p>
+</div>
+
+<p>
+この2つ目の文が、この資料の本当の目的です。
+<strong>「既存のものを調べる」ことの価値は、使えるものが見つかることだけではありません。
+「そもそも何を作るべきなのか」が分かることのほうが大きい。</strong>
+</p>
+
+<h3>0.2 「無知の無知」とは何か、なぜそれが最大の敵か</h3>
+
+<p>
+知識の状態には、次の4段階があります。
+</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>段階</th><th>状態</th><th>そのときあなたは</th><th>対処法</th></tr></thead>
+<tbody>
+<tr><td><strong>既知の既知</strong></td><td>知っていて、知っていると分かっている</td><td>「HTMLの書き方は分かる」</td><td>使うだけ</td></tr>
+<tr><td><strong>既知の未知</strong></td><td>知らないが、知らないと分かっている</td><td>「Reactは知らない。調べれば分かる」</td><td><strong>検索できる</strong></td></tr>
+<tr><td><strong>未知の既知</strong></td><td>知っているが、自覚していない</td><td>無意識に正しくやっている</td><td>言語化すれば強くなる</td></tr>
+<tr><td><strong>未知の未知<br>（無知の無知）</strong></td><td><strong>知らないことに気づいていない</strong></td><td>「JSを小さくするには自分で書くしかない」<br>（minifier という道具の存在を知らない）</td><td><strong class="ng">検索できない。<br>だから調べようがない</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box danger">
+<span class="t">なぜ4段目だけが致命的か</span>
+<p>
+2段目（既知の未知）なら、あなたは検索できます。「React 入門」と打てばいい。
+</p>
+<p>
+しかし4段目では、<strong>検索窓に打ち込む言葉そのものを持っていません。</strong>
+「JavaScript を小さくする道具」の存在を知らなければ「minifier」とは検索できず、
+結果として「自分で書くしかない」という結論に、<strong>疑いを持たずに</strong>到達します。
+</p>
+<p>
+実際に起きたことがまさにこれです。<code>build.js</code> の中に、
+JavaScript を小さくする処理が <strong>64行、手書きされていました</strong>。
+</p>
+</div>
+
+<p>
+だからこの資料は、<strong>「あなたが持っていなかった検索語」を配ること</strong>を
+最優先にしています。第3章はそのための専用の章です。
+</p>
+
+<h3>0.3 この資料の構成</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>章</th><th>内容</th><th>読む目的</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>何が起きていたのか</td><td>現状を数字で把握する</td></tr>
+<tr><td><strong>2</strong></td><td><strong>前提となる用語をすべて</strong></td><td><strong>以降を読むための土台。ここを飛ばすと後が読めない</strong></td></tr>
+<tr><td><strong>3</strong></td><td><strong>知らなかったから起きたこと</strong></td><td><strong>「あのとき何と検索すればよかったか」の一覧</strong></td></tr>
+<tr><td>4〜7</td><td>学習サイトの正体</td><td><strong>本題。何を作るべきかの設計図</strong></td></tr>
+<tr><td>8</td><td>演習と正誤判定</td><td>ゲームを教材として正しくする</td></tr>
+<tr><td>9</td><td>アーキテクチャ</td><td>具体的な設計。そのまま実装できる粒度</td></tr>
+<tr><td>10</td><td>既製品は使えるか</td><td>作らずに済ませられるかの判断</td></tr>
+<tr><td>11</td><td>資産の当てはめ</td><td>いま持っているものをどこに置くか</td></tr>
+<tr><td>12〜14</td><td>技術リファレンス</td><td>個別の技術判断。後から引く</td></tr>
+<tr><td>15〜17</td><td>着手順・用語集・信頼度</td><td>行動に移す</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box term">
+<span class="t">この資料の約束</span>
+<ul style="margin-bottom:0">
+<li>専門用語は<strong>必ず初出時に説明する</strong>。説明なしで使わない</li>
+<li>「〜すべき」と書くときは<strong>必ず理由を書く</strong></li>
+<li><strong>推測と実測を区別する</strong>。実際に測った数字には「実測」と明記する</li>
+<li><strong>調べても分からなかったことは「未確認」と書く</strong>。埋めない</li>
+</ul>
+</div>
+
+
+<h2 id="p1"><span class="num">1</span>何が起きていたのか<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<h3>1.1 あなたが作ったもの（実測）</h3>
+
+<p>
+まずリポジトリの現物を数えました。すべて実際に <code>wc -l</code>（行数を数えるコマンド）と
+<code>du</code>（容量を調べるコマンド）で測った値です。
+</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>区分</th><th class="num">行数</th><th>中身</th></tr></thead>
+<tbody>
+<tr><td><strong>学習ゲーム2本</strong></td><td class="num">4,330</td><td>Linux Story Quest（1,119行のJS）と Git Dungeon（1,063行のJS）</td></tr>
+<tr><td><strong>かけら（SPA）</strong></td><td class="num">1,996</td><td>うちビルド処理が159行</td></tr>
+<tr><td><strong>学習記録サイト</strong></td><td class="num">1,882</td><td>＋最適化なしの画像 69MB</td></tr>
+<tr><td>インフラ設定</td><td class="num">4ファイル</td><td>AWS の設定を生のJSONで手書き</td></tr>
+<tr><td colspan="3" style="padding-top:.8rem"><strong>合計 約 8,200 行</strong>（画像・ドキュメントを除く）</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>1.2 一番の発見 — コンテンツは足りている</h3>
+
+<p>
+ここが今回の調査で<strong>最も重要な発見</strong>です。
+</p>
+
+<div class="box why">
+<span class="t">Markdown で既に書いた学習コンテンツ：約 8,800 行</span>
+<p>それなのに、<strong>公開サイトに載っているのは記事4本だけ</strong>です。</p>
+</div>
+
+<div class="tw">
+<table>
+<thead><tr><th>ファイル</th><th class="num">行数</th><th>内容</th></tr></thead>
+<tbody>
+<tr><td><code>week5/docs/STUDY.md</code></td><td class="num">1,023</td><td>「入り口から順番に、裏側で起きていることを全部説明する」</td></tr>
+<tr><td><code>week4/html_gen_pattern/docs/GUIDE.md</code></td><td class="num">807</td><td></td></tr>
+<tr><td><code>week4/html_gen_pattern/docs/SPEC.md</code></td><td class="num">800</td><td></td></tr>
+<tr><td><code>week4/html_gen_pattern/docs/NOTES_layout-patterns.md</code></td><td class="num">750</td><td></td></tr>
+<tr><td><code>week5/docs/FILES.md</code></td><td class="num">630</td><td>「このリポジトリのすべて」</td></tr>
+<tr><td><code>week5/docs/DESIGN.md</code></td><td class="num">625</td><td>デザイン定義書</td></tr>
+<tr><td><code>week5/docs/REQUIREMENTS.md</code></td><td class="num">617</td><td>要件定義書</td></tr>
+<tr><td><code>week5/docs/DEPLOY.md</code></td><td class="num">427</td><td>AWS デプロイ定義</td></tr>
+<tr><td><code>week3/独自ドメインとHTTPS化の仕組み解説.md</code></td><td class="num">398</td><td></td></tr>
+<tr><td>ほか多数</td><td class="num">…</td><td></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box">
+<span class="t">つまりこういうことです</span>
+<p>
+これは<strong>コンテンツ不足の問題ではありません。器（うつわ）が無いことによる問題です。</strong>
+</p>
+<p>
+記事を「HTMLで1ページずつ手書きする」形にしてしまったため、
+1本公開するのに大変な手間がかかる。だから Markdown で書いたものが
+リポジトリの中に溜まったまま、外に出ていかない。
+</p>
+<p>
+<strong>器を入れれば、この 8,800 行は「置くだけ」で公開されます。</strong>
+これが今回いちばん即効性のある改善です。
+</p>
+</div>
+
+<h3>1.3 「ゼロから作ったのが間違いだった」は、半分だけ正しい</h3>
+
+<p>
+結論を先に言うと、<strong>作ったものすべてが無駄だったわけではありません。</strong>
+はっきり2つに分かれます。
+</p>
+
+<div class="cols">
+<div class="card" style="border-left:4px solid var(--danger-line)">
+<h4 style="margin-top:0" class="ng">✗ 自作すべきでなかったもの</h4>
+<ul class="mini" style="margin-bottom:0">
+<li>JavaScript を小さくする処理（minifier）</li>
+<li>データ圧縮アルゴリズム（BPE）</li>
+<li>DOM操作の薄い包み紙</li>
+<li>日付の計算</li>
+<li>ヘッダ・フッタのコピペ管理</li>
+<li>フォントCSSの正規表現書き換え</li>
+<li>記事一覧の手動更新</li>
+<li>画像の手作業</li>
+</ul>
+<p class="mini" style="margin-bottom:0"><strong>共通点</strong>：世界中の誰にとっても同じ問題。だから既に解かれている。</p>
+</div>
+<div class="card" style="border-left:4px solid var(--good-line)">
+<h4 style="margin-top:0" class="ok">✓ 自作でよかったもの</h4>
+<ul class="mini" style="margin-bottom:0">
+<li>日本語の教材文（8,800行）</li>
+<li>「60日後に読み返す」という時間ルール</li>
+<li>ヴィクトリア朝のCSS 303行</li>
+<li>RPGの世界観・ステージ設計</li>
+<li>初学者がつまずく順番の反映</li>
+<li>ヒントの段階的な出し方</li>
+<li>Linux Story Quest の仮想ファイルシステム</li>
+</ul>
+<p class="mini" style="margin-bottom:0"><strong>共通点</strong>：あなた固有の判断。OSSからは絶対に手に入らない。</p>
+</div>
+</div>
+
+<div class="box term">
+<span class="t">この資料が伝えたい、いちばん大事なこと</span>
+<p style="margin-bottom:0">
+遠回りだったのは<strong>「器」を自作したこと</strong>であって、
+<strong>「中身」を作ったことではありません。</strong>
+むしろ中身は、この先どんな OSS を使っても手に入らない、あなただけの資産です。
+</p>
+</div>
+
+
+<h2 id="p2"><span class="num">2</span>前提となる用語をすべて<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<p>
+ここから先を読むために必要な言葉を、全部説明します。
+<strong>「知っている」と思う項目も、定義がずれていることがあるので目を通してください。</strong>
+</p>
+
+<h3 id="p2-1">2.1 OSS とライセンス</h3>
+
+<div class="box term">
+<span class="t">用語：OSS（オープンソースソフトウェア）</span>
+<p style="margin-bottom:0">
+ソースコードが公開されていて、条件を守れば誰でも使える／改造できる／配布できるソフトウェア。
+<strong>「無料」という意味ではありません。</strong>「条件付きで自由」という意味です。
+</p>
+</div>
+
+<p>
+そして、その<strong>「条件」を定めた文書がライセンス</strong>です。
+ここを軽く見ると、あとで公開できなくなったり、自分のコードまで公開義務が発生したりします。
+</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>ライセンス</th><th>ひとことで</th><th>あなたが気をつけること</th></tr></thead>
+<tbody>
+<tr><td><strong>MIT</strong></td><td>ほぼ何でもOK</td><td>著作権表示を残すだけ。<strong>いちばん安全</strong></td></tr>
+<tr><td><strong>Apache-2.0</strong></td><td>MITに特許条項を足したもの</td><td>ほぼMITと同じ感覚で使える</td></tr>
+<tr><td><strong>BSD-2 / BSD-3</strong></td><td>MITとほぼ同等</td><td>安全</td></tr>
+<tr><td><strong>MPL-2.0</strong></td><td>ファイル単位の弱いコピーレフト</td><td>そのファイルを改造したら公開。自分のコードは巻き込まれない</td></tr>
+<tr><td><strong>LGPL</strong></td><td>ライブラリ用のコピーレフト</td><td>リンク方法によって条件が変わる。<strong>要確認</strong></td></tr>
+<tr><td><strong>GPL-3.0</strong></td><td class="q">強いコピーレフト</td><td><strong>組み込むと自分のコードも同じライセンスで公開する義務</strong></td></tr>
+<tr><td><strong>AGPL-3.0</strong></td><td class="q">GPLのネットワーク版</td><td><strong>サーバーで動かして公開するだけで、ソース公開義務が発生する</strong></td></tr>
+<tr><td><strong>BUSL-1.1</strong></td><td class="ng">OSSではない</td><td>Terraform等。商用制限あり。一定期間後にOSS化</td></tt></tr>
+<tr><td><strong>CC BY</strong></td><td>文章・画像向け。表示すればOK</td><td><strong>ソフトウェア用ではない。</strong>出典表示が必須</td></tr>
+<tr><td><strong>CC BY-NC</strong></td><td class="q">非商用のみ</td><td>The Odin Project 等。<strong>商用利用不可</strong></td></tr>
+<tr><td><strong>CC BY-SA</strong></td><td>継承あり</td><td>改変したら同じライセンスで公開</td></tr>
+<tr><td><strong>OFL-1.1</strong></td><td>フォント用</td><td>フォント自体の再配布条件。あなたも使っています</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box danger">
+<span class="t">特に注意が必要だったもの（今回の調査で見つかった実例）</span>
+<ul style="margin-bottom:0">
+<li><strong>Terraform は BUSL-1.1</strong> — 現在の新バージョンは厳密には OSI 型 OSS ではない。OSS を重視するなら <strong>OpenTofu</strong>（MPL-2.0）を選ぶ</li>
+<li><strong>CheerpX（WebVM の中核）はプロプライエタリ</strong> — Community 条件では<strong>自己ホストと再配布が許可されない</strong>。S3 に置くには商用条件の確認が必要</li>
+<li><strong>roadmap.sh はコンテンツ再配布禁止</strong> — リンクはOK、転載はNG</li>
+<li><strong>tldr の本文は CC BY-4.0</strong> — 取り込むなら帰属表示が必須</li>
+<li><strong>OverTheWire Bandit は OSS ではない</strong> — All rights reserved・再配布禁止。リンクのみ</li>
+<li><strong>pngquant は GPL-3.0 または商用</strong></li>
+<li><strong>Anki は AGPL-3.0</strong></li>
+</ul>
+</div>
+
+<div class="box warn">
+<span class="t">見落としやすい罠</span>
+<p style="margin-bottom:0">
+<strong>「GitHub で公開されている」ことと「OSS である」ことは別です。</strong>
+LICENSE ファイルが無いリポジトリは、法的には<strong>「著作権で保護されたまま、何の許可も出ていない」</strong>状態です。
+公開されていても、勝手に fork して使ってよいわけではありません。<br>
+Zenn Book や技術書典系のリポジトリは、サンプルコードだけ OSS で本文は販売物、という構成が多いので特に注意。
+</p>
+</div>
+
+<h3 id="p2-2">2.2 静的サイトと動的サイト</h3>
+
+<div class="box term">
+<span class="t">用語：静的サイト（static site）</span>
+<p style="margin-bottom:0">
+あらかじめ完成した HTML ファイルを置いておき、そのまま配るサイト。
+サーバーは「ファイルを渡す」だけで、<strong>何も考えません</strong>。
+</p>
+</div>
+
+<div class="box term">
+<span class="t">用語：動的サイト（dynamic site）</span>
+<p style="margin-bottom:0">
+アクセスがあるたびにサーバーがプログラムを実行し、
+データベースを読んで HTML を<strong>その場で組み立てて</strong>返すサイト。
+WordPress や Moodle はこちら。
+</p>
+</div>
+
+<div class="tw">
+<table>
+<thead><tr><th></th><th>静的サイト</th><th>動的サイト</th></tr></thead>
+<tbody>
+<tr><td>必要なもの</td><td>ファイル置き場だけ</td><td><strong>常時動くサーバー ＋ データベース</strong></td></tr>
+<tr><td>費用</td><td class="ok">ほぼ無料</td><td>サーバー代が毎月かかる</td></tr>
+<tr><td>速度</td><td class="ok">非常に速い</td><td>処理のぶん遅い</td></tr>
+<tr><td>壊れにくさ</td><td class="ok">壊れようがない</td><td>DB障害・更新失敗・攻撃対象になる</td></tr>
+<tr><td>保守</td><td class="ok">ほぼ不要</td><td><strong>セキュリティ更新を怠ると乗っ取られる</strong></td></tr>
+<tr><td>できないこと</td><td>ログイン、ユーザーごとの表示、書き込み</td><td>—</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box why">
+<span class="t">なぜこの区別が今回の核心なのか</span>
+<p>
+「学習サイト」と聞くと、多くの人は <strong>Moodle</strong> のような動的な LMS を思い浮かべます。
+しかし LMS が動的である理由は、<strong>「受講者が何百人もいて、それぞれの進捗を管理するから」</strong>です。
+</p>
+<p style="margin-bottom:0">
+<strong>あなたの学習者は一人です。</strong>
+一人ぶんの進捗なら、サーバーではなく<strong>その人のブラウザの中に保存すれば足ります。</strong>
+だから静的サイトのままで、学習サイトが成立します。これが第9章の結論の土台です。
+</p>
+</div>
+
+<h3 id="p2-3">2.3 ビルドとは何か</h3>
+
+<div class="box term">
+<span class="t">用語：ビルド（build）</span>
+<p style="margin-bottom:0">
+人間が書きやすい形のファイルを、<strong>ブラウザが読みやすい形へ機械的に変換する工程</strong>。
+「原稿 → 印刷物」の印刷にあたる作業です。
+</p>
+</div>
+
+<p>ビルドの中では、だいたい次のような作業が行われます。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>作業</th><th>用語</th><th>何をするか</th><th>あなたの現状</th></tr></thead>
+<tbody>
+<tr><td>まとめる</td><td><strong>バンドル</strong><br>(bundle)</td><td>バラバラのJSファイルを1つにまとめ、読み込み回数を減らす</td><td>していない</td></tr>
+<tr><td>小さくする</td><td><strong>minify</strong><br>(ミニファイ)</td><td>空白・改行・コメントを削り、変数名を短くする</td><td class="ng"><strong>64行を手書き</strong></td></tr>
+<tr><td>変換する</td><td><strong>トランスパイル</strong></td><td>新しい書き方を古いブラウザ向けに書き換える</td><td>していない</td></tr>
+<tr><td>指紋を付ける</td><td><strong>ハッシュ付与</strong></td><td>ファイル名に <code>app.a3f9c1.js</code> のような印を付け、更新時に確実に読み直させる</td><td>していない</td></tr>
+<tr><td>資産を扱う</td><td><strong>アセット処理</strong></td><td>画像を最適化し、CSSを生成し、フォントを配置する</td><td class="ng">手書きで実装</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box term">
+<span class="t">用語：ビルドツール／バンドラ</span>
+<p style="margin-bottom:0">
+上の作業をまとめて引き受けてくれる道具。<strong>Vite（ヴィート）</strong>、esbuild、Rollup、webpack などがあります。
+現在の主流は Vite です。<strong>あなたが159行かけて自作した <code>build.js</code> は、Vite の設定10〜20行で置き換わります。</strong>
+</p>
+</div>
+
+<h3 id="p2-4">2.4 Markdown と frontmatter</h3>
+
+<div class="box term">
+<span class="t">用語：Markdown（マークダウン）</span>
+<p style="margin-bottom:0">
+記号だけで見出しやリストを表せる、軽い記法。あなたが <code>STUDY.md</code> などで
+すでに 8,800 行書いているものです。
+</p>
+</div>
+
+<pre><code># 見出し1
+## 見出し2
+
+普通の段落です。**太字** と `コード` が書けます。
+
+- リスト
+- リスト
+
+```js
+const x = 1;   // コードブロック
+```</code></pre>
+
+<p>
+これが HTML に変換されると <code>&lt;h1&gt;</code> <code>&lt;h2&gt;</code>
+<code>&lt;p&gt;</code> <code>&lt;strong&gt;</code> <code>&lt;ul&gt;</code> になります。
+つまり<strong>あなたが記事で手書きしていた HTML タグを、書かなくてよくなります。</strong>
+</p>
+
+<div class="box term">
+<span class="t">用語：frontmatter（フロントマター）</span>
+<p>
+Markdown ファイルの<strong>先頭に付ける「この文書についての情報」</strong>。
+<code>---</code> で囲んだ部分に書きます。本文には表示されません。
+</p>
+<pre style="margin-bottom:0"><code>---
+title: 権威DNSサーバーとは
+published: 2026-07-01
+tags: ["AWS", "DNS"]
+draft: false
+---
+
+ここから本文</code></pre>
+</div>
+
+<div class="box why">
+<span class="t">なぜ frontmatter が決定的に重要か</span>
+<p>
+frontmatter があると、<strong>プログラムが記事を「読める」ようになります。</strong>
+</p>
+<p>
+いまは記事一覧のカードを <code>index.html</code> に<strong>手で書き足して</strong>いますね。
+frontmatter があれば、「全記事の <code>title</code> と <code>published</code> を集めて、
+日付順に並べてカードにする」という処理を<strong>機械が自動でやります</strong>。
+</p>
+<p style="margin-bottom:0">
+記事を1本足す＝Markdownを1枚置く。<strong>一覧の更新もリンクも自動。貼り忘れが原理的に起こらない。</strong>
+これが第4章で出てくる「出版モデル」の正体です。
+</p>
+</div>
+
+<h3 id="p2-5">2.5 データをどこに保存するか</h3>
+
+<p>
+ブラウザの中にデータを保存する方法は主に2つあります。学習の進捗をどこに置くかの話に直結します。
+</p>
+
+<div class="tw">
+<table>
+<thead><tr><th></th><th>localStorage</th><th>IndexedDB</th></tr></thead>
+<tbody>
+<tr><td>扱えるもの</td><td><strong>文字列だけ</strong></td><td>構造を持ったデータ、ファイルも可</td></tr>
+<tr><td>動作</td><td class="q"><strong>同期</strong>（処理中は画面が止まる）</td><td class="ok"><strong>非同期</strong>（止まらない）</td></tr>
+<tr><td>容量の目安</td><td>約 5〜10 MiB</td><td>もっと大きい</td></tr>
+<tr><td>検索・索引</td><td>できない</td><td class="ok">できる</td></tr>
+<tr><td>難しさ</td><td class="ok">とても簡単</td><td>やや複雑</td></tr>
+<tr><td>向いているもの</td><td>テーマ設定、開閉状態など<strong>失っても困らないもの</strong></td><td><strong>学習進捗、復習履歴、イベントログ</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box danger">
+<span class="t">絶対に知っておくべきこと：ブラウザの保存は永続保証がない</span>
+<p>
+localStorage も IndexedDB も、<strong>ブラウザの都合で消えることがあります。</strong>
+</p>
+<ul>
+<li>ユーザーが「閲覧データを削除」した</li>
+<li>プライベートブラウジングだった</li>
+<li>ストレージが圧迫され、ブラウザが古いデータを捨てた（eviction＝退去）</li>
+<li>機種変更した</li>
+</ul>
+<p style="margin-bottom:0">
+<strong>だから「エクスポート機能」は、あったら良い機能ではなく必須機能です。</strong>
+<code>navigator.storage.persist()</code> で永続化を依頼できますが、
+<strong>ブラウザが許可するとは限りません。</strong>
+</p>
+</div>
+
+<div class="box warn">
+<span class="t">現在のコードにある実際の問題</span>
+<p style="margin-bottom:0">
+「かけら」の保存処理は <code>QuotaExceededError</code>（容量オーバー）や
+ストレージ禁止を <strong>catch していません</strong>。
+つまりプライベートブラウジングやストレージ無効設定の環境では、
+<strong>ユーザーに何も知らせないまま記録が消えます。</strong>
+保存失敗を通知し、バックアップを促す処理を足すべきです。
+</p>
+</div>
+
+<h3 id="p2-6">2.6 ドメインモデルとは何か</h3>
+
+<p>
+この資料でいちばん重要な概念です。丁寧に説明します。
+</p>
+
+<div class="box term">
+<span class="t">用語：ドメインモデル（domain model）</span>
+<p>
+「その世界に、どんな“もの”があり、それらがどう関係しているか」を整理したもの。
+<strong>プログラムを書く前に決める、世界の見取り図</strong>です。
+</p>
+<p style="margin-bottom:0">
+「ドメイン」は<strong>「対象としている領域」</strong>という意味です。
+学習サイトのドメインなら、対象は「学ぶこと」の世界。
+</p>
+</div>
+
+<p>例で説明します。図書館のドメインモデルを考えてみます。</p>
+
+<figure>
+<svg viewBox="0 0 720 220" role="img" aria-labelledby="lib-t">
+<title id="lib-t">図書館のドメインモデルの例。本・利用者・貸出という3つの概念と、その関係</title>
+<g font-family="sans-serif" font-size="13">
+  <rect x="20" y="30" width="150" height="70" rx="6" fill="none" stroke="#7a4b2a" stroke-width="2"/>
+  <text x="95" y="55" text-anchor="middle" fill="#7a4b2a" font-weight="bold">本</text>
+  <text x="95" y="76" text-anchor="middle" fill="#6b6355" font-size="11">ISBN・題名・著者</text>
+
+  <rect x="285" y="30" width="150" height="70" rx="6" fill="none" stroke="#2f5d4f" stroke-width="2"/>
+  <text x="360" y="55" text-anchor="middle" fill="#2f5d4f" font-weight="bold">貸出</text>
+  <text x="360" y="76" text-anchor="middle" fill="#6b6355" font-size="11">貸出日・返却期限</text>
+
+  <rect x="550" y="30" width="150" height="70" rx="6" fill="none" stroke="#7a4b2a" stroke-width="2"/>
+  <text x="625" y="55" text-anchor="middle" fill="#7a4b2a" font-weight="bold">利用者</text>
+  <text x="625" y="76" text-anchor="middle" fill="#6b6355" font-size="11">会員番号・氏名</text>
+
+  <line x1="170" y1="65" x2="285" y2="65" stroke="#999" stroke-width="1.5"/>
+  <line x1="435" y1="65" x2="550" y2="65" stroke="#999" stroke-width="1.5"/>
+  <text x="227" y="58" text-anchor="middle" fill="#6b6355" font-size="11">される</text>
+  <text x="492" y="58" text-anchor="middle" fill="#6b6355" font-size="11">する</text>
+
+  <text x="360" y="150" text-anchor="middle" fill="#6b6355" font-size="12">ルール：1冊は同時に1人にしか貸せない</text>
+  <text x="360" y="172" text-anchor="middle" fill="#6b6355" font-size="12">ルール：延滞している人は新規に借りられない</text>
+  <text x="360" y="194" text-anchor="middle" fill="#6b6355" font-size="12">処理：返却されたら、貸出に返却日を記録して終了させる</text>
+</g>
+</svg>
+<figcaption>ドメインモデルの例。「もの」「関係」「ルール」「処理」で世界を記述する</figcaption>
+</figure>
+
+<div class="box why">
+<span class="t">なぜドメインモデルを先に決めるのか</span>
+<p>
+決めずに作ると、<strong>あとで直せなくなる</strong>からです。
+</p>
+<p>
+たとえば図書館で「本」と「貸出」を分けずに、
+本のデータの中に「いま誰が借りているか」を直接書いてしまったとします。
+最初は動きます。しかし<strong>「過去に誰が借りたか」を知りたくなった瞬間に破綻します。</strong>
+情報がどこにも残っていないからです。
+</p>
+<p style="margin-bottom:0">
+同じことがあなたのゲームでも起きています。Git Dungeon は
+Gitの状態を <code>firstCommit</code>、<code>mergedFeature</code> といった
+<strong>真偽値（true/false）の羅列</strong>で持っています。動きます。
+しかし<strong>「コミットがいくつあるか」「どの枝がどこから分かれたか」は、どこにも無い</strong>のです。
+</p>
+</div>
+
+<div class="box term">
+<span class="t">用語：第一級の概念（first-class concept）</span>
+<p style="margin-bottom:0">
+そのシステムが<strong>「独立した“もの”として正面から扱っている」</strong>もの。
+図書館なら「貸出」は第一級。もし貸出を本の属性の一部として持っていたら、それは第一級ではありません。<br>
+<strong>この資料では「その OSS が何を第一級にしているか」を繰り返し見ます。
+それがそのまま「学習サイトに必要な要素」の答えになるからです。</strong>
+</p>
+</div>
+
+<h3 id="p2-7">2.7 配信と圧縮</h3>
+
+<div class="box term">
+<span class="t">用語：CDN（コンテンツ配信ネットワーク）</span>
+<p style="margin-bottom:0">
+世界中にコピーを置いておき、<strong>アクセスした人にいちばん近い場所から配る</strong>仕組み。
+あなたが使っている <strong>CloudFront</strong> がこれです。
+</p>
+</div>
+
+<div class="box term">
+<span class="t">用語：gzip / Brotli と Content-Encoding</span>
+<p>
+ファイルを<strong>転送するときだけ自動で圧縮し、ブラウザが自動で解凍する</strong>仕組み。
+サーバーが「圧縮して送るよ」と <code>Content-Encoding</code> というラベルを付けて送ると、
+ブラウザが勝手に元に戻します。<strong>プログラムは何もしなくていい。</strong>
+</p>
+<p style="margin-bottom:0">
+Brotli は gzip より新しく、よく縮みます。<strong>CloudFront は両方に対応していて、
+あなたはすでに有効にしています</strong>（<code>docs/DEPLOY.md</code> に記載あり）。
+</p>
+</div>
+
+<div class="box danger">
+<span class="t">これを知らなかったために起きたこと</span>
+<p style="margin-bottom:0">
+この仕組みを知らないと、<strong>「データを小さくするには、自分で圧縮アルゴリズムを書くしかない」</strong>と考えます。
+実際 <code>build.js</code> には <strong>BPE（Byte Pair Encoding）という圧縮方式が36行、手書き</strong>されていました。
+そして<strong>実測の結果、それは配信サイズをむしろ悪化させていました</strong>（12.2節）。
+</p>
+</div>
+
+
+<h2 id="p3"><span class="num">3</span>知らなかったから起きたこと<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<p>
+この章が<strong>「無知の無知」への直接の処方箋</strong>です。
+「自作したもの」と「そのとき検索すべきだった言葉」を並べます。
+</p>
+
+<div class="box">
+<span class="t">この表の使い方</span>
+<p style="margin-bottom:0">
+右端の<strong>「検索すべきだった言葉」を覚えてください。</strong>
+次に似た状況になったとき、<strong>作り始める前にこの言葉で検索する</strong>だけで、
+同じ遠回りを避けられます。
+</p>
+</div>
+
+<div class="tw">
+<table>
+<thead><tr><th>あなたが自作したもの</th><th class="num">行数</th><th>実際に存在する道具</th><th>検索すべきだった言葉</th></tr></thead>
+<tbody>
+<tr><td>JavaScriptを小さくする処理</td><td class="num">64</td><td>esbuild / terser / SWC</td><td class="ok"><code>javascript minifier</code></td></tr>
+<tr><td>データを圧縮する処理（BPE）</td><td class="num">36</td><td><strong>不要</strong>（CloudFrontのBrotliで足りる）</td><td class="ok"><code>CloudFront 圧縮 Content-Encoding</code></td></tr>
+<tr><td>フォントCSSの正規表現書き換え</td><td class="num">27</td><td>Fontsource を import するだけ</td><td class="ok"><code>fontsource vite 使い方</code></td></tr>
+<tr><td>ファイルのコピー・削除・生成</td><td class="num">17</td><td>Vite</td><td class="ok"><code>静的サイト ビルドツール</code></td></tr>
+<tr><td>日付の計算（DST回避を含む）</td><td class="num">112</td><td>date-fns / Temporal API</td><td class="ok"><code>javascript 日付 ライブラリ</code></td></tr>
+<tr><td>DOM操作の包み紙</td><td class="num">56</td><td><strong>不要</strong>（標準APIをそのまま使う）</td><td class="ok"><code>lit-html</code> / <code>DOM ラッパー 必要か</code></td></tr>
+<tr><td>保存データの型チェック</td><td class="num">13+31</td><td>Valibot / Zod</td><td class="ok"><code>javascript スキーマ 検証</code></td></tr>
+<tr><td>画面切り替え（ルーター）</td><td class="num">70〜90</td><td>navaid（ただし<strong>今回は不要</strong>）</td><td class="ok"><code>SPA router</code></td></tr>
+<tr><td>状態管理</td><td class="num">20〜25</td><td>nanostores（ただし<strong>今回は不要</strong>）</td><td class="ok"><code>state management vanilla js</code></td></tr>
+<tr><td>記事のHTML・ヘッダフッタのコピペ</td><td class="num">1,882</td><td>Astro / Starlight（SSG）</td><td class="ok"><code>静的サイトジェネレータ</code></td></tr>
+<tr><td>記事一覧の手動更新</td><td class="num">—</td><td>Content Collections</td><td class="ok"><code>markdown frontmatter ブログ 一覧 自動</code></td></tr>
+<tr><td>目次・前後リンク・サイト内検索</td><td class="num">—</td><td>Starlight（標準機能）＋ Pagefind</td><td class="ok"><code>ドキュメント サイト フレームワーク</code></td></tr>
+<tr><td>PNG図解 26枚を手作業で作成</td><td class="num">69MB</td><td>D2 / Mermaid（図をコードで書く）</td><td class="ok"><code>diagram as code</code></td></tr>
+<tr><td>Gitの状態を真偽値で模倣</td><td class="num">1,063</td><td>isomorphic-git（本物のGitがブラウザで動く）</td><td class="ok"><code>git in browser javascript</code></td></tr>
+<tr><td>ターミナルの見た目・入力欄</td><td class="num">—</td><td>xterm.js</td><td class="ok"><code>browser terminal emulator</code></td></tr>
+<tr><td>AWS設定を生JSONで手書き</td><td class="num">4ファイル</td><td>AWS CDK</td><td class="ok"><code>Infrastructure as Code AWS</code></td></tr>
+<tr><td>学習サイトの構造を独自に設計</td><td class="num">—</td><td>Exercism の構造 / xAPI / LMS の設計</td><td class="ok"><code>LMS domain model</code> / <code>xAPI</code></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>3.1 検索できるようになるための「上位語」リスト</h3>
+
+<p>
+個別の道具名を覚えるより、<strong>「その種類の道具を指す言葉」を覚えるほうが応用が利きます。</strong>
+これを知っていれば、道具の名前を知らなくても検索にたどり着けます。
+</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>やりたいこと</th><th>その種類の道具を指す言葉</th></tr></thead>
+<tbody>
+<tr><td>複数のページで共通部分を使い回したい</td><td><strong>テンプレートエンジン</strong> / <strong>SSG（静的サイトジェネレータ）</strong></td></tr>
+<tr><td>コードを配信用に加工したい</td><td><strong>ビルドツール</strong> / <strong>バンドラ</strong> / <strong>minifier</strong></td></tr>
+<tr><td>データの形が正しいか調べたい</td><td><strong>スキーマバリデーション</strong></td></tr>
+<tr><td>コードの書き方の誤りを機械に指摘させたい</td><td><strong>リンター（linter）</strong></td></tr>
+<tr><td>コードの見た目を自動で整えたい</td><td><strong>フォーマッタ（formatter）</strong></td></tr>
+<tr><td>コードが正しく動くか自動で確かめたい</td><td><strong>テストランナー</strong> / <strong>E2Eテスト</strong></td></tr>
+<tr><td>変更のたびに自動でチェック・公開したい</td><td><strong>CI/CD</strong></td></tr>
+<tr><td>サーバー構成をコードで管理したい</td><td><strong>IaC（Infrastructure as Code）</strong></td></tr>
+<tr><td>図を文字で書きたい</td><td><strong>diagram as code</strong></td></tr>
+<tr><td>文章の日本語をチェックしたい</td><td><strong>textlint</strong> / <strong>校正ツール</strong></td></tr>
+<tr><td>ライブラリの更新を自動で追いたい</td><td><strong>Dependabot</strong> / <strong>Renovate</strong></td></tr>
+<tr><td>鍵やパスワードの漏洩を防ぎたい</td><td><strong>secret scanning</strong></td></tr>
+<tr><td>復習のタイミングを最適化したい</td><td><strong>SRS（間隔反復）</strong> / <strong>FSRS</strong></td></tr>
+<tr><td>学習の記録を標準的な形で持ちたい</td><td><strong>xAPI</strong> / <strong>SCORM</strong> / <strong>LTI</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box term">
+<span class="t">さらに効く習慣：「awesome リスト」を最初に見る</span>
+<p style="margin-bottom:0">
+GitHub には <code>awesome-<em>分野名</em></code> という、その分野の OSS をまとめたリストが大量にあります。
+<code>awesome static site generators</code>、<code>awesome education</code> のように検索すると、
+<strong>その分野に何が存在するのかを俯瞰できます。</strong>
+「無知の無知」を潰すのに、これがいちばん手っ取り早い方法です。
+</p>
+</div>
+
+<h2 id="p4"><span class="num">4</span>学習サイトの正体<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<p>
+ここからが本題です。<strong>「学習サイトを作る」とは、具体的に何を作ることなのか。</strong>
+世界中の学習プラットフォームを調べて、その答えを抽出しました。
+</p>
+
+<h3 id="p4-1">4.1 学習サイトは「二つのモデル」でできている</h3>
+
+<p>
+Moodle、Frappe LMS、Exercism、freeCodeCamp、CTFd、Runestone、Starlight、Docusaurus、mdBook……
+これらを横断して調べると、<strong>持っている機能がきれいに2種類に分かれる</strong>ことが分かりました。
+</p>
+
+<figure>
+<svg viewBox="0 0 760 320" role="img" aria-labelledby="two-t">
+<title id="two-t">学習サイトの二つのモデル。出版モデルは既存のSSGが提供し、学習状態モデルは自分で足す必要がある</title>
+<g font-family="sans-serif">
+  <rect x="20" y="20" width="340" height="270" rx="8" fill="none" stroke="#2f5d4f" stroke-width="2"/>
+  <text x="190" y="50" text-anchor="middle" font-size="15" font-weight="bold" fill="#2f5d4f">A. 出版モデル</text>
+  <text x="190" y="72" text-anchor="middle" font-size="11" fill="#6b6355">「読み物をどう並べ、どう見せるか」</text>
+  <g font-size="12" fill="#23201a">
+    <text x="45" y="105">・LearningPath / Book</text>
+    <text x="45" y="128">・Module / Section</text>
+    <text x="45" y="151">・Lesson / Page</text>
+    <text x="45" y="174">・順序（Navigation order）</text>
+    <text x="45" y="197">・Article / TIL</text>
+    <text x="45" y="220">・Asset（画像など）</text>
+    <text x="45" y="243">・Tag / 検索索引</text>
+  </g>
+  <rect x="45" y="258" width="290" height="24" rx="4" fill="#2f5d4f" opacity="0.14"/>
+  <text x="190" y="275" text-anchor="middle" font-size="12" font-weight="bold" fill="#2f5d4f">既存のSSGが提供してくれる</text>
+
+  <rect x="400" y="20" width="340" height="270" rx="8" fill="none" stroke="#b03a3a" stroke-width="2"/>
+  <text x="570" y="50" text-anchor="middle" font-size="15" font-weight="bold" fill="#b03a3a">B. 学習状態モデル</text>
+  <text x="570" y="72" text-anchor="middle" font-size="11" fill="#6b6355">「学習者が、いまどこにいるか」</text>
+  <g font-size="12" fill="#23201a">
+    <text x="425" y="105">・Learner（学習者）</text>
+    <text x="425" y="128">・Enrollment（受講登録）</text>
+    <text x="425" y="151">・Progress（完了状態・最終位置）</text>
+    <text x="425" y="174">・Attempt（挑戦）</text>
+    <text x="425" y="197">・Result / Feedback</text>
+    <text x="425" y="220">・完了条件</text>
+    <text x="425" y="243">・学習イベント</text>
+  </g>
+  <rect x="425" y="258" width="290" height="24" rx="4" fill="#b03a3a" opacity="0.14"/>
+  <text x="570" y="275" text-anchor="middle" font-size="12" font-weight="bold" fill="#b03a3a">SSGは提供しない。自分で足す</text>
+</g>
+</svg>
+<figcaption>学習サイトを構成する二つのモデル。この分離が、この資料の中心的な発見</figcaption>
+</figure>
+
+<div class="box danger">
+<span class="t">これが「遠回りの正体」でした</span>
+<p>
+<code>03.learning_site</code> は、<strong>A（出版モデル）を手作業で自作していました。</strong>
+</p>
+<ul>
+<li>ヘッダ・フッタを6ファイルにコピペ ＝ <strong>レイアウト機能の手作業</strong></li>
+<li><code>index.html</code> にカードを手で追加 ＝ <strong>一覧生成の手作業</strong></li>
+<li>目次なし・前後リンクなし・検索なし ＝ <strong>ナビゲーション機能の欠落</strong></li>
+</ul>
+<p style="margin-bottom:0">
+<strong>A は Starlight を入れれば全部ついてきます。あなたが本当に足すべきなのは B だけです。</strong>
+</p>
+</div>
+
+<h3 id="p4-2">4.2 A. 出版モデル ── 詳しく</h3>
+
+<p>
+Starlight、Docusaurus、MkDocs、mdBook、Quarto といった
+「ドキュメント／書籍を作るための道具」が共通して持っているモデルです。
+</p>
+
+<pre><code>Site
+├── LearningPath / Book        学習の道すじ、または1冊の本
+│   ├── Module / Part / Section   章
+│   │   └── Lesson / Chapter / Page  節・ページ
+│   └── Navigation order          並び順
+├── Article / TIL              単発の読み物
+├── Asset                      画像・添付ファイル
+└── Tag / Search index         タグと検索</code></pre>
+
+<h4>このモデルが持つ「ルール」</h4>
+
+<div class="tw">
+<table>
+<thead><tr><th>ルール</th><th>なぜそうなっているか</th><th>あなたの現状</th></tr></thead>
+<tbody>
+<tr><td><strong>教材には明示された順序がある</strong></td><td>Case No.0 → No.3 のように、読む順番に意味がある</td><td class="ng">順序の情報がどこにもない</td></tr>
+<tr><td>記事には日付とタグがあるが、<strong>順序は必須でない</strong></td><td>ブログ記事は独立して読めるべきもの</td><td>—</td></tr>
+<tr><td><strong>URLは公開後になるべく変えない</strong></td><td>リンクが切れる。検索順位も失われる</td><td class="ok">現状の slug は維持すべき</td></tr>
+<tr><td>画像・コード・ゲームは、<strong>それを使う教材から追跡できる</strong></td><td>どこで使っているか分からない資産は消せない</td><td class="ng">works/ が二重管理</td></tr>
+<tr><td><strong>下書きと公開済みを区別する</strong></td><td>書きかけを公開したくない</td><td class="ng">区別の仕組みがない</td></tr>
+<tr><td>前後ナビゲーションとサイト横断検索を持つ</td><td>連続教材は「次へ」がないと読めない</td><td class="ng">両方ない</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="p4-3">4.3 B. 学習状態モデル ── 詳しく</h3>
+
+<p>
+Frappe LMS、Runestone、CTFd、Tutor LMS といった
+「LMS（学習管理システム）」が<strong>追加で</strong>持っているモデルです。
+</p>
+
+<div class="box term">
+<span class="t">用語：LMS（Learning Management System／学習管理システム）</span>
+<p style="margin-bottom:0">
+学校や企業が使う、<strong>受講者の学習を管理するためのシステム</strong>。
+「誰が」「どの講座を」「どこまで進んで」「何点だったか」を記録します。
+Moodle、Canvas、Open edX などが代表例。
+</p>
+</div>
+
+<pre><code>Learner                        学習者
+├── Enrollment                 どの講座に登録しているか
+├── Progress                   進捗
+│   ├── Lesson completion         どのレッスンを完了したか
+│   └── Last visited position     最後にどこを見ていたか
+└── Attempt                    挑戦（1回ごとの記録）
+    ├── Activity                  何に挑戦したか
+    ├── Submitted answer / Evidence  提出した答え・証拠
+    ├── Result                    結果
+    └── Feedback                  フィードバック</code></pre>
+
+<h4>このモデルが持つ「ルール」── ここが設計の勘所</h4>
+
+<div class="box why">
+<span class="t">ルール1：完了条件は、種類ごとに違う</span>
+<p>
+これが一番大事です。「完了」の意味は一つではありません。
+</p>
+<div class="tw" style="margin:.7rem 0 0">
+<table>
+<thead><tr><th>種類</th><th>「完了」の判定方法</th><th>例</th></tr></thead>
+<tbody>
+<tr><td>読み物</td><td><strong>閲覧</strong> または <strong>自己申告</strong></td><td>「読んだ」ボタンを押す</td></tr>
+<tr><td>クイズ</td><td><strong>合格点</strong></td><td>8問中6問正解</td></tr>
+<tr><td>ゲーム・演習</td><td><strong>クリアイベント</strong></td><td>ゲームが「終わった」と通知する</td></tr>
+<tr><td>成果物</td><td><strong>チェックリスト</strong></td><td>デプロイした・READMEを書いた・振り返りを書いた</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="box why">
+<span class="t">ルール2：進捗（Progress）と採点（Score）は別概念</span>
+<p style="margin-bottom:0">
+「終わったかどうか」と「どのくらい良くできたか」は違います。
+<strong>混ぜると、あとで「60点でクリアした人」を表現できなくなります。</strong>
+Learn Git Branching が「クリア」と「最短手数でのクリア」を分けているのも同じ理由です。
+</p>
+</div>
+
+<div class="box why">
+<span class="t">ルール3：ゲームの内部状態と、サイト全体の進捗は別ストアにする</span>
+<p style="margin-bottom:0">
+Linux Story Quest の「いまステージ3にいる」という情報と、
+サイトの「Linuxコース：演習1つ完了」という情報は<strong>別の場所に持つ</strong>。
+混ぜると、ゲームを作り直したときにサイト全体の進捗まで壊れます。
+</p>
+</div>
+
+<div class="box why">
+<span class="t">ルール4：Attempt（挑戦）を何度でも作れるか、制限するかを決める</span>
+<p style="margin-bottom:0">
+学習用途では<strong>基本的に無制限</strong>が正解です。
+試験なら制限します。<strong>この判断を最初に明文化しておかないと、あとから変えられません。</strong>
+</p>
+</div>
+
+<div class="box danger">
+<span class="t">ルール5：認証を入れた瞬間、責任が発生する</span>
+<p>
+「ログイン機能をつけよう」と思った瞬間に、次のすべてが必要になります。
+</p>
+<ul style="margin-bottom:0">
+<li>個人情報の<strong>削除機能</strong>（求められたら消せること）</li>
+<li><strong>エクスポート機能</strong>（データを持ち出せること）</li>
+<li><strong>バックアップ</strong>（失わないこと）</li>
+<li><strong>プライバシーポリシー</strong></li>
+<li>パスワード管理・不正アクセス対策</li>
+</ul>
+<p style="margin-bottom:0; margin-top:.7rem">
+<strong>だから「認証を入れない」ことは、手抜きではなく積極的な設計判断です。</strong>
+学習者が一人なら、進捗はその人のブラウザに置けばよく、これらの責任は一切発生しません。
+</p>
+</div>
+
+
+<h2 id="p5"><span class="num">5</span>世界のLMSが持っている概念<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<p>
+<strong>これらを「使え」と言っているのではありません。</strong>
+すべて個人には過剰です。しかし<strong>「何を第一級の概念にしているか」を読むと、
+学習サイトに必要な要素が見えてきます。</strong> そのための章です。
+</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>名前</th><th>第一級の概念（ここが読みどころ）</th><th>ライセンス／状況</th><th>個人での採否</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>Moodle</strong></td>
+  <td>Course ／ <strong>Activity（学習者が行うもの）</strong> ／ <strong>Resource（教師が提示するもの）</strong> ／ User ／ Grade ／ Completion ／ Competency</td>
+  <td>GPL-3.0<br>v5.2.2（2026-08-08）</td>
+  <td class="ng">過剰。PHP＋DBが必要</td>
+</tr>
+<tr>
+  <td><strong>Frappe Learning</strong></td>
+  <td><strong>Course → Chapter → Lesson の3層</strong>＋ Learner ／ Enrollment ／ Batch ／ Quiz ／ Assignment ／ Programming exercise ／ Completion</td>
+  <td>AGPL-3.0<br>2026-07も更新</td>
+  <td class="ng">最も完成したLMS候補だが重い</td>
+</tr>
+<tr>
+  <td><strong>Open edX / Canvas /<br>Sakai / ILIAS / Chamilo</strong></td>
+  <td>Course ／ Module ／ Unit ／ Enrollment ／ Cohort ／ Grade ／ Certificate</td>
+  <td>各種</td>
+  <td class="ng">すべて組織向け</td>
+</tr>
+<tr>
+  <td><strong>Runestone Academy</strong></td>
+  <td>Book ／ Course ／ Section ／ <strong>Assignment ／ Question ／ Attempt</strong> ／ Student ／ Instructor ／ Analytics</td>
+  <td>MIT（同梱教材に例外）</td>
+  <td class="ng">公式が本番運用を「substantially more complex」と明記</td>
+</tr>
+<tr>
+  <td><strong>CTFd</strong> <span class="tag">唯一の有力候補</span></td>
+  <td><strong>Challenge ／ Category ／ Flag ／ Hint ／ Submission ／ Solve ／ Score ／ Prerequisites ／ Competition window</strong></td>
+  <td>Apache-2.0<br>v3.8.6（2026-06-16）</td>
+  <td class="q">条件付き。ゲームを「解いたらフラグ」形式にするなら合う。ただし記事の母艦にはならない</td>
+</tr>
+<tr>
+  <td><strong>Tutor LMS / LearnPress</strong></td>
+  <td>WordPress上の Course ／ Topic ／ Lesson ／ Quiz ／ Enrollment ／ Order</td>
+  <td>GPL-3.0<br>v4.0.7（2026-08-20）</td>
+  <td class="ng">WordPress保守が増える</td>
+</tr>
+<tr>
+  <td><strong>CourseLit</strong></td>
+  <td>Course ／ Lesson ／ Student ／ <strong>Product ／ Payment ／ Sales page</strong></td>
+  <td>AGPL-3.0</td>
+  <td class="ng">販売しないなら不要な概念が多い</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h3>5.1 Moodle から借りる、たった一つの概念</h3>
+
+<div class="box term">
+<span class="t">Activity と Resource の分離</span>
+<p>
+Moodle は公式ドキュメントで、この2つをはっきり分けています。
+</p>
+<ul>
+<li><strong>Activity（活動）</strong>＝ <strong>学習者が「する」もの</strong>（課題、クイズ、フォーラム）</li>
+<li><strong>Resource（教材）</strong>＝ <strong>教師が「見せる」もの</strong>（ファイル、ページ、リンク）</li>
+</ul>
+<p style="margin-bottom:0">
+これが<strong>「読むもの」と「やるもの」を別種として扱う</strong>という発想の出所です。
+第7章の <code>kind: article</code> と <code>kind: exercise</code> は、この考え方から来ています。
+</p>
+</div>
+
+<h3>5.2 演習を「コードとして」管理している OSS ── ここが最重要</h3>
+
+<p>
+<strong>あなたは学習ゲームを2本、それぞれ1,000行超で自作しています。</strong>
+世界の実装が「演習」をどうモデル化しているかを見ると、設計の指針が得られます。
+</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>OSS</th><th>演習を何で表現するか</th><th>正解をどう判定するか</th><th>進捗をどこに持つか</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>Exercism</strong><br><span class="tag">最重要</span></td>
+  <td>trackの <code>config.json</code>、<code>concepts/&lt;slug&gt;</code>、<code>exercises/concept/&lt;slug&gt;</code>、<code>exercises/practice/&lt;slug&gt;</code>。各演習が <code>.docs</code>／<code>.meta</code>／テスト／stub／exemplar を持つ</td>
+  <td>学習者のコードを<strong>言語別テストランナー</strong>に通す</td>
+  <td class="ok"><strong>教材リポジトリ自身は進捗を持たない</strong>（Web側のDB）</td>
+</tr>
+<tr>
+  <td><strong>freeCodeCamp</strong></td>
+  <td><code>superBlock → chapter → module → block → challenge</code>。challengeは frontmatter 付き Markdown</td>
+  <td>Markdown内の <code>--tests--</code> から生成したテストを実行</td>
+  <td>アカウントの <code>completedChallenges</code></td>
+</tr>
+<tr>
+  <td><strong>The Odin Project</strong></td>
+  <td><code>path → course → section → lesson/project</code></td>
+  <td class="q"><strong>多くは自動採点なし。</strong>自己確認と成果物</td>
+  <td>ログインユーザーが手動完了</td>
+</tr>
+<tr>
+  <td><strong>PrairieLearn</strong><br><span class="tag">思想を借りる</span></td>
+  <td><code>info.json</code>／<code>question.html</code>／<strong>秘密の <code>server.py</code></strong>／<code>tests/</code></td>
+  <td><code>server.py</code> の <strong><code>generate</code>／<code>prepare</code>／<code>parse</code>／<code>grade</code>／<code>test</code></strong></td>
+  <td>PostgreSQL</td>
+</tr>
+<tr>
+  <td><strong>CTFd</strong></td>
+  <td><strong>Challenge が第一級。</strong>category／description／files／flags／hints／prerequisites／value</td>
+  <td>static/regex flag、複数flagの any/all</td>
+  <td>User／Submission／Solve／Hint unlock</td>
+</tr>
+<tr>
+  <td><strong>Runestone</strong></td>
+  <td>PreTeXt の <code>&lt;exercise&gt;</code>／<code>&lt;statement&gt;</code>／<code>&lt;hint&gt;</code>／<code>&lt;answer&gt;</code>／<code>&lt;solution&gt;</code></td>
+  <td>選択肢・並べ替え・数値・Unit Test・IO Test</td>
+  <td>静的HTMLでは保存しない</td>
+</tr>
+<tr>
+  <td><strong>WeBWorK / OPL</strong></td>
+  <td><code>.pg</code>ファイル。Subject/Chapter/Section階層＋<strong>問題seed</strong></td>
+  <td>answer evaluator（数値誤差・数式同値）</td>
+  <td>サーバーDB</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h4>Exercism の <code>config.json</code> ── 教材設計の教科書</h4>
+
+<p>
+Exercism の設定ファイルは、<strong>単なる表示設定ではなくカリキュラムの中心モデル</strong>です。
+</p>
+
+<pre><code>{
+  "slug": "linux-quest",
+  "concepts": [
+    { "uuid": "...", "slug": "filesystem-navigation", "name": "ファイルシステム移動" }
+  ],
+  "exercises": {
+    "concept": [                            ← 新しい概念を「教える」演習
+      { "slug": "find-the-workshop", "name": "工房を探せ",
+        "concepts": ["filesystem-navigation"],
+        "prerequisites": ["shell-basics"], "status": "active" }
+    ],
+    "practice": [                           ← 既習の概念を「使って復習する」演習
+      { "slug": "lost-archive", "name": "失われた書庫",
+        "practices": ["filesystem-navigation", "file-search"],
+        "prerequisites": ["filesystem-navigation"], "difficulty": 3 }
+    ]
+  }
+}</code></pre>
+
+<div class="box term">
+<span class="t">ここから読み取れる設計思想（そのまま借りられる）</span>
+<ul style="margin-bottom:0">
+<li><strong><code>concepts</code> は画面ページではなく「習得対象」そのもの</strong>
+    ── 「ステージ3」ではなく「ファイルシステム移動」が主役</li>
+<li><strong>concept exercise（教える）と practice exercise（復習する）を分ける</strong>
+    ── 役割が違うものを同じ「ステージ」で扱わない</li>
+<li><code>prerequisites</code>（前提）が解除条件になる</li>
+<li>配列の順序が推奨学習順</li>
+<li><strong><code>wip / beta / active / deprecated</code> で教材のライフサイクルを管理する</strong>
+    ── 書きかけ・実験中・現役・廃止を区別する</li>
+<li><code>.meta/design.md</code> に<strong>学習目標・対象外・設計理由</strong>を残す
+    ── <strong>学習者向けの本文とは別ファイル</strong>にする</li>
+<li><strong>exemplar（模範解答）は「答えの表示用」ではなく、
+    テストと課題仕様の整合性を保証する実行可能な資料</strong></li>
+</ul>
+</div>
+
+<div class="box why">
+<span class="t">あなたのゲームに当てはめると</span>
+<p style="margin-bottom:0">
+現在は「ステージ1、2、3……」という<strong>画面上の番号</strong>で進行を管理しています。
+これを<strong>「概念・前提・演習の関係」へ昇格させる</strong>のが Exercism モデルです。<br>
+そうすると、<strong>「この概念はまだ習っていないから、この演習はまだ出さない」</strong>という
+判断が自動でできるようになり、ステージを並べ替えても壊れません。
+</p>
+</div>
+
+<h4>PrairieLearn の「問題を関数として持つ」思想</h4>
+
+<p>
+PrairieLearn では、問題は固定された文章ではなく<strong>関数</strong>です。
+</p>
+
+<pre><code>def generate(data):   # 今回の問題パラメータと正解を「生成」する
+def parse(data):      # 学習者の入力を構造化する
+def grade(data):      # 正解と比較し、部分点とフィードバックを返す</code></pre>
+
+<div class="box term">
+<span class="t">借りるべき思想：1個の課題定義から、多数の variant（変種）を生成する</span>
+<p>
+<code>seed</code>（乱数の種）を変えることで、同じ課題から違う問題を作ります。
+</p>
+<ul>
+<li><strong>Linux</strong>：初期ディレクトリ名・対象ファイル名・検索語を seed から変える</li>
+<li><strong>Git</strong>：ブランチ名・分岐位置・目標グラフを変える</li>
+</ul>
+<p style="margin-bottom:0">
+効果は<strong>「同じ概念でも、丸暗記では突破できなくなる」</strong>こと。
+そして <strong>seed を進捗に保存すれば、同じ問題を再現できます</strong>（復習に使える）。
+</p>
+</div>
+
+
+<h2 id="p6"><span class="num">6</span>教育の標準規格<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<p>
+教育の世界には、<strong>システム同士がデータをやりとりするための国際規格</strong>があります。
+ほとんどは個人には不要ですが、<strong>「学習をどう記録するか」の考え方の宝庫</strong>です。
+</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>規格</th><th>何を標準化しているか</th><th>個人での価値</th></tr></thead>
+<tbody>
+<tr><td><strong>xAPI</strong>（Tin Can）</td><td>学習イベントを <strong><code>actor</code>（誰が）／<code>verb</code>（何をした）／<code>object</code>（何に対して）</strong> ＋ Result／Context／Timestamp で表現する</td><td class="ok"><strong>大いにある</strong>。下で詳述</td></tr>
+<tr><td><strong>SCORM</strong>（1.2 / 2004）</td><td>教材をZIPにまとめ、LMSと進捗をやりとりする方法</td><td class="ng">低。LMSへ納品しないなら不要</td></tr>
+<tr><td><strong>cmi5</strong></td><td>xAPIのプロファイル（起動・セッション・完了の約束事）</td><td class="ng">低</td></tr>
+<tr><td><strong>LTI 1.3</strong></td><td>LMSを<code>Platform</code>、外部ツールを<code>Tool</code>として <code>Context／User／Role／Resource link／Launch／Result</code> を交換</td><td class="ng">今は不要。OIDC＋JWT＋OAuth2＋HTTPSが必要</td></tr>
+<tr><td><strong>QTI</strong></td><td>問題・テストの記述形式</td><td class="ng">低。選択式問題を大量に作るなら再検討</td></tr>
+<tr><td><strong>H5P</strong></td><td><code>Content type／Library／Content instance／Attempt result</code></td><td class="ng"><strong>既存ゲームを .h5p に詰める仕組みではない。</strong>ラッパー開発が必要</td></tr>
+<tr><td><strong>Open Badges</strong></td><td>修了証・バッジを、検証可能な形で表現する</td><td class="q">将来、他者に配るなら</td></tr>
+<tr><td><strong>Caliper Analytics</strong></td><td>学習分析イベント</td><td class="ng">低</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>6.1 xAPI だけは借りる価値がある</h3>
+
+<div class="box term">
+<span class="t">xAPI の中核：actor / verb / object</span>
+<p>
+「誰が・何をした・何に対して」という<strong>英語の文の形</strong>で学習を記録します。
+</p>
+<pre style="margin-bottom:0"><code>{
+  "actor":  "local:8f86c44d",                    ← 誰が
+  "verb":   "completed",                         ← 何をした
+  "object": "unit:web.dns.authoritative-server", ← 何に対して
+  "result": { "durationSeconds": 1080 },         ← 結果
+  "context":{ "course": "web-foundations",
+              "contentVersion": 1 },             ← 文脈
+  "timestamp": "2026-08-23T08:18:00.000Z"        ← いつ
+}</code></pre>
+</div>
+
+<div class="box why">
+<span class="t">なぜイベントで記録するのが優れているのか ── 決定的な理由</span>
+<p>
+やりがちなのは、こう書くことです。
+</p>
+<pre><code>// ❌ 状態を上書きする
+progress["web.dns"] = { completed: true };</code></pre>
+<p>
+これでも動きます。しかし<strong>「いつ完了したか」「何回挑戦したか」「何日に学習したか」が
+どこにも残りません。</strong>
+</p>
+<p>
+あとで「ストリーク（連続学習日数）を出したい」と思っても、
+<strong>元データが無いので計算できません。</strong>
+</p>
+<p style="margin-bottom:0">
+イベントとして貯めておけば、<strong>ストリークも、総学習時間も、分野別の割合も、
+進捗率も、あとから何度でも再計算できます。</strong>
+集計方法を変えたくなっても、過去のデータを失いません。
+<strong>これが「イベントソーシング」という考え方です。</strong>
+</p>
+</div>
+
+<h4>使う動詞は9個だけに絞る</h4>
+
+<pre><code>opened            開いた
+started           始めた
+completed         完了した
+attempted         挑戦した
+passed            合格した
+failed            失敗した
+reviewed          復習した
+bookmarked        しおりを付けた
+session-completed 学習セッションが終わった</code></pre>
+
+<div class="box warn">
+<span class="t">やらないこと</span>
+<p style="margin-bottom:0">
+<strong>xAPI互換の LRS（Learning Record Store）を作るのは過剰です。</strong>
+LRS API、IRI語彙、OAuth、完全な xAPI 検証までは実装しません。
+<strong>「xAPI-inspired（xAPIに着想を得た）」と明記して、形だけ借ります。</strong>
+</p>
+<p style="margin-bottom:0; margin-top:.6rem">
+それでも利点は大きい。<strong>ゲーム・記事・SRS・かけらが、同じ形式で連携できる</strong>ようになります。
+</p>
+</div>
+
+
+<h2 id="p7"><span class="num">7</span>最小ドメインモデル<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<p>
+第4〜6章で見たものを、<strong>個人ひとりの学習サイト向けに削ぎ落とした</strong>結果です。
+独立した3つの調査が、ほぼ同じ結論に到達しました。
+</p>
+
+<h3>7.1 完成形</h3>
+
+<pre><code>Course（コース）
+└── Chapter（章）
+    └── Unit（学習の単位）  ← 記事も演習も成果物も、すべてこれ
+        ├── kind: article    読む   完了＝手動で「読んだ」
+        ├── kind: exercise   試す   完了＝ゲームからのイベント／得点
+        └── kind: project    作る   完了＝チェックリスト＋URL
+
+    Unit が共通して持つもの:
+      id              ← 不変。進捗はこれで参照する（絶対に変えない）
+      order           ← 表示順
+      prerequisites   ← 前提となる Unit（学習可能性）
+      estimatedMinutes← 想定所要時間
+      difficulty      ← 難易度
+      outcomes        ← 到達目標（何ができるようになるか）
+      completion      ← 完了条件の定義
+      status          ← draft / published / archived
+      contentVersion  ← 内容の版番号
+
+LearnerState（学習者の状態）  ← ここが既存SSGに無い部分。自分で作る
+├── UnitProgress    完了状態・最終アクセス・試行回数
+├── ReviewCard      復習カード（いつ復習すべきか）
+├── Bookmark        しおり（unitId + 見出しID + メモ）
+├── ChecklistState  成果物の完了項目
+└── LearningEvent   actor / verb / object / result / context / timestamp</code></pre>
+
+<div class="box term">
+<span class="t">この設計の核心：記事も演習も作品も、同じ Unit</span>
+<p>
+分けるのは<strong><code>kind</code>（種類）と完了条件だけ</strong>です。
+順序・前提・所要時間といった性質は<strong>全部共通</strong>で持たせます。
+</p>
+<p style="margin-bottom:0">
+こうすると、<strong>「DNSの記事を読む → Linuxゲームで手を動かす → 自分のサイトを作る」</strong>という
+学習の流れを、<strong>一本の道すじとして並べられます。</strong>
+種類が違うから別のページに置く、という必要がなくなります。
+</p>
+</div>
+
+<div class="box danger">
+<span class="t">これによって分かった、現在の構造上の問題</span>
+<p>
+いまの <code>03.learning_site/index.html</code> は
+<strong>「Case Files（学習記録）」と「Exhibition（制作物展示室）」</strong>の2セクションに分かれています。
+</p>
+<p style="margin-bottom:0">
+モデルから見ると<strong>これは分ける必要がありません。</strong>
+そして興味深いことに、<code>03.learning_site/README.md</code> に書かれた
+あなた自身の言葉 ──<strong>「学習記録もそれ自体が制作物、という思想で両方を載せる」</strong>──
+のほうが、<strong>モデルと一致しています。</strong>
+思想は正しかったのに、実装が思想に追いついていなかった、という状態です。
+</p>
+</div>
+
+<h3>7.2 演習を作り込むなら、さらに細かく</h3>
+
+<p>Exercism 由来の内訳を <code>Unit</code> に足します。</p>
+
+<pre><code>Exercise（演習）
+├── Narrative / Instructions   学習者向けの本文・物語
+├── Prerequisites              解除条件
+├── InitialState               開始時の状態
+├── Generator(seed)            variant（変種）の生成
+├── AllowedActions             許可する操作
+├── GoalConstraints            ★ 正解＝到達すべき状態の条件
+├── Tests / Grader             判定器
+├── Hints                      段階的なヒント
+├── Exemplar                   模範解答（CIでテストを通ることを確認）
+└── Rewards                    XP・バッジ</code></pre>
+
+<h3>7.3 要素ごとの必要度 ── 何を作り、何を作らないか</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>要素</th><th>必要度</th><th>理由・備考</th></tr></thead>
+<tbody>
+<tr><td>コンテンツ構造（コース/章/節、順序）</td><td class="ok">必須</td><td>Starlight の sidebar が提供してくれる</td></tr>
+<tr><td>前提関係（prerequisites）</td><td class="ok">必須</td><td>ただし<strong>強制ロックではなく警告</strong>に</td></tr>
+<tr><td>コンテンツ種別（読む/やる/作る）</td><td class="ok">必須</td><td>Moodle の Activity/Resource 分離に由来</td></tr>
+<tr><td>完了条件（種別ごとに異なる）</td><td class="ok">必須</td><td>4.3節のルール1</td></tr>
+<tr><td><strong>安定ID</strong></td><td class="ok">必須</td><td><strong>並べ替えで進捗が消えないため。最重要</strong></td></tr>
+<tr><td>下書き / 公開の区別</td><td class="ok">必須</td><td><code>status: draft | published | archived</code></td></tr>
+<tr><td>学習イベントログ</td><td class="ok">必須</td><td>あとから再計算できる（6.1節）</td></tr>
+<tr><td>進捗（完了状態・最終位置）</td><td class="ok">必須</td><td>IndexedDB へ</td></tr>
+<tr><td><strong>エクスポート／インポート</strong></td><td class="ok">必須</td><td><strong>ブラウザ保存は永続保証がないため</strong></td></tr>
+<tr><td>想定時間</td><td class="q">あると良い</td><td>「今日やること」の生成に使う</td></tr>
+<tr><td>難易度</td><td class="q">あると良い</td><td></td></tr>
+<tr><td>復習カード（SRS）</td><td class="q">あると良い</td><td>9.5節</td></tr>
+<tr><td>しおり（bookmark）</td><td class="q">あると良い</td><td></td></tr>
+<tr><td>チェックリスト</td><td class="q">あると良い</td><td>成果物の完了判定に</td></tr>
+<tr><td>用語集（glossary）</td><td class="q">あると良い</td><td></td></tr>
+<tr><td>ヒント（と閲覧イベント）</td><td class="q">あると良い</td><td><strong>ヒント閲覧は「失敗」ではなくイベント</strong></td></tr>
+<tr><td>variant生成（seed）</td><td class="q">あると良い</td><td>丸暗記防止</td></tr>
+<tr><td>バッジ／実績</td><td class="q">あると良い</td><td>「条件を満たしたら award イベントを生成」</td></tr>
+<tr><td>ストリーク</td><td class="q">注意</td><td><strong>かけらの設計思想と衝突しうる。9.6節</strong></td></tr>
+<tr><td>進捗バー</td><td class="q">あると良い</td><td><strong>廃止済みや任意課題を分母に入れるか明文化が必要</strong></td></tr>
+<tr><td>受講登録（Enrollment）</td><td class="ng">不要</td><td>学習者が一人</td></tr>
+<tr><td>ユーザー／認証</td><td class="ng">不要</td><td><strong>入れた瞬間に責任が発生する（4.3節ルール5）</strong></td></tr>
+<tr><td>採点台帳／成績</td><td class="ng">不要</td><td></td></tr>
+<tr><td>修了証／決済</td><td class="ng">不要</td><td></td></tr>
+<tr><td>コホート／教師ロール</td><td class="ng">不要</td><td></td></tr>
+<tr><td>提出期限</td><td class="ng">不要</td><td></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>7.4 実装するときに守るルール（一覧）</h3>
+
+<div class="box">
+<ol style="margin-bottom:0">
+<li><strong>教材の定義とゲームエンジンを分離する</strong></li>
+<li><strong>ステージ番号ではなく、安定IDで進捗を保存する</strong></li>
+<li><strong>入力・実行・判定を分離する</strong>（第8章で詳述）</li>
+<li><strong>正解は可能な限り「実行後の状態」で判定する</strong>（第8章）</li>
+<li>特定の操作を学ばせたい場合だけ、操作の証拠を追加で要求する</li>
+<li><strong>completion（完了）／score（得点）／XP／achievement（実績）を別概念にする</strong></li>
+<li><strong>ヒント閲覧は失敗ではなく、イベントとして扱う</strong></li>
+<li>教材を追加したとき、既存の進捗率の分母が突然変わる問題に対応する</li>
+<li><strong>模範解答が必ずテストを通ることを CI で確認する</strong></li>
+<li>作者向けの設計意図と、学習者向けの本文を別ファイルにする</li>
+<li><strong><code>order</code>（表示順）と <code>prerequisites</code>（学習可能性）を混同しない</strong></li>
+<li><strong>Markdown 本文に進捗状態を書かない</strong></li>
+<li><code>contentVersion</code> を上げても完了を取り消さず、「更新あり」と表示する</li>
+</ol>
+</div>
+
+<h2 id="p8"><span class="num">8</span>演習と正誤判定<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<p>
+あなたは学習ゲームを2本自作しています。この章は<strong>「教材として正しい判定とは何か」</strong>の話です。
+ここには、世界の実装が共通して到達している<strong>一つの原理</strong>があります。
+</p>
+
+<h3 id="p8-1">8.1 原理：文字列一致ではなく、状態一致</h3>
+
+<div class="cols">
+<div class="card" style="border-left:4px solid var(--danger-line)">
+<h4 style="margin-top:0" class="ng">✗ 悪い判定</h4>
+<pre style="margin-bottom:.6rem"><code>input === "cp docs/a.txt atelier/b.txt"</code></pre>
+<p class="mini" style="margin-bottom:0">
+<strong>一つの手順しか認めない。</strong><br>
+学習者が正しく目的を達成しても、書き方が違えば「不正解」になる。
+</p>
+</div>
+<div class="card" style="border-left:4px solid var(--good-line)">
+<h4 style="margin-top:0" class="ok">✓ 望ましい判定</h4>
+<pre style="margin-bottom:.6rem"><code>fileExists("/home/student/atelier/b.txt") &&
+fileContent("/home/student/atelier/b.txt")
+  === originalContent</code></pre>
+<p class="mini" style="margin-bottom:0">
+<strong>「どうなったか」だけを見る。</strong><br>
+やり方は問わない。
+</p>
+</div>
+</div>
+
+<p>状態で判定すると、次がすべて正解になります。</p>
+
+<ul>
+<li>相対パス（<code>atelier/b.txt</code>）でも絶対パス（<code>/home/student/atelier/b.txt</code>）でも</li>
+<li><code>./atelier/b.txt</code> のような書き方でも</li>
+<li>先に <code>cd atelier</code> してからコピーしても</li>
+<li>引用符の有無が違っても</li>
+<li><strong>まったく別の手順で同じ結果に到達しても</strong></li>
+</ul>
+
+<div class="box why">
+<span class="t">なぜこれが「教材として正しい」のか</span>
+<p style="margin-bottom:0">
+学習の目的は<strong>「特定の文字列を打てるようになること」ではなく、
+「目的を達成できるようになること」</strong>だからです。<br>
+文字列一致で判定すると、学習者は<strong>「正解の呪文を覚える」</strong>ことを学んでしまいます。
+それは目的と違います。
+</p>
+</div>
+
+<h4>ただし「このコマンドを覚えてほしい」場合は</h4>
+
+<p>
+学習目標が「<code>cp</code> コマンドを知ること」なら、状態だけでは不十分です。
+その場合は<strong>操作の証拠</strong>を追加で要求します。
+</p>
+
+<pre><code>goal: {
+  state:    { fileExists: "/atelier/b.txt" },   ← 到達すべき状態
+  evidence: { commandUsed: "cp" }               ← 使ってほしい操作
+}</code></pre>
+
+<div class="box term">
+<span class="t">この章の結論を一文で</span>
+<p style="margin-bottom:0" style="font-size:1.05rem">
+<strong>正解 ＝ 最終状態の制約 ＋（学習目標に必要な場合のみ）操作の証拠</strong>
+</p>
+</div>
+
+<h3>8.2 判定を三層に分ける</h3>
+
+<pre><code>1. 構文受付   parse("cp docs/a.txt atelier/b.txt")  →  AST（構造化データ）
+                  ↓
+2. 実行       nextState = execute(previousState, ast)
+                  ↓
+3. 課題判定   grade(nextState, goalConstraints)</code></pre>
+
+<div class="box term">
+<span class="t">用語：AST（抽象構文木）</span>
+<p style="margin-bottom:0">
+文字列を、プログラムが扱いやすい<strong>構造</strong>に変換したもの。
+<code>"cp a.txt b.txt"</code> を
+<code>{command:"cp", args:["a.txt","b.txt"]}</code> のような形にするイメージです。
+</p>
+</div>
+
+<div class="box">
+<span class="t">現在の Linux Story Quest は、すでに良い方向にある</span>
+<p style="margin-bottom:0">
+<code>stageSeed</code> が課題ごとの <code>check(ctx)</code> を持ち、
+コマンド実行結果の context で判定しています（<code>script.js:67</code>）。<br>
+<strong>改善点は、<code>ctx.name === "..."</code> を主条件にしすぎず、
+仮想ファイルシステムの「実行後の状態」を独立した判定器（grader）に渡すこと。</strong>
+</p>
+</div>
+
+<h4>テスト結果は true/false にしない</h4>
+
+<pre><code>{
+  testId:   "file-created",
+  passed:   true,
+  message:  "plan.txt が atelier に作成された",   ← 学習者に見せる説明
+  expected: { path: "/home/student/atelier/plan.txt" },
+  actual:   { exists: true },
+  weight:   1                                     ← 部分点の重み
+}</code></pre>
+
+<p>
+<strong>フィードバックを返せるかどうかが、教材としての質を分けます。</strong>
+「不正解」とだけ言われるのと、「ファイルは作られましたが、中身が違います」と言われるのでは、
+学習効果がまったく違います。
+</p>
+
+<h3 id="p8-2">8.3 Exercism 方式をブラウザだけで実現する</h3>
+
+<pre><code>exercise.json
+     ↓
+stub（穴埋め用の雛形） + 学習者のコード
+     ↓
+sandboxed iframe または Web Worker（隔離された実行環境）
+     ↓
+tests.js
+     ↓
+TestResult[]
+     ↓
+完了判定・フィードバック・進捗保存</code></pre>
+
+<div class="tw">
+<table>
+<thead><tr><th>要素</th><th>推奨</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td>アサーション（判定文）</td><td>Chai、または <code>equal/deepEqual/ok/match</code> だけの自作小型assert</td><td>小さく済む</td></tr>
+<tr><td>開発時の教材テスト</td><td>Vitest / Web Test Runner</td><td><strong>教材作者が使う道具。学習者向けrunnerとは別</strong></td></tr>
+<tr><td>無限ループ対策</td><td><strong>Web Worker を時間制限で terminate</strong></td><td>学習者のコードが止まらないと画面が固まる</td></tr>
+<tr><td>DOM課題</td><td><code>sandbox</code>属性付き iframe 内で実行</td><td>本体を壊さない</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box danger">
+<span class="t">公開して他人のコードを実行するなら</span>
+<p style="margin-bottom:0">
+<strong>同一オリジンの Worker をセキュリティ境界だと思ってはいけません。</strong>
+ネットワーク・ストレージ・親画面への影響を分離する必要があります。
+自分だけが使う間は問題になりませんが、公開時には必ず見直してください。
+</p>
+</div>
+
+<h3 id="p8-3">8.4 Git の判定 ── Learn Git Branching の設計</h3>
+
+<div class="box term">
+<span class="t">Learn Git Branching とは</span>
+<p style="margin-bottom:0">
+ブラウザで Git のブランチ操作を学べる、100%クライアントサイドの学習ゲーム。
+<strong>あなたの Git Dungeon と目的が重なる、世界的に有名な既存教材</strong>です。
+MIT ライセンス。日本語対応もあります。
+</p>
+</div>
+
+<p>各レベルが持っているデータ:</p>
+
+<ul>
+<li><code>startTree</code> ── 開始時のコミットツリー</li>
+<li><code>goalTreeString</code> ── <strong>目標のコミットツリー</strong></li>
+<li><code>solutionCommand</code> ── 模範解答のコマンド列</li>
+<li>説明・ヒント</li>
+</ul>
+
+<div class="box why">
+<span class="t">本質</span>
+<p style="margin-bottom:0">
+<strong>模範コマンド列を再現したかどうかではなく、
+「現在のリポジトリの状態が、目標のグラフと一致するか」で判定している。</strong><br>
+8.1節の原理と、まったく同じです。
+</p>
+</div>
+
+<h4>現在の Git Dungeon の問題</h4>
+
+<pre><code>// 真偽値の連鎖で16段階を判定している（script.js:120, 176）
+firstCommit, featureCreated, navCommit, mergedFeature,
+conflictStarted, conflictResolved, pushed</code></pre>
+
+<div class="box danger">
+<span class="t">何が問題か</span>
+<p>
+「コマンドの結果が Git として正しいか」を、<strong>自作コード自身が決めています。</strong>
+つまり<strong>教材の正しさを、別の実装で検証できません。</strong>
+</p>
+<p style="margin-bottom:0">
+そして<strong>あなたの Git 理解が間違っていた場合、ゲームも一緒に間違います。</strong>
+学習用の教材でこれは致命的です。誰も間違いに気づけません。
+</p>
+</div>
+
+<h4>置き換えるモデル</h4>
+
+<pre><code>repoState = {
+  commits: { C0: { parents: [],     tree: {...} },
+             C1: { parents: ["C0"], tree: {...} } },
+  refs:    { "refs/heads/main": "C1",
+             "refs/heads/feature/nav": "C2" },
+  HEAD:    { symbolic: "refs/heads/main" },
+  index:   {...},        ← ステージングエリア
+  worktree:{...},        ← 作業ツリー
+  remotes: {...},
+  merge:   { inProgress: false, conflicts: [] }
+}</code></pre>
+
+<p>そして課題側は<strong>制約</strong>で書きます。</p>
+
+<pre><code>goal: {
+  branch: "main",
+  refs:   { "feature/nav": { mergedInto: "main" } },
+  worktree: { clean: true },
+  requiredFiles: ["nav.js"]
+}</code></pre>
+
+<h4>グラフを比較するときの注意</h4>
+
+<div class="box warn">
+<span class="t">正規化が必要</span>
+<ul>
+<li>コミットIDそのものを比べない（<strong>生成順または構造で再ラベルする</strong>）</li>
+<li>親子関係を比較する</li>
+<li>ブランチ・タグが指すノードを比較する</li>
+<li>HEAD・index・worktree・コンフリクト状態を比較する</li>
+<li><strong>無関係な dangling commit（どこからも参照されない孤児コミット）を許すかは、課題ごとに指定する</strong></li>
+</ul>
+<p style="margin-bottom:0">
+Learn Git Branching でも、<strong>見た目上は同等でも余分な dangling commit があると
+不一致になる問題が報告されています</strong>（issue #99）。
+だから<strong>完全一致だけでなく、制約ベースの比較も持つべき</strong>です。
+</p>
+</div>
+
+<h3>8.5 Git エンジンの選択 ── 調査が割れた点</h3>
+
+<p>
+2つの調査が違う結論を出しました。<strong>原理（状態で判定する）は一致しています。</strong>
+</p>
+
+<div class="tw">
+<table>
+<thead><tr><th></th><th>調査A の主張</th><th>調査B の主張</th></tr></thead>
+<tbody>
+<tr><td>結論</td><td><strong>isomorphic-git へ全面置換</strong></td><td><strong>小型の自作リポジトリモデルを継続</strong></td></tr>
+<tr><td>理由</td><td>実コミット・index・refs を正とできる。<strong>教材の正しさを別実装で検証できる</strong></td><td><strong>本物のGitを動かすより学習目標を制御しやすい。</strong>Learn Git Branching も独自ツリーモデル</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box term">
+<span class="t">裁定：isomorphic-git を採る。ただし判定は制約ベースで書く</span>
+<p>
+両者は排他ではありません。<strong>isomorphic-git をエンジンにし、目標は制約として表現する</strong>のが統合案です。
+</p>
+<p style="margin-bottom:0">
+決め手は<strong>「これが学習サイトである」</strong>こと。
+自作モデルだと、自分の Git 理解の誤りがそのままゲームの誤りになります。
+実オブジェクトを使えば、<strong>CI（自動テスト）で本物の git と付き合わせて検証できます。</strong>
+</p>
+</div>
+
+<pre><code>git commit -m "..."
+      ↓  薄い「許可リスト型アダプター」（自作。受け付けるコマンドを限定する）
+git.commit({ fs, dir, message, author })      ← isomorphic-git
+      ↓
+statusMatrix() / currentBranch() / log() / resolveRef() で実状態を検査
+      ↓
+goalConstraints と突き合わせる</code></pre>
+
+<div class="tw">
+<table>
+<thead><tr><th>名前</th><th>ライセンス／状況</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td><strong>isomorphic-git</strong></td><td><strong>MIT</strong>・v1.41.9（2026-08更新）</td><td class="ok"><strong>採用</strong>。純JavaScript、静的ホスティング可</td></tr>
+<tr><td><strong>@isomorphic-git/lightning-fs</strong></td><td>MIT・v4.7.0（2026-08）</td><td class="ok"><strong>採用</strong>。IndexedDBに永続化。⚠ 完全なNode <code>fs</code>ではない。操作後に <code>fs.flush()</code> が必要</td></tr>
+<tr><td>wasm-git</td><td><strong>GPL-2.0＋linking exception</strong></td><td class="ng">pthreads版 約920KB（COOP/COEP必須）／JSPI版 約805KB／Asyncify版 約1.5MB。<strong>状態判定が難しい</strong></td></tr>
+<tr><td>@gitgraph/js</td><td>MIT・<strong>v1.4.0（最終公開 約5年前）</strong></td><td class="ng">更新停滞。<strong>現在の描画UIに <code>git.log()</code> を流すほうがよい</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box warn">
+<span class="t">isomorphic-git の制約（正直に）</span>
+<ul style="margin-bottom:0">
+<li><strong>merge に複数merge baseや一部戦略の制限がある</strong></li>
+<li><strong>外部GitHubへの clone/push は CORS 制約を受ける</strong>（公式に CORS proxy が案内されている）</li>
+<li><strong>PAT（アクセストークン）をゲームに入力・保存させる設計は避ける</strong></li>
+<li>→ <strong><code>push</code> 教材は、ブラウザ内の模擬リモートにするか、通信部分だけ演出として残す</strong></li>
+</ul>
+<p style="margin-bottom:0; margin-top:.7rem">
+ここで「本物」と呼べるのは<strong>「Gitのオブジェクト・インデックス・参照・コミット履歴が実物である」</strong>という意味であり、
+<strong>Git CLI 全体を再実装できるという意味ではありません。</strong>
+</p>
+</div>
+
+<h3>8.6 Linux は自作を続ける</h3>
+
+<div class="box term">
+<span class="t">両方の調査が一致して「自作継続」を推奨しました</span>
+<p>理由が説得力あるものでした。</p>
+<ul style="margin-bottom:0">
+<li><strong>必要なコマンド集合を一貫して置き換えられる、成熟した純JavaScript版 GNU coreutils 一式は存在しない</strong>（調べた結果、確認できなかった）</li>
+<li><strong>本格的な Bash パーサを入れると、構文は認識できてもパイプ・変数展開・glob・subshell・終了コードを実行できないという、別の不整合が生じる</strong></li>
+<li>現在のゲームは汎用シェルではなく、ステージが要求する構文が限定されている</li>
+</ul>
+</div>
+
+<p>代わりにやるべきこと:</p>
+
+<ol>
+<li><strong><code>runCommand()</code> を DOM 操作から切り離して純関数に近づける</strong></li>
+<li><strong>Vitest でテストを書く</strong>（正解例だけでなく、タイプミス・存在しないパス・権限不足・危険なオプションも）</li>
+<li>引用符対応が必要になったら <code>tokenize()</code> を <strong>shell-quote</strong>（MIT・v1.10.0）に</li>
+<li>将来「実シェル」をやりたくなったら <strong>Bashkit</strong>（MIT・0.x）を実験モードで</li>
+</ol>
+
+<div class="box danger">
+<span class="t">ブラウザで本物のLinuxを動かす選択肢 ── 罠に注意</span>
+<div class="tw" style="margin:.7rem 0 0">
+<table>
+<thead><tr><th>名前</th><th>ライセンス</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td><strong>WebVM / CheerpX</strong></td><td>WebVMはApache-2.0だが<br><strong>CheerpX本体はプロプライエタリ</strong></td><td class="ng"><strong>Community条件では自己ホストとOEM再配布が不可。</strong>S3に置くには商用条件の確認が必要（1開発者あたり月額£100）。<strong>中核依存にしない</strong></td></tr>
+<tr><td>container2wasm</td><td>Apache-2.0</td><td class="ng">20数コマンドのために rootfs 全体を積むのは過剰</td></tr>
+<tr><td>busybox-wasm-wasi</td><td>BusyBox部分 GPL-2.0</td><td class="ng">約608KB・COOP/COEP必須。<code>df</code> <code>du</code> <code>tar</code> <code>ping</code> が不足</td></tr>
+<tr><td>v86</td><td>BSD-2-Clause</td><td class="ng">数十MB級イメージ。教材設計よりVMの起動・永続化に時間を取られる</td></tr>
+</tbody>
+</table>
+</div>
+<p style="margin-bottom:0; margin-top:.7rem">
+<strong>必要なのはOSの起動ではなく、限定的なファイル操作とコマンドの意味論です。</strong>
+</p>
+</div>
+
+<h3>8.7 tldr や man から正解を自動生成できるか → できない</h3>
+
+<div class="box warn">
+<p><strong>tldr</strong>（コマンドの実用例集・本文はCC BY-4.0）は機械処理しやすい形式ですが、
+<strong>代表例集であって、コマンドの完全な仕様でも正解集合でもありません。</strong></p>
+<p><strong>man</strong> は提供元もライセンスも一つではなく（Linux man-pages / GNU coreutils / Bash built-ins）、
+roff 形式の解析も必要です。さらに
+<strong>「文法上有効であること」と「このステージの学習目標を満たすこと」は別問題です。</strong></p>
+<p style="margin-bottom:0">
+→ <strong>ヒントや追加の例には使える。正解判定の自動生成には使わない。</strong>
+使うならビルド時に特定のコミットへ固定し、<strong>CC BY-4.0 の帰属表示</strong>を行うこと。
+</p>
+</div>
+
+
+<h2 id="p9"><span class="num">9</span>アーキテクチャ<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<p>ここからは具体的な設計です。<strong>そのまま実装できる粒度</strong>まで落とします。</p>
+
+<h3 id="p9-1">9.1 三案の比較</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>評価軸</th><th>案A：静的サイト完結</th><th>案B：静的＋薄いバックエンド</th><th>案C：Moodle等のLMS</th></tr></thead>
+<tbody>
+<tr><td>構成</td><td>Markdown＋ブラウザ保存<br>サーバーなし</td><td>進捗だけ外部サービスへ</td><td>PHP＋DB＋メール＋cron</td></tr>
+<tr><td>初期コスト</td><td class="ok">低</td><td>中（認証・DB・API・権限設計）</td><td class="ng">高</td></tr>
+<tr><td>運用コスト</td><td class="ok">最小</td><td>中（DB移行・障害対応・監視）</td><td class="ng">高（更新・バックアップ・セキュリティ）</td></tr>
+<tr><td>学習効果</td><td>個人用途には十分</td><td>複数端末・通知で向上</td><td>課題提出・採点では強いが一人には摩擦</td></tr>
+<tr><td>将来の公開</td><td class="ok">教材・作品の公開に非常に強い<br>（進捗は端末別）</td><td>アカウント付き公開に強い</td><td>本格的な受講管理に強い</td></tr>
+<tr><td>データ持ち出し</td><td class="ok">Markdown＋JSONで非常に良い</td><td>SQLite/Postgresなら良い</td><td class="q">独自バックアップ形式で重い</td></tr>
+<tr><td>無料運用</td><td class="ok">可能</td><td>小規模なら可能だが無料枠変更の影響</td><td class="ng">ソフトは無料でもサーバー費と保守時間</td></tr>
+<tr><td><strong>今回の適合度</strong></td><td class="ok"><strong>最適</strong></td><td>複数端末が必要になった時点で</td><td class="ng"><strong>過剰</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box term">
+<span class="t">結論：案A（Astro + Starlight による静的サイト完結型）</span>
+<p style="margin-bottom:0">
+教材は Markdown、作品・ゲームは同一サイト内の独立ページ、進捗は IndexedDB。
+<strong>サーバー・アカウント・同期は現段階では持ちません。</strong>
+</p>
+</div>
+
+<h4>案A で足りる条件（いま全部満たしている）</h4>
+<ul>
+<li>学習者は一人</li>
+<li>主に使う端末を決められる</li>
+<li>手動のJSONバックアップを許容できる</li>
+<li>教材や作品は公開してよい</li>
+<li><strong>成績証明・教師による採点・受講者管理が不要</strong></li>
+</ul>
+
+<h4>案B へ移る条件（＝それまでは作らない）</h4>
+<ul>
+<li>PCとスマートフォンの<strong>自動</strong>同期</li>
+<li>ログイン後にどの端末でも再開</li>
+<li>公開サイトで<strong>複数利用者</strong>の進捗を分離</li>
+<li>サーバー側通知・ランキング・提出物保存</li>
+<li>ブラウザデータ消去でも失われない自動バックアップ</li>
+</ul>
+
+<div class="tw">
+<table>
+<thead><tr><th>案Bの候補</th><th>利点</th><th>注意点</th></tr></thead>
+<tbody>
+<tr><td><strong>Cloudflare Workers + D1</strong><span class="tag">第一候補</span></td><td>SQLite互換。無料枠は1DB 500MB／アカウント合計5GB、Workers は1日10万リクエスト</td><td>配信先をCloudflareに寄せる場合</td></tr>
+<tr><td>Supabase</td><td>Postgres・Auth・行レベルセキュリティ・標準SQLエクスポート</td><td>無料枠は2プロジェクト／DB 500MB／5万MAU。<strong>低活動プロジェクトは休止対象</strong></td></tr>
+<tr><td>Firebase</td><td>認証導入が容易。Firestore無料枠 1GiB／日5万read・2万write</td><td><strong>データモデルとエクスポートがFirestore依存になる</strong></td></tr>
+<tr><td>PocketBase</td><td>SQLite・認証・API・管理画面が単一実行ファイル</td><td><strong>自分で常時稼働・更新・バックアップ。v1.0前は後方互換を保証しない</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="p9-2">9.2 ディレクトリ設計</h3>
+
+<pre><code>src/
+├── content.config.ts               ← frontmatterのスキーマ定義
+├── content/
+│   ├── courses/                    ← コースのメタ定義
+│   │   ├── web-foundations.yaml
+│   │   ├── linux.yaml
+│   │   └── git.yaml
+│   ├── docs/                       ← Starlightの教材本体
+│   │   └── courses/
+│   │       ├── web-foundations/
+│   │       │   ├── index.md
+│   │       │   └── 01-network/
+│   │       │       ├── 01-dns.md
+│   │       │       ├── 02-https.md
+│   │       │       └── 03-aws-project.md
+│   │       ├── linux/
+│   │       │   └── 01-basics/
+│   │       │       ├── 01-filesystem.md
+│   │       │       └── 02-story-quest.md
+│   │       └── git/
+│   │           └── 01-basics/
+│   │               └── 01-git-dungeon.md
+│   ├── review-cards/               ← 復習カード
+│   │   ├── dns.yaml
+│   │   └── git-basics.yaml
+│   └── glossary/                   ← 用語集
+│       ├── dns.yaml
+│       └── origin.yaml
+├── components/learning/            ← 学習サイト固有の部品
+│   ├── CompleteButton.astro           「完了」ボタン
+│   ├── ExerciseFrame.astro            演習の埋め込み枠
+│   ├── ReviewPanel.astro              復習パネル
+│   └── ProgressBar.astro              進捗バー
+├── lib/
+│   ├── learning-store/             ← IndexedDB
+│   │   ├── indexeddb.ts
+│   │   ├── export.ts
+│   │   └── migrations.ts
+│   ├── srs/                        ← 間隔反復（ts-fsrs）
+│   ├── events/                     ← xAPI風イベント
+│   └── habits/                     ← かけら連携
+└── pages/
+    ├── index.astro                 ← ヴィクトリア朝のトップ（通常のAstroページ）
+    ├── about.astro
+    ├── works.astro                 ← 作品一覧（ポートフォリオ）
+    ├── dashboard.astro             ← 今日やること
+    ├── review.astro                ← 復習キュー
+    └── settings/data.astro         ← エクスポート／インポート
+
+public/
+└── works/                          ← ゲーム・アプリを無改造で同居させる
+    ├── linux-story-quest/
+    ├── git-dungeon/
+    └── kakera/</code></pre>
+
+<div class="box danger">
+<span class="t">最重要のルール</span>
+<p style="margin-bottom:0">
+<strong>数字プレフィックス（<code>01-</code>、<code>02-</code>）は、人間とサイドバーのためのものです。
+進捗の主キーには絶対に使わないでください。</strong><br>
+進捗は必ず、変更しない <code>id</code> で参照します。
+そうしないと、<strong>記事を並べ替えた瞬間に、全部の進捗が消えます。</strong>
+</p>
+</div>
+
+<h3 id="p9-3">9.3 frontmatter ── 全フィールド解説</h3>
+
+<pre><code>---
+id: web.dns.authoritative-server
+title: 権威DNSサーバーとは
+description: DNS問い合わせが権威サーバーへ届くまでを理解する
+course: web-foundations
+chapter: network
+kind: article
+order: 20
+
+prerequisites:
+  - web.dns.overview
+
+estimatedMinutes: 15
+difficulty: beginner
+outcomes:
+  - 再帰DNSと権威DNSを区別できる
+  - digの結果から問い合わせ先を読める
+
+completion:
+  mode: manual
+  requiredChecklist: []
+  eventName: null
+  minimumScore: null
+
+review:
+  enabled: true
+  cardSet: dns-authoritative
+
+artifact: null
+status: published
+contentVersion: 1
+updatedAt: 2026-08-25
+---</code></pre>
+
+<div class="tw">
+<table>
+<thead><tr><th>フィールド</th><th>意味</th><th>なぜ必要か・注意点</th></tr></thead>
+<tbody>
+<tr><td><code>id</code></td><td><strong>不変の識別子</strong></td><td class="ok"><strong>最重要。進捗はこれで参照する。一度決めたら絶対に変えない。</strong>ファイル名やURLとは独立させる</td></tr>
+<tr><td><code>title</code></td><td>表示タイトル</td><td>変更してよい</td></tr>
+<tr><td><code>description</code></td><td>1行説明</td><td>一覧カードとSEO（検索エンジン向け）に使う</td></tr>
+<tr><td><code>course</code> / <code>chapter</code></td><td>所属</td><td>どのコースのどの章か</td></tr>
+<tr><td><code>kind</code></td><td><code>article</code>／<code>exercise</code>／<code>project</code></td><td class="ok"><strong>完了条件を決める。第7章の核心</strong></td></tr>
+<tr><td><code>order</code></td><td><strong>表示順</strong></td><td class="q"><strong><code>prerequisites</code>と混同しない。</strong>これは「並べる順番」だけ</td></tr>
+<tr><td><code>prerequisites</code></td><td><strong>学習可能性</strong></td><td class="q"><strong>「これを先に学んでおく必要がある」。強制ロックではなく警告を標準に</strong></td></tr>
+<tr><td><code>estimatedMinutes</code></td><td>想定所要時間</td><td>「今日やること」を20〜30分に収めるための入力値</td></tr>
+<tr><td><code>difficulty</code></td><td>難易度</td><td><code>beginner</code>／<code>intermediate</code>／<code>advanced</code></td></tr>
+<tr><td><code>outcomes</code></td><td><strong>到達目標</strong></td><td>「何ができるようになるか」を書く。<strong>教材を書くときの指針になる</strong></td></tr>
+<tr><td><code>completion.mode</code></td><td>完了判定の方式</td><td><code>manual</code>／<code>checklist</code>／<code>event</code>／<code>score</code></td></tr>
+<tr><td><code>review.enabled</code><br><code>review.cardSet</code></td><td>復習カードの有無</td><td>SRS（9.5節）で使う</td></tr>
+<tr><td><code>artifact</code></td><td>成果物の情報</td><td>リポジトリURL・デモURL・ライセンス</td></tr>
+<tr><td><code>status</code></td><td><strong>公開状態</strong></td><td class="ok"><code>draft</code>（下書き）／<code>published</code>／<code>archived</code>。<strong>書きかけを公開しない仕組み</strong></td></tr>
+<tr><td><code>contentVersion</code></td><td>内容の版番号</td><td class="q"><strong>上げても完了を取り消さない。「更新あり」と表示するだけ</strong></td></tr>
+<tr><td><code>updatedAt</code></td><td>更新日</td><td></td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>演習の場合</h4>
+<pre><code>kind: exercise
+completion:
+  mode: event                       ← ゲームからのイベントで完了
+  eventName: quest.completed
+exercise:
+  launch: /works/linux-story-quest/  ← 起動先
+  attemptLimit: null                 ← 挑戦回数の制限（nullは無制限）
+  passRequired: true</code></pre>
+
+<h4>成果物の場合</h4>
+<pre><code>kind: project
+completion:
+  mode: checklist                    ← チェックリストで完了
+  requiredChecklist:
+    - deployed                          デプロイした
+    - readme-written                    READMEを書いた
+    - retrospective-written             振り返りを書いた
+artifact:
+  repository: https://github.com/example/project
+  demo: /works/project/
+  license: MIT</code></pre>
+
+<h3 id="p9-4">9.4 進捗データ ── 全フィールド解説</h3>
+
+<h4>保存先の使い分け</h4>
+
+<div class="tw">
+<table>
+<thead><tr><th>保存先</th><th>保存するもの</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td><code>localStorage</code></td><td>テーマ、サイドバー開閉、最後に開いたコース</td><td><strong>失っても困らないUI設定だけ</strong></td></tr>
+<tr><td><strong><code>IndexedDB</code></strong></td><td><strong>完了状況・チェック項目・SRSカード・復習履歴・しおり・イベントログ</strong></td><td>構造化データ・索引・非同期。<strong>進捗は必ずこちら</strong></td></tr>
+<tr><td>JSONファイル</td><td>バックアップ・端末移行・将来のサーバー移行</td><td><strong>唯一の確実な保険</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box warn">
+<span class="t">IndexedDB の中も分ける</span>
+<p style="margin-bottom:0">
+巨大な単一JSONにせず、<code>units</code>／<code>reviewCards</code>／<code>events</code>／
+<code>bookmarks</code>／<code>dailyStats</code> を<strong>別のオブジェクトストア</strong>にします。<br>
+現在の「かけら」のデータも、統合時には localStorage から IndexedDB へ移行します。
+</p>
+</div>
+
+<h4>エクスポートJSONの完全な形</h4>
+
+<pre><code>{
+  "format": "spartan-learning-export",
+  "schemaVersion": 1,                        ← 形式の版。移行に必須
+  "exportedAt": "2026-08-25T10:30:00.000Z",
+  "profile": { "id": "local:8f86c44d", "timezone": "Asia/Tokyo" },
+
+  "units": {
+    "web.dns.authoritative-server": {
+      "status": "completed",                 ← 完了状態
+      "startedAt":  "2026-08-23T08:00:00.000Z",
+      "completedAt":"2026-08-23T08:18:00.000Z",
+      "lastOpenedAt":"2026-08-25T09:10:00.000Z",
+      "contentVersionCompleted": 1,          ← どの版で完了したか
+      "checklist": {},
+      "attempts": 1,                         ← 挑戦回数
+      "bestScore": null,
+      "updatedAt": "2026-08-25T09:10:00.000Z" ← 同期時の競合解決に使う
+    }
+  },
+
+  "reviewCards": {
+    "dns-authoritative:recursive-vs-authoritative": {
+      "state": "review",
+      "due": "2026-08-29T00:00:00.000Z",     ← 次に復習すべき日
+      "stability": 5.42,                     ← FSRSの内部値（記憶の強さ）
+      "difficulty": 4.71,                    ← FSRSの内部値（項目の難しさ）
+      "elapsedDays": 3,
+      "scheduledDays": 5,
+      "reps": 3,                             ← 復習回数
+      "lapses": 0,                           ← 忘れた回数
+      "lastReview": "2026-08-24T12:00:00.000Z"
+    }
+  },
+
+  "bookmarks": [
+    { "id": "bookmark:01J...",
+      "unitId": "web.dns.authoritative-server",
+      "headingId": "recursive-query",        ← 見出し単位で覚える
+      "note": "dig +traceで再確認",
+      "createdAt": "2026-08-23T08:12:00.000Z" }
+  ],
+
+  "events": [                                ← ここが再計算の元データ
+    { "id": "01J...", "actor": "local:8f86c44d",
+      "verb": "completed",
+      "object": "unit:web.dns.authoritative-server",
+      "result": { "durationSeconds": 1080 },
+      "context": { "course": "web-foundations", "contentVersion": 1 },
+      "timestamp": "2026-08-23T08:18:00.000Z" }
+  ]
+}</code></pre>
+
+<h4>データを失わないための設計</h4>
+
+<div class="box">
+<ul style="margin-bottom:0">
+<li><strong>初回完了後と30日ごとにJSONバックアップを促す</strong></li>
+<li><strong>インポート前にスキーマ検証し、自動スナップショットを作る</strong>（壊れたデータで上書きしないため）</li>
+<li>イベントは UUID で<strong>和集合</strong>（重複を除いて合体）</li>
+<li>同じ進捗レコードは <code>updatedAt</code> の新しい方を採用</li>
+<li>削除の同期に備え、将来は <code>tombstone</code>（削除済みの印）を使う</li>
+<li><code>navigator.storage.persist()</code> で永続化を依頼する（<strong>ただし許可されるとは限らない</strong>）</li>
+<li><strong>サーバー無しの自動複数端末同期は実現しない。</strong>案AではJSONの受け渡しで対応</li>
+</ul>
+</div>
+
+<h3 id="p9-5">9.5 間隔反復（SRS）</h3>
+
+<div class="box term">
+<span class="t">用語：SRS（Spaced Repetition System／間隔反復）</span>
+<p>
+<strong>「忘れかけたタイミングで復習すると、いちばん効率よく覚えられる」</strong>という
+認知科学の知見を、アルゴリズムにしたもの。
+</p>
+<p style="margin-bottom:0">
+覚えたてのものは翌日、定着してきたら1週間後、さらに定着したら1ヶ月後……というふうに
+<strong>復習の間隔を自動で伸ばしていきます。</strong>Anki が有名です。
+</p>
+</div>
+
+<div class="box term">
+<span class="t">用語：FSRS（Free Spaced Repetition Scheduler）</span>
+<p style="margin-bottom:0">
+SRSの最新世代のアルゴリズム。<strong>Anki公式も従来のSM-2の代替として採用</strong>しており、
+同じ時間でより多く保持できる可能性があると説明されています。
+標準の目標保持率は90%。<strong>保持率を上げるほど復習量が急増します。</strong>
+</p>
+</div>
+
+<div class="tw">
+<table>
+<thead><tr><th>名前</th><th>ライセンス／状況</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td><strong>ts-fsrs</strong></td><td><strong>MIT</strong>・v5.4.1（2026-06）</td><td class="ok"><strong>採用</strong>。TypeScript実装、Node 20以上</td></tr>
+<tr><td><strong>Anki本体</strong></td><td><strong>AGPL-3.0-or-later</strong>・26.05系（2026-06）</td><td class="ok"><strong>サイトにSRSを再実装しないなら、まずこれを別アプリとして使う</strong></td></tr>
+<tr><td>SM-2</td><td>—</td><td class="ng">実装は単純だが、新規に選ぶ理由は少ない</td></tr>
+<tr><td>Recall</td><td>MIT・v1.2.0（2026）</td><td class="q">非常に新しい小規模プロジェクト。実験用途</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box danger">
+<span class="t">最重要の注意：FSRSの対象は「レッスン」ではなく「思い出せる単位のカード」</span>
+<div class="cols" style="margin:.7rem 0 0">
+<div>
+<p class="mini ng" style="margin:0"><strong>✗ 悪い例</strong></p>
+<p style="margin:.3rem 0 0">「DNSの記事を復習する」</p>
+<p class="mini" style="margin:.3rem 0 0">→ 大きすぎて「思い出せたか」を判定できない</p>
+</div>
+<div>
+<p class="mini ok" style="margin:0"><strong>✓ 良い例</strong></p>
+<p style="margin:.3rem 0 0">「再帰DNSと権威DNSの違いを説明する」</p>
+<p class="mini" style="margin:.3rem 0 0">→ 思い出せたか自分で判定できる</p>
+</div>
+</div>
+<p style="margin-bottom:0; margin-top:.8rem">
+評価は <strong>Again（もう一度）／Hard（難しい）／Good（普通）／Easy（簡単）</strong> の4段階。<br>
+初期は標準パラメータのまま。<strong>数百件のレビュー履歴が貯まるまで、個人最適化はしない。</strong>
+</p>
+</div>
+
+<h3 id="p9-6">9.6 「ひとりで続ける」ための仕組み</h3>
+
+<p>
+ダッシュボードは<strong>「数値を増やすゲーム」ではなく「次に何をすればよいかを一画面で示すもの」</strong>にします。
+</p>
+
+<h4>「今日やること」の生成規則</h4>
+<ol>
+<li><strong>期限超過の復習カード</strong>（最優先）</li>
+<li>学習中レッスンの続き</li>
+<li>前提条件を満たした次の短いレッスン</li>
+<li>余裕があれば成果物の小タスク</li>
+</ol>
+
+<p>
+<code>estimatedMinutes</code> を足して<strong>20〜30分程度</strong>に収めます。
+そして<strong>復習の滞納が多い日は、新規教材を抑えます。</strong>
+（Ankiが「復習が滞っている場合は新規カードを増やさない」と勧める設計と同じ考え方）
+</p>
+
+<div class="box danger">
+<span class="t">⚠ ストリーク（連続日数）の扱い ── あなたの設計思想と衝突します</span>
+<p>
+調査中に、あなたの <code>docs/PRESENTATION.md:20</code> にこう書かれているのが見つかりました。
+</p>
+<p>
+<strong>「かけら」は連続日数や達成率を意図的に持たない設計。</strong>
+</p>
+<p>
+学習サイトを作ると、ほぼ必ず「ストリークを付けたい」と思います。
+しかし<strong>それはあなたが意識的に外した設計判断</strong>です。壊さないでください。
+</p>
+<p style="margin-bottom:0">もし付けるなら、次の条件を守ります。</p>
+<ul style="margin-bottom:0">
+<li>Asia/Tokyo の日付境界で集計する</li>
+<li>1回開いただけでなく、<strong>完了・復習・一定時間の学習</strong>を対象にする</li>
+<li><strong>現在のストリークより「過去30日の学習日数」を大きく表示する</strong></li>
+<li><strong>途切れを罰として扱わない</strong></li>
+<li><strong>連続日数のためだけの無意味な操作を促さない</strong></li>
+<li>ヒートマップを使うなら「連続記録」「未達」を強調せず、月ごとの学習量や分野の分布だけを表示する</li>
+</ul>
+</div>
+
+<h4>「かけら」の位置づけ直し</h4>
+
+<figure>
+<svg viewBox="0 0 720 200" role="img" aria-labelledby="kakera-t">
+<title id="kakera-t">学習イベントから、進捗集計とかけらの習慣記録が派生する関係図</title>
+<g font-family="sans-serif" font-size="12">
+  <rect x="15" y="70" width="130" height="52" rx="6" fill="none" stroke="#7a4b2a" stroke-width="2"/>
+  <text x="80" y="92" text-anchor="middle" font-weight="bold" fill="#7a4b2a">教材・演習</text>
+  <text x="80" y="110" text-anchor="middle" font-weight="bold" fill="#7a4b2a">・SRS</text>
+
+  <line x1="145" y1="96" x2="215" y2="96" stroke="#999" stroke-width="1.5" marker-end="url(#ar)"/>
+  <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6" fill="#999"/></marker></defs>
+
+  <rect x="215" y="70" width="130" height="52" rx="6" fill="#2f5d4f" fill-opacity="0.12" stroke="#2f5d4f" stroke-width="2"/>
+  <text x="280" y="101" text-anchor="middle" font-weight="bold" fill="#2f5d4f">学習イベント</text>
+
+  <line x1="345" y1="86" x2="425" y2="46" stroke="#999" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="345" y1="106" x2="425" y2="146" stroke="#999" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <rect x="425" y="22" width="130" height="46" rx="6" fill="none" stroke="#3a6b8f" stroke-width="2"/>
+  <text x="490" y="50" text-anchor="middle" font-weight="bold" fill="#3a6b8f">進捗集計</text>
+
+  <rect x="425" y="124" width="130" height="46" rx="6" fill="none" stroke="#b03a3a" stroke-width="2"/>
+  <text x="490" y="152" text-anchor="middle" font-weight="bold" fill="#b03a3a">かけら</text>
+
+  <line x1="555" y1="140" x2="600" y2="120" stroke="#999" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="555" y1="155" x2="600" y2="175" stroke="#999" stroke-width="1.5" marker-end="url(#ar)"/>
+  <text x="605" y="118" font-size="11" fill="#6b6355">学習した日の記録</text>
+  <text x="605" y="178" font-size="11" fill="#6b6355">60日後の振り返り</text>
+</g>
+</svg>
+<figcaption>かけらは進捗DBではなく、学習イベントから派生する「習慣・振り返りレイヤー」</figcaption>
+</figure>
+
+<div class="tw">
+<table>
+<thead><tr><th>担当</th><th>役割</th></tr></thead>
+<tbody>
+<tr><td>学習サイト</td><td>何を完了し、何を覚えているか</td></tr>
+<tr><td>SRS</td><td>次にいつ思い出すべきか</td></tr>
+<tr><td><strong>かけら</strong></td><td><strong>今日学習に向き合ったか、何を感じたか</strong></td></tr>
+<tr><td><strong>60日ルール</strong></td><td><strong>60日前の学習記録と現在を比較する振り返り</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box term">
+<span class="t">重要</span>
+<p style="margin-bottom:0">
+<strong>「かけら」が完了状態を別に保存すると、二重管理になります。</strong>
+学習イベントを入力として、日次の習慣記録を<strong>派生させます</strong>。
+自由記述の感想だけを、かけら固有のデータとして持ちます。<br><br>
+<strong>あなたが作った「60日後に読み返す」という時間ルールが、
+学習サイトの振り返り機能としてそのまま生きます。</strong>
+</p>
+</div>
+
+<h3 id="p9-7">9.7 学習サイト特有のUI</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>UI</th><th>推奨実装</th></tr></thead>
+<tbody>
+<tr><td>追従目次（scrollspy）</td><td class="ok"><strong>Starlightの右目次（自作不要）</strong></td></tr>
+<tr><td>読了進捗バー</td><td>Starlightのコンポーネント差し替え＋小さなCustom Element</td></tr>
+<tr><td>前後レッスン移動</td><td class="ok"><strong>Starlightのサイドバー順から自動生成</strong></td></tr>
+<tr><td>しおり</td><td>見出しID＋unit ID＋メモを IndexedDB へ</td></tr>
+<tr><td>チェックリスト</td><td class="q"><strong>Markdown上の初期値と、IndexedDB上の学習者状態を分離。</strong><code>remark-gfm</code>のタスクリストは無効化されたチェックボックスになるので、保存可能なものは専用コンポーネントにする</td></tr>
+<tr><td>コードのコピーボタン</td><td class="ok"><strong>Starlight標準のExpressive Code</strong>（MIT・キーボード操作と読み上げ通知つき）</td></tr>
+<tr><td>用語集</td><td><code>glossary</code>コレクションを作り、用語ページと初出リンクを生成</td></tr>
+<tr><td>脚注</td><td><code>remark-gfm</code></td></tr>
+<tr><td>ネタバレ折りたたみ</td><td class="ok"><strong><code>&lt;details&gt;&lt;summary&gt;</code>（JavaScript不要）</strong></td></tr>
+<tr><td>演習の埋め込み</td><td><strong>同一オリジンのページを優先。</strong>iframeなら<code>postMessage</code>で完了イベントを送る</td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>アクセシビリティ要件</h4>
+
+<div class="box">
+<ul style="margin-bottom:0">
+<li>完了・しおり・復習評価は<strong>すべてキーボードで操作可能</strong>に</li>
+<li>クリックできる <code>div</code> ではなく <strong><code>button</code> と <code>a</code></strong> を使う</li>
+<li>進捗更新は <strong><code>aria-live="polite"</code></strong> で読み上げソフトに通知</li>
+<li>サイドバーやダイアログを閉じたら、<strong>開いたボタンにフォーカスを戻す</strong></li>
+<li><strong>「正解」を色だけで表現しない</strong>（色覚特性への配慮）</li>
+<li>コードブロックの横スクロール領域をキーボードで操作可能に</li>
+<li>見出し階層を飛ばさない（h2の次にh4を置かない）</li>
+<li><strong>ゲーム内にも「ゲームを飛ばして文章版で学ぶ」経路を用意する</strong></li>
+</ul>
+</div>
+
+<h4>SPAで画面を切り替えるときの正しい手順</h4>
+
+<ol>
+<li>新しい画面を描画する</li>
+<li><code>document.title</code> を変更する</li>
+<li><strong><code>tabindex="-1"</code> を付けた新しい <code>h1</code> にフォーカスを移す</strong></li>
+<li>ページ上部へスクロールする</li>
+<li>保存完了など、フォーカス移動では伝わらない状態だけ <code>aria-live="polite"</code> で通知する</li>
+</ol>
+
+<div class="box warn">
+<span class="t">現在のコードで見つかった、実在するアクセシビリティの不具合</span>
+<p>
+<strong>「かけら」はかなり適切に実装されています。</strong>
+live region（<code>index.html:35</code>）、同一文の再通知（<code>main.js:46</code>）、
+通常ナビ後の <code>h1.focus()</code>（<code>main.js:126</code>）——どれも正しい。
+</p>
+<p style="margin-bottom:0">
+<strong>ただし <code>popstate</code>（ブラウザの戻る／進む）の処理（<code>main.js:194</code>）だけは、
+再描画とスクロールしかしておらず、見出しへのフォーカス移動がありません。</strong>
+<code>navigate()</code> と共通の関数にまとめるべきです。
+画面ごとの <code>document.title</code> 更新も追加候補です。
+</p>
+</div>
+
+<h2 id="p10"><span class="num">10</span>既製品は使えるか<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<p>
+あなたの第一希望は<strong>「もう良いものがあるなら、それを使いたい」</strong>でした。
+その答えを出します。
+</p>
+
+<div class="box term">
+<span class="t">結論</span>
+<p style="margin-bottom:0">
+<strong>「そのまま使える既製品」は存在します。ただし必要なのは完成LMSではなく、
+「教材の順序」と「独立アプリ」を静的に統合するコーススターターです。</strong><br>
+そして推奨は <strong>Starlight</strong>（Astro公式のドキュメント用ツールキット、MIT）。
+</p>
+</div>
+
+<h3>10.1 なぜ Starlight なのか ── 調査が割れた点の裁定</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>調査</th><th>第一推奨</th></tr></thead>
+<tbody>
+<tr><td>ドキュメント基盤の調査</td><td><strong>Starlight</strong></td></tr>
+<tr><td>アーキテクチャの調査</td><td><strong>Starlight</strong></td></tr>
+<tr><td>既製品の調査</td><td><code>btholt/next-course-starter</code></td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>Starlight を採る理由:</strong></p>
+
+<ol>
+<li><strong>next-course-starter は Next.js / React</strong>。あなたは素のJavaScriptで書いてきたので、Reactは新規学習になる。第1ラウンドの調査でも「Next.jsは既存HTMLのJSX化コストが最大、このサイトには過剰」と判定済み</li>
+<li>next-course-starter は<strong>「GitHub Releasesなし、最終コミット日は未確認」</strong>（調査自身の記述）。Starlightは <strong>v0.41.5（2026-07-28）</strong> で公式保守</li>
+<li><strong>既製品の調査自身が、退路としてStarlightを挙げている</strong> ——「スターター固有の古さやNext.js更新問題が大きければ、コンテンツ構造を保ったまま公式Starlightへ移る」</li>
+<li>next-course-starter の利点は <code>Course / Section / Lesson</code> を第一級概念に持つことだが、<strong>それは9.3節のfrontmatterでStarlightに足せる</strong></li>
+<li>手書きのヴィクトリア朝CSS 303行を保つには、Astro系が有利</li>
+</ol>
+
+<div class="box">
+<p style="margin-bottom:0">
+→ <strong>next-course-starter からは「ドメインモデル」と「1週間の手順」だけ借り、器は Starlight。</strong>
+</p>
+</div>
+
+<h3>10.2 なぜ「記事は教材であってブログではない」のか</h3>
+
+<div class="box why">
+<p>
+現在の4記事には、次の性質があります。
+</p>
+<ul>
+<li><strong>Case No.0 → No.3 と読む順番がある</strong></li>
+<li>1記事に複数の章がある</li>
+<li>AWS用語を後から参照したくなる</li>
+<li>章目次・現在位置・前後移動が有用</li>
+<li>今後 <code>STUDY.md</code> や授業ノートを統合できる</li>
+</ul>
+<p style="margin-bottom:0">
+<strong>これは「日付順に並ぶブログ」ではなく「順番に読む教材」です。</strong>
+だから汎用ブログSSGより、ドキュメント基盤（Starlight）が正しい。
+</p>
+</div>
+
+<div class="tw">
+<table>
+<thead><tr><th>機能</th><th>Astro単体</th><th><strong>Starlight</strong></th><th>Quartz</th></tr></thead>
+<tbody>
+<tr><td>記事の目次</td><td>自作</td><td class="ok"><strong>標準</strong></td><td>標準</td></tr>
+<tr><td>サイドバー</td><td>自作</td><td class="ok"><strong>標準</strong></td><td>標準</td></tr>
+<tr><td>前後リンク</td><td>自作</td><td class="ok"><strong>標準</strong></td><td>文書構造次第</td></tr>
+<tr><td>日本語検索</td><td>Pagefind追加</td><td class="ok"><strong>Pagefind標準</strong></td><td>既存検索</td></tr>
+<tr><td>独自トップ／作品一覧</td><td class="ok"><strong>最適</strong></td><td>通常のAstroページを併設</td><td class="ng">不得手</td></tr>
+<tr><td>既存CSSの再現</td><td class="ok"><strong>最も自由</strong></td><td>CSS変数と差し替えでかなり可能</td><td class="ng">テーマ構造との衝突が大きい</td></tr>
+<tr><td>継続的な自作量</td><td class="ng">レイアウト・目次・ナビが残る</td><td class="ok"><strong>最少</strong></td><td>Quartz流への調整が必要</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>
+構成は<strong>「記事は Starlight、トップと作品一覧は通常の Astro ページ」</strong>の併用です。
+Astro上で動くので、画像最適化やS3配信といった利点を失いません。
+</p>
+
+<h3>10.3 フル機能LMSはすべて過剰だった</h3>
+
+<p>
+第5章で見たLMS群は、<strong>すべてDB＋常時稼働サーバーが必要</strong>です。
+唯一の条件付き候補が CTFd でしたが、<strong>記事・授業ノート・作品集の母艦にはなりません。</strong>
+</p>
+
+<h3>10.4 ナレッジベース系も器にならない</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>名前</th><th>第一級の概念</th><th>ライセンス／状況</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td><strong>BookStack</strong></td><td><strong>Shelf → Book → Chapter → Page</strong>（明快な出版階層）</td><td>MIT・v26.05.2（2026-07-02）<br>主開発はCodebergへ移行</td><td class="ng">階層は優秀だが<strong>PHP/DBサーバーが必要</strong>。ゲームを第一級教材として扱えない</td></tr>
+<tr><td><strong>Docmost</strong></td><td>Workspace / Space / Page / Block / Comment / Revision</td><td>コアAGPL-3.0<br>v0.95.0（2026-07-03）</td><td class="ng"><strong>学習順序・進捗・演習がない</strong></td></tr>
+<tr><td><strong>Wiki.js</strong></td><td>Page / Path / Tag / User / Group / Permission</td><td>AGPL-3.0・安定2.5.314<br><strong>3.0は開発中</strong></td><td class="ng">コース・進捗・演習がない</td></tr>
+<tr><td><strong>Outline</strong></td><td>Workspace / Collection / Document / Revision</td><td class="ng"><strong>BSL 1.1（OSI型OSSではない）</strong></td><td class="ng">学習サイトモデルを持たない</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box">
+<p style="margin-bottom:0">
+ナレッジベースは<strong>「授業メモを編集する場所」にはなりますが、
+「記事・ゲーム・習慣アプリを統合した公開学習サイト」の器には弱い</strong>のです。
+</p>
+</div>
+
+<h3>10.5 参考になる実例リポジトリ</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>実例</th><th>ライセンス</th><th>第一級の概念</th><th>真似すべき点</th></tr></thead>
+<tbody>
+<tr><td><strong>simonw/til</strong></td><td>Apache-2.0<br>2026-07も更新（581件）</td><td>Topic / TIL entry / Date / Feed</td><td class="ok"><strong>週次メモを大作記事にしようとせず、1学習1Markdownで蓄積する</strong></td></tr>
+<tr><td><strong>日本語版 Modern<br>JavaScript Tutorial</strong></td><td>独自LICENSE<br>（再利用時は個別確認）</td><td><strong>Section / Article / Task / Solution / Local resource</strong></td><td class="ok"><strong><code>task.md</code>と<code>solution.md</code>を分離</strong>し、画像・コードを教材のそばに置く</td></tr>
+<tr><td><strong>サバイバルTypeScript</strong></td><td>CC-BY-SA-4.0等<br>最終リリース2023-07</td><td>Learning phase / Chapter / Page / Example</td><td class="ok"><strong>「あらまし → 作って学ぶ → 読んで学ぶ」という学習段階をサイト構造に反映</strong></td></tr>
+<tr><td><strong>Rust Book 日本語版</strong></td><td>Apache-2.0 OR MIT</td><td>Chapter / Listing / Translation mapping</td><td class="ok">本文と実行例を分離し、設定ファイルを正規の情報源にする</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box danger">
+<span class="t">OSSと誤認しやすい例（重要）</span>
+<ul style="margin-bottom:0">
+<li><strong>りあクト！</strong> — サンプルコードは公開されているが、<strong>販売書籍の本文を自由にforkできるOSSとは確認できなかった</strong></li>
+<li><strong>Zenn Book</strong> — <code>books/&lt;slug&gt;/config.yaml + chapter.md</code> の運用は参考になるが、<strong>GitHubで公開されていることとOSSであることは別。著者が明示したLICENSEがないリポジトリを教材のfork元にしてはいけない</strong></li>
+<li><strong>技術書典系</strong> — サンプルコードのみOSS、本文は販売物という構成が多い。<strong>リポジトリ単位・ディレクトリ単位でライセンスを確認する</strong></li>
+</ul>
+</div>
+
+<div class="box term">
+<span class="t">日本語事例から抽出できる定石</span>
+<p style="margin-bottom:0">
+<strong>「本文」「課題」「解答」「実行例」「画像」を、別の第一級要素として管理する。</strong><br>
+そして<strong>公開リポジトリと再利用可能なOSSを混同しない。</strong>
+</p>
+</div>
+
+<h3>10.6 学習ゲームをどう置くか</h3>
+
+<p>
+<strong>最初からH5PやLTIへ変換せず、ビルド結果へそのままコピーするのが最小コストです。</strong>
+</p>
+
+<pre><code>public/works/
+├── linux-story-quest/
+├── git-dungeon/
+└── kakera/</code></pre>
+
+<p>教材ページ側では2通り:</p>
+<ul>
+<li><strong>基本</strong>：「新しいページでゲームを始める」リンク</li>
+<li>教材の文脈を保ちたい場合：iframe（埋め込み）</li>
+</ul>
+
+<pre><code>&lt;iframe src="/works/linux-story-quest/" title="Linux Story Quest"
+        loading="lazy" sandbox="allow-scripts allow-same-origin"&gt;&lt;/iframe&gt;</code></pre>
+
+<div class="box warn">
+<span class="t">注意事項</span>
+<ul style="margin-bottom:0">
+<li>ゲーム内のURLは<strong>相対パス</strong>にする</li>
+<li><strong>各アプリの <code>localStorage</code> キーに名前空間を付ける</strong>（衝突防止）</li>
+<li>iframeと親ページの進捗連携が必要になったら <code>postMessage</code></li>
+<li><strong>全画面操作やキーボード中心のゲームは、iframeより別ページがよい</strong></li>
+<li>CSPの <code>frame-src</code> / <code>frame-ancestors</code> を明示する</li>
+<li><strong>サイト側の「完了」とゲーム内部の「クリア」は、当初は分離してよい</strong></li>
+</ul>
+</div>
+
+<h4>H5P と LTI は今は不要</h4>
+
+<div class="tw">
+<table>
+<thead><tr><th></th><th>判定</th></tr></thead>
+<tbody>
+<tr><td><strong>H5P</strong>（GPL-3.0）</td><td class="ng"><strong>既存ゲームをそのまま <code>.h5p</code> に詰める仕組みではない。</strong>H5P content type としてラッパーを開発する必要があり、コスト超過</td></tr>
+<tr><td><strong>LTI 1.3</strong></td><td class="ng"><strong>OIDC・JWT・OAuth 2.0・HTTPSが必要。</strong>必要になるのは「複数受講者をLMSで認証したい」「成績簿へ返したい」「複数LMSへ提供したい」場合だけ</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>昇格の順序</strong>：同一オリジン配下の独立アプリ → <code>postMessage</code> で完了イベント → サーバー/LTI</p>
+
+<h3>10.7 Git ベース CMS は今は不要</h3>
+
+<div class="box term">
+<span class="t">用語：Git ベース CMS</span>
+<p style="margin-bottom:0">
+ブラウザ上の管理画面で記事を書くと、<strong>データベースではなく Git にコミットされる</strong>仕組み。
+「WordPressのような編集画面」と「静的サイトの手軽さ」を両立させます。
+</p>
+</div>
+
+<p>
+<strong>現状は本人しか編集しないので、Markdown ＋ VS Code で十分です。</strong>
+CMSは「スマホから更新したい」「Gitを知らない編集者が加わる」段階で導入します。
+</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>名前</th><th>ライセンス／状況</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td><strong>Sveltia CMS</strong></td><td><strong>MIT</strong>・v0.187.0（2026-08-11）非常に活発</td><td class="ok"><strong>将来の第一推奨。</strong>Decap互換設定</td></tr>
+<tr><td>Decap CMS</td><td>MIT・v3.12.2（2026-04-17）</td><td class="q"><strong>「放棄されたまま」ではなく再活性化している。</strong>ただしSveltiaの方がUI・モバイル・i18n・性能で上</td></tr>
+<tr><td>Keystatic</td><td>MIT・最新release未確認<br>READMEは experimental 表記</td><td class="ng">GitHub modeはアプリ側ルートを要し、<strong>純粋なS3静的配信と相性が悪い</strong></td></tr>
+<tr><td>TinaCMS</td><td>Apache-2.0・3.11系（2026-07）</td><td class="ng">TinaCloudまたはデータ層・認証の運用が必要。個人4記事には過剰</td></tr>
+<tr><td>Static CMS</td><td class="ng"><strong>2024-09-09にarchive、開発終了</strong></td><td class="ng"><strong>採用不可</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box danger">
+<span class="t">重要：CMSはS3へ直接書かない</span>
+<pre style="margin:.6rem 0 0"><code>ブラウザのCMS → GitHub API へ Markdown/画像を commit
+              → GitHub Actions または Cloudflare Pages が build
+              → dist を S3/CloudFront または Pages へ配信</code></pre>
+<p style="margin-bottom:0; margin-top:.6rem">
+<strong>S3 は OAuth の client secret を安全に保持できません。</strong>
+個人なら fine-grained PAT、複数編集者なら Cloudflare Worker 上の OAuth クライアントを使います。
+</p>
+</div>
+
+<h3>10.8 スライドは Marp CLI</h3>
+
+<p>
+<code>02.homework/05.week5/docs/PRESENTATION.md</code> は
+<strong>すでにMarkdownで <code>---</code> による6区切り</strong>があり、発表ツールへ移す前提が整っています。
+</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>名前</th><th>ライセンス／状況</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td><strong>Marp CLI</strong></td><td>MIT・v4.5.0（2026-07-17）</td><td class="ok"><strong>第一推奨。</strong>HTML/PDF/PPTX/画像へ変換。現行Markdownを最小変更で使える</td></tr>
+<tr><td>Marp for VS Code</td><td>MIT・v3.5.1（2026-05）</td><td class="ok">エディタ内プレビュー。CLIと併用</td></tr>
+<tr><td>Slidev</td><td>MIT・v52.15.2（2026-05-10）</td><td class="q">ライブコード・発表者画面。<strong>依存が大きい</strong>。必要になってから</td></tr>
+<tr><td>reveal.js</td><td>MIT・v6.0.1（2026-04-11）</td><td class="q">HTML設定が増える</td></tr>
+<tr><td>remark slideshow</td><td class="ng"><strong>近年の保守を確認できず</strong></td><td class="ng"><strong>名称衝突にも注意</strong>（<code>remark</code>処理系と別物）</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box warn">
+<span class="t">日本語フォントの注意</span>
+<p style="margin-bottom:0">
+PDFで文字化けや代替フォント置換を防ぐには、<strong>Webフォントを外部CDNに依存させず、ローカル配布して明示します。</strong>
+Marp/SlidevのPDF生成はブラウザレンダリングなので、<strong>CI環境にも同じフォントを用意する必要があります。</strong>
+</p>
+</div>
+
+<p class="mini">
+現行の <code>PRESENTATION.md</code> は1区切りの情報量が多いので、
+表や画像を含む部分をさらに分割し<strong>10〜14枚程度</strong>にすると読みやすくなります。
+</p>
+
+
+<h2 id="p11"><span class="num">11</span>いまある資産を、どこに置くか<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<p>
+第7章のモデル（<code>Course → Chapter → Unit(kind)</code>）に、
+<strong>手元の資産をすべて割り当てた表</strong>です。
+</p>
+
+<h3>11.1 コース1：Webインフラ（AWS / DNS / HTTPS）</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>現在の資産</th><th>kind</th><th>置き場所</th><th>備考</th></tr></thead>
+<tbody>
+<tr><td><code>articles/case-00-s3-cloudfront.html</code></td><td>article</td><td><code>docs/courses/web-infra/01-s3-cloudfront.md</code></td><td>HTML → Markdown</td></tr>
+<tr><td><code>articles/case-01-domain-https.html</code></td><td>article</td><td><code>.../02-domain-https.md</code></td><td class="ok"><strong>slugは維持</strong>（既存URLを壊さない）</td></tr>
+<tr><td><code>articles/case-02-subdomain-s3.html</code></td><td>article</td><td><code>.../03-subdomain-s3.md</code></td><td></td></tr>
+<tr><td><code>articles/case-03-cross-account-subdomain.html</code></td><td>article</td><td><code>.../04-cross-account.md</code></td><td></td></tr>
+<tr><td><code>week3/独自ドメインとHTTPS化の仕組み解説.md</code><br>（398行）</td><td>article</td><td><code>.../00-https-concepts.md</code></td><td class="ok"><strong>そのまま載る。</strong>case-01の前段に置くと順序が通る</td></tr>
+<tr><td><code>week3/サブドメインに静的S3サイトを公開する手順.md</code><br>（229行）</td><td>article</td><td><code>.../03b-subdomain-howto.md</code></td><td>手順書。記事と分けると読みやすい</td></tr>
+<tr><td><code>week4/summary.md</code> ＋ <code>subdomain-guide*.html</code></td><td>article</td><td><code>.../04b-delegation-summary.md</code></td><td></td></tr>
+<tr><td><code>week5/docs/DEPLOY.md</code>（427行）</td><td class="ok"><strong>project</strong></td><td><code>.../05-deploy-project.md</code></td><td><strong>成果物として完了条件を付ける</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>11.2 コース2：Linux ／ コース3：Git</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>現在の資産</th><th>kind</th><th>置き場所</th><th>備考</th></tr></thead>
+<tbody>
+<tr><td>（新規に書く導入）</td><td>article</td><td><code>docs/courses/linux/01-basics.md</code></td><td>ゲームの前に読む</td></tr>
+<tr><td><strong>Linux Story Quest</strong></td><td class="ok"><strong>exercise</strong></td><td><code>docs/courses/linux/02-story-quest.md</code> が<br><code>/works/linux-story-quest/</code> を起動</td><td><strong>Exercism構造を適用（第5章）</strong></td></tr>
+<tr><td>（新規に書く導入）</td><td>article</td><td><code>docs/courses/git/01-basics.md</code></td><td><strong>Learn Git Branchingへのリンクもここ</strong></td></tr>
+<tr><td><strong>Git Dungeon</strong></td><td class="ok"><strong>exercise</strong></td><td><code>docs/courses/git/02-git-dungeon.md</code> が<br><code>/works/git-dungeon/</code> を起動</td><td><strong>isomorphic-gitへ載せ替え（8.5節）</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>11.3 コース4：Webフロントエンド ／ コース5：アプリを作る</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>現在の資産</th><th class="num">行数</th><th>kind</th><th>備考</th></tr></thead>
+<tbody>
+<tr><td><code>week4/html_gen_pattern/docs/GUIDE.md</code></td><td class="num">807</td><td>article</td><td rowspan="4" style="vertical-align:middle"><strong>4つのUnitに分ける。<br>合計2,709行がそのまま公開される</strong></td></tr>
+<tr><td><code>week4/html_gen_pattern/docs/SPEC.md</code></td><td class="num">800</td><td>article</td></tr>
+<tr><td><code>week4/html_gen_pattern/docs/NOTES_layout-patterns.md</code></td><td class="num">750</td><td>article</td></tr>
+<tr><td><code>week4/html_gen_pattern/docs/CONTENT.md</code></td><td class="num">352</td><td>article</td></tr>
+<tr><td><code>week4/tailwind/SPEC_redesign.md</code></td><td class="num">276</td><td>article</td><td></td></tr>
+<tr><td><code>01.lesson/04.week4/{html,javascript,tailwind}</code></td><td class="num">—</td><td>article</td><td>授業メモとして</td></tr>
+<tr><td><code>01.lesson/02.week2/nomal_site</code></td><td class="num">—</td><td>project</td><td>初期の成果物</td></tr>
+<tr style="border-top:2px solid var(--line)"><td><code>week5/docs/REQUIREMENTS.md</code></td><td class="num">617</td><td>article</td><td><strong>要件定義の書き方そのものが教材</strong></td></tr>
+<tr><td><code>week5/docs/DESIGN.md</code></td><td class="num">625</td><td>article</td><td></td></tr>
+<tr><td><code>week5/docs/UX.md</code></td><td class="num">258</td><td>article</td><td></td></tr>
+<tr><td><code>week5/docs/STRUCTURE.md</code></td><td class="num">260</td><td>article</td><td></td></tr>
+<tr><td><code>week5/docs/STUDY.md</code></td><td class="num">1,023</td><td>article</td><td class="ok"><strong>最大の教材資産。裏側の全解説</strong></td></tr>
+<tr><td><code>week5/docs/FILES.md</code></td><td class="num">630</td><td>article</td><td></td></tr>
+<tr><td><strong>かけら本体</strong></td><td class="num">—</td><td class="ok"><strong>project</strong>＋習慣レイヤー</td><td><code>/works/kakera/</code>。9.6節を参照</td></tr>
+<tr><td><code>week5/docs/PRESENTATION.md</code></td><td class="num">117</td><td>—</td><td><strong>MarpでHTML/PDF化</strong> → <code>/slides/kakera/</code></td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="mini">
+授業メモ <code>01.lesson/01.week1</code>〜<code>06.week6</code> は、
+最初はほぼそのままMarkdown化して <code>docs/notes/week-01..06.md</code> に置き、
+あとから「教材」と「記録」に分離します。
+</p>
+
+<h3>11.4 「かけら」の三重の役割 ── 混ぜないこと</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>役割</th><th>kind / 位置</th><th>内容</th></tr></thead>
+<tbody>
+<tr><td><strong>① 教材の題材</strong></td><td><code>article</code> ×6</td><td>REQUIREMENTS / DESIGN / UX / STRUCTURE / STUDY / FILES を読む</td></tr>
+<tr><td><strong>② 成果物</strong></td><td><code>project</code></td><td><code>/works/kakera/</code> で動く。完了条件＝デプロイ済み・README・振り返り</td></tr>
+<tr><td><strong>③ 学習習慣レイヤー</strong></td><td>機能</td><td><strong>学習イベントを購読して「今日学習に向き合ったか」を記録し、60日後に振り返らせる</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>11.5 捨てるもの・残すもの</h3>
+
+<div class="cols">
+<div class="card" style="border-left:4px solid var(--danger-line)">
+<h4 style="margin-top:0" class="ng">捨てる</h4>
+<ul class="mini" style="margin-bottom:0">
+<li>手書きHTMLの記事レイアウト（6ファイルのコピペ）</li>
+<li><code>index.html</code> のカードを手で足す運用</li>
+<li><code>03.learning_site/works/</code> の手動コピー（二重管理）</li>
+<li><strong>Case FilesとExhibitionのセクション分割</strong></li>
+<li><code>build.js</code> の自作minifierとBPE</li>
+</ul>
+</div>
+<div class="card" style="border-left:4px solid var(--good-line)">
+<h4 style="margin-top:0" class="ok">残す</h4>
+<ul class="mini" style="margin-bottom:0">
+<li><strong>ヴィクトリア朝のCSS 303行</strong>（Starlightのカスタムcssへ移植）</li>
+<li>記事の語り口と物語挿絵（Case File No.X という見立てごと）</li>
+<li><strong>日本語の教材文 8,800行</strong></li>
+<li>Linux Story Questの仮想FSと教材ロジック</li>
+<li>RPGの世界観・ステージ設計・ヒントの出し方</li>
+<li><strong>60日ルール</strong>（学習サイトの振り返り機能へ昇格）</li>
+<li>かけらのアクセシビリティ実装</li>
+</ul>
+</div>
+</div>
+
+
+<h2 id="p12"><span class="num">12</span>自作コードの検証結果<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<p>
+ここからは技術リファレンスです。
+<strong>この章の数字はすべて、実際にコマンドを実行して測った実測値</strong>です。
+</p>
+
+<h3 id="p12-1">12.1 手書き minifier は「不完全なJavaScript字句解析器」だった</h3>
+
+<p>
+<code>build.js</code> の64行は、JavaScriptを1文字ずつ走査して空白とコメントを除く処理でした。
+<strong>しかし現実のJavaScriptは、それだけでは解析できません。</strong>
+</p>
+
+<h4>破壊パターン① 正規表現リテラルと除算の区別ができない</h4>
+
+<pre><code>const result = value / /x/.test(text);</code></pre>
+<p>最初の <code>/</code> は<strong>割り算</strong>、次の <code>/</code> は<strong>正規表現の開始</strong>です。空白を消すと:</p>
+<pre><code>const result=value//x/.test(text);   ← // 以降が全部コメント扱いになる</code></pre>
+<p class="mini">
+<code>/</code> が「除算・正規表現・コメント」のどれかは、
+<strong>前後1文字では判断できず、構文上の位置を理解しなければなりません。</strong>
+</p>
+
+<h4>破壊パターン② テンプレートリテラルの中身を書き換えてしまう</h4>
+
+<p>
+現在の処理は<strong>すべての</strong>テンプレートリテラル内部に対して
+<code>replace(/\s+/g," ")</code> を実行します。
+HTML以外でも改行や連続スペースをデータとして使う可能性があるため、
+<strong>通常の文字列値が変わってしまいます。</strong>
+</p>
+
+<pre><code>`outer ${`inner ${value}`}`</code></pre>
+<p class="mini">
+さらに、<code>${...}</code> の中をJavaScriptとして再帰的に解析していないため、
+<strong>内側のバッククォートを外側の終了と誤認します。</strong>
+</p>
+
+<h4>破壊パターン③ ASI（自動セミコロン挿入）を無視している</h4>
+
+<div class="box term">
+<span class="t">用語：ASI（Automatic Semicolon Insertion）</span>
+<p style="margin-bottom:0">
+JavaScriptが<strong>改行の位置に自動でセミコロンを補う</strong>仕様。
+だから<strong>改行を消すと意味が変わることがあります。</strong>
+</p>
+</div>
+
+<pre><code>function f() {
+  return
+  { ok: true };
+}</code></pre>
+<p class="mini">
+元は <code>undefined</code> を返します（<code>return</code> の直後にASIが働く）。
+しかし<strong>改行を消すとオブジェクトを返す</strong>ようになり、意味が変わります。
+</p>
+
+<pre><code>a
+++b</code></pre>
+<p class="mini">
+ASIにより本来2文ですが、このminifierでは <code>a++b</code> となり<strong>構文エラー</strong>になります。
+</p>
+
+<div class="box danger">
+<span class="t">結論</span>
+<p style="margin-bottom:0">
+この64行は「単純なminifier」ではなく、<strong>「不完全なJavaScript字句解析器」</strong>になっています。<br>
+<strong>いま動いていても、書き方を変えた瞬間に静かに壊れたコードを吐きます。</strong>
+学習用に一度作る価値はありましたが、<strong>本番のビルドに残してはいけません。</strong>
+</p>
+</div>
+
+<div class="tw">
+<table>
+<thead><tr><th>置き換え候補</th><th>ライセンス／状況</th><th>速度・圧縮</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td><strong>Vite に移行して本番ビルドに任せる</strong></td><td>MIT</td><td>—</td><td class="ok"><strong>第一推奨。64行が0行に</strong></td></tr>
+<tr><td>esbuild（単体で使うなら）</td><td>MIT・v0.28.2（2026-08-08）</td><td>非常に高速。Terserより数％大きい</td><td class="ok">導入コスト最低</td></tr>
+<tr><td>Terser</td><td>BSD-2-Clause・v5.50.0（2026-08）</td><td>遅いが圧縮率は安定</td><td class="q">小アプリでは処理時間差は実害なし</td></tr>
+<tr><td>SWC</td><td>Apache-2.0・v1.16.1（2026-08）</td><td>高速で圧縮率もトップ級</td><td class="q">minifyだけには過剰</td></tr>
+<tr><td>oxc-minify</td><td>MIT・v0.144.0（2026-08）</td><td>最速級</td><td class="ng"><strong>公式npmが「alpha、誤った結果を返す可能性」と明記。現時点では選ばない</strong></td></tr>
+<tr><td>uglify-js</td><td>BSD-2-Clause・<strong>最終publish 2024-08</strong></td><td>非常に遅い</td><td class="ng">ES2022+を使う新規案件ではTerserを選ぶ</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="p12-2">12.2 自作BPE圧縮は、配信サイズを「悪化」させていた</h3>
+
+<div class="box term">
+<span class="t">用語：BPE（Byte Pair Encoding）</span>
+<p style="margin-bottom:0">
+よく出てくる文字の並びを1つの記号に置き換えていく圧縮方式。
+<code>build.js</code> に<strong>36行、手書き</strong>されていました。
+</p>
+</div>
+
+<p>実データで再測定した結果（<strong>実測</strong>）:</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>形式</th><th class="num">raw</th><th class="num">gzip -9</th><th class="num">Brotli</th></tr></thead>
+<tbody>
+<tr><td>元の <code>lines.json</code></td><td class="num">20,433 B</td><td class="num">6,159 B</td><td class="num">5,544 B</td></tr>
+<tr><td><strong>自作BPE ＋ 復号コード</strong></td><td class="num">9,022 B</td><td class="num">6,093 B</td><td class="num"><strong>4,979 B</strong></td></tr>
+<tr style="background:var(--good-bg)"><td><strong>素の <code>export default [...]</code></strong></td><td class="num">16,056 B</td><td class="num"><strong>5,100 B</strong></td><td class="num"><strong>4,681 B</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box danger">
+<span class="t">結論：素のJS配列のほうが、自作BPEよりBrotli後で298バイト「小さい」</span>
+<p>
+BPEは raw サイズだけ見ると効いています（20,433 → 9,022）。
+しかし<strong>HTTP圧縮後には、独自の辞書・トークン・復号コードがそのまま重複コストになります。</strong>
+</p>
+<p style="margin-bottom:0">
+しかも<strong>CloudFrontの自動圧縮は、あなたがすでに有効にしています</strong>（<code>docs/DEPLOY.md</code> に記載）。<br>
+<strong>つまり36行のコードを書いて、配信サイズを悪くしていた</strong>ということになります。削除一択です。
+</p>
+</div>
+
+<h4>クライアント側の圧縮ライブラリも不要</h4>
+
+<div class="tw">
+<table>
+<thead><tr><th>名前</th><th>ライセンス／状況</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td>lz-string</td><td>MIT・npm stable 1.5.0は約3年前</td><td class="ng"><strong>localStorage容量対策向け。HTTP配信には不採用</strong></td></tr>
+<tr><td>fflate</td><td>MIT・v0.8.3（2026-05）</td><td class="ng">約8KBのライブラリを20KBのデータのために足すのは<strong>逆効果</strong>。⚠ <strong>0.8.2以前に2026年公開のDoS問題あり。使うなら0.8.3+</strong></td></tr>
+<tr><td>pako</td><td>MIT AND Zlib・v3.0.1（2026-07）</td><td class="ng"><strong>フルbundleがこのデータより大きい</strong></td></tr>
+<tr><td>brotli-wasm</td><td>MIT・v3.0.1（最終publish 約2年前）</td><td class="ng">WASM初期化と追加assetが必要。<strong>完全に過剰</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<p class="mini">
+<strong>クライアント圧縮が必要になる条件</strong>（今はどれも該当しない）：
+localStorage/IndexedDBに数MB以上保存する／ユーザー生成ファイルをZIPで書き出す／サーバーへ送る前に圧縮する／
+HTTP <code>Content-Encoding</code> が使えない独自コンテナを扱う／オフライン単一HTMLへ大量データを埋め込む。
+</p>
+
+<h3 id="p12-3">12.3 実在したバグ ── DST（サマータイム）</h3>
+
+<div class="box term">
+<span class="t">用語：DST（Daylight Saving Time／夏時間・サマータイム）</span>
+<p style="margin-bottom:0">
+一部の国で、夏の間だけ時計を1時間進める制度。
+<strong>切り替わる日は「23時間の日」や「25時間の日」が発生します。</strong>
+</p>
+</div>
+
+<p>
+<code>lib/date.js</code> には「正午に固定する」という<strong>優れた工夫</strong>が入っていました。
+これは日付文字列のずれを避けるうえで有効です。しかし <code>daysBetween</code> は依然として安全ではありませんでした。
+</p>
+
+<pre><code>export function daysBetween(first, last = dateKey()) {
+  return Math.floor((fromDateKey(last) - fromDateKey(first)) / DAY);
+}</code></pre>
+
+<p>
+DST開始日をまたぐと、正午どうしの間隔が<strong>23時間</strong>になり、
+<code>Math.floor(23 / 24) === 0</code> になります。
+</p>
+
+<p><strong>実際に実行して再現した結果:</strong></p>
+
+<pre><code>TZ=America/New_York （DSTあり）
+  2026-03-07 → 2026-03-08 の日数差: 0    ← 期待値 1
+  60日開放: 2026-02-01 → 2026-04-02 : 59  ← 期待値 60（開放が1日遅れる）
+
+TZ=Asia/Tokyo （DSTなし）
+  2026-03-07 → 2026-03-08 の日数差: 1    ← 正常
+  60日開放: 2026-02-01 → 2026-04-02 : 60  ← 正常</code></pre>
+
+<div class="box warn">
+<span class="t">重要な但し書き</span>
+<p style="margin-bottom:0">
+<strong>バグは実在します。ただし日本（JST）にはDSTがないので、国内の利用者には現れません。</strong><br>
+「今壊れている」のではなく<strong>「DSTのある地域の端末で使われたら壊れる」</strong>種類のバグです。
+だから<strong>優先度は低い</strong>。
+</p>
+</div>
+
+<h4>直し方</h4>
+
+<p>
+<strong><code>differenceInCalendarDays</code> だけ date-fns に置き換えます。</strong>
+この関数は「24時間の経過」ではなく<strong>「カレンダー上の日付差」</strong>を計算するので、
+定義上DSTの影響を受けません。
+</p>
+
+<div class="box">
+<p style="margin-bottom:0">
+表示文言・60日ルール・<code>monthDayIndex</code>（366件の一言を選ぶ処理）は<strong>アプリ固有の仕様なので自作のまま残します。</strong>
+<strong>ライブラリを丸ごと被せる必要はありません。</strong>
+</p>
+</div>
+
+<h3 id="p12-4">12.4 画像 69MB ── 根治は「図をコードで書く」</h3>
+
+<p><strong>実測:</strong> PNG 26枚、合計 約69MB。サムネイル1枚が 3.3〜4.0MB。</p>
+
+<pre><code>4.0 MB  assets/thumb-cross-domain.png
+3.6 MB  assets/thumb-git-dungeon.png
+3.6 MB  assets/thumb-linux-quest.png
+3.5 MB  assets/thumb-subdomain.png
+3.4 MB  articles/images/13_dns_ledger.png</code></pre>
+
+<p>
+トップページはサムネイルを6枚並べているので、<strong>初回表示で約20MBを転送</strong>している計算になります。
+<code>srcset</code>（画面サイズに応じた画像切替）も <code>loading="lazy"</code>（遅延読み込み）も
+<code>width/height</code> 指定もありません。
+</p>
+
+<div class="box term">
+<span class="t">重要な分類 ── 26枚すべてをコード化してはいけない</span>
+<div class="tw" style="margin:.7rem 0 0">
+<table>
+<thead><tr><th>場所</th><th class="num">枚数</th><th>内容</th><th>判断</th></tr></thead>
+<tbody>
+<tr><td><code>articles/images/00〜09</code></td><td class="num">10</td><td>DNS・HTTPS・CloudFrontなどの<strong>説明図</strong></td><td class="ok"><strong>6枚をコード化</strong>、4枚は挿絵併用</td></tr>
+<tr><td><code>articles/images/10〜18</code></td><td class="num">9</td><td><strong>ヴィクトリア朝の物語挿絵</strong></td><td>PNGとして維持</td></tr>
+<tr><td><code>assets/hero.png</code></td><td class="num">1</td><td>サイトの主ビジュアル</td><td>維持</td></tr>
+<tr><td><code>assets/thumb-*.png</code></td><td class="num">6</td><td>サムネイル</td><td>維持</td></tr>
+</tbody>
+</table>
+</div>
+<p style="margin-bottom:0; margin-top:.7rem">
+技術図は約1.0〜1.8MB、<strong>挿絵・サムネイルは約3.3〜4.2MB。
+つまり容量の大半は「コード化できない美術資産」の側にあります。</strong>
+そちらは画像最適化（<code>astro:assets</code> でWebP/AVIF＋srcset）で対処します。
+</p>
+</div>
+
+<h3 id="p12-5">12.5 フォント243個 ── 実は異常ではない</h3>
+
+<p>
+現在のビルドは、2つのフォントから<strong>243個の <code>@font-face</code> を抽出し、
+243個のwoff2（計約4.5MiB）を配信物に含めています。</strong>
+</p>
+
+<div class="box term">
+<span class="t">用語：unicode-range と、日本語フォントの分割配信</span>
+<p>
+CSSの <code>unicode-range</code> は「このフォントファイルは、この文字の範囲を担当する」と宣言する仕組みです。
+</p>
+<p style="margin-bottom:0">
+<strong>ブラウザは、ページに実際に出てきた文字を含む断片だけをダウンロードします。</strong>
+つまり<strong>「243ファイルをデプロイしている」ことと「利用者が243ファイル全部をダウンロードする」ことは別</strong>です。<br>
+これは Fontsource と Google Fonts の<strong>正式な日本語配信方式</strong>で、
+Googleは日本語フォントの分割により<strong>単一ファイル配信より88%少ない転送量</strong>になったと説明しています。
+</p>
+</div>
+
+<div class="tw">
+<table>
+<thead><tr><th>項目</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td>243ファイルのデプロイ自体</td><td class="ok"><strong>異常ではない</strong>（正式な方式）</td></tr>
+<tr><td>243個を全部読み込んでいるなら</td><td class="q">異常（要確認）</td></tr>
+<tr><td><strong>正規表現によるCSS変換</strong></td><td class="ng"><strong>不要で壊れやすい。ここが本当の問題</strong></td></tr>
+<tr><td>固定テキストだけの完全サブセット</td><td class="ng"><strong>不適切</strong>（日本語の自由入力があるため）</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>直し方は、Viteのエントリから公式CSSを直接importするだけです。これで27行が消えます。</p>
+
+<pre><code>import "@fontsource/zen-old-mincho/400.css";
+import "@fontsource/zen-kaku-gothic-new/400.css";</code></pre>
+
+<div class="box warn">
+<span class="t">さらに軽くしたい場合</span>
+<p style="margin-bottom:0">
+<strong>ゴシック体はシステムフォントに戻し、明朝一書体だけを自己ホストする</strong>という選択があります。<br>
+また、<strong>4.5MBの日本語フォントを全部precache（オフライン用に事前保存）すると初回の準備が重くなる</strong>ので、
+Service Worker を入れる前にフォント削減を先に行ってください。
+</p>
+</div>
+
+<h3>12.6 「かけら」で今すぐ直すべき点</h3>
+
+<div class="box danger">
+<ol style="margin-bottom:0">
+<li><strong>保存失敗を検知していない</strong> — <code>QuotaExceededError</code> やストレージ禁止を catch していないので、プライベートブラウジング等で<strong>黙って記録が消えます</strong></li>
+<li><strong><code>popstate</code> でフォーカス移動がない</strong> — 戻る／進むのとき、見出しへフォーカスが移らない（9.7節）</li>
+<li><strong>検証規則が2つある</strong> — <code>normalize()</code> は浅い型検査、<code>validBackup()</code> は深い検査。<strong>同じデータ形式に2つの規則があり、将来ずれます。</strong>Valibot で1つの <code>StateSchema</code> に統合すべき</li>
+<li><strong><code>innerHTML</code> の使用が規律で守られている</strong> — 後述</li>
+</ol>
+</div>
+
+<h4>XSSリスクについて ── 正確に</h4>
+
+<div class="box">
+<p>
+<code>dom.js</code> の <code>setMarkup()</code> は <code>innerHTML</code> を直接使っています。
+</p>
+<p class="ok">
+<strong>ただし、現行の経路に穴はありません。</strong>
+保存済みユーザーデータ（<code>feeling</code>／<code>done</code>／<code>person</code>／<code>goal</code>）は、
+その後すべて <code>textContent</code> で挿入されています。<strong>実装は正しい。</strong>
+</p>
+<p>
+<strong>問題は構造です。</strong>
+12箇所の <code>setMarkup()</code> と21箇所の <code>setText()</code> の対応を<strong>人間の規律で維持している</strong>ため、
+将来 <code>${entry.feeling}</code> のような補間を<strong>1回追加するだけで保存型XSSに変わります。</strong>
+</p>
+<p style="margin-bottom:0">
+lit-html なら通常の <code>${value}</code> が必ずテキストノードになるので、この取り違えが<strong>構造的に起きなくなります。</strong>
+危険な操作は <code>unsafeHTML</code> に隔離され、<strong>レビューで検索できる</strong>ようになります。
+</p>
+</div>
+
+<pre><code>// 現在 — 2段階。規律で守っている
+setMarkup(root, `&lt;p data-feeling&gt;&lt;/p&gt;`);
+setText(find(root, "[data-feeling]"), entry.feeling);
+
+// lit-html — 1行。${} は常にテキスト
+render(html`&lt;p&gt;${entry.feeling}&lt;/p&gt;`, root);</code></pre>
+
+<h2 id="p13"><span class="num">13</span>図解と日本語<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<h3>13.1 図をコードで書く（diagram as code）</h3>
+
+<div class="box term">
+<span class="t">用語：diagram as code（図をコードとして書く）</span>
+<p>
+図を画像編集ソフトで描くのではなく、<strong>テキストで記述してビルド時にSVGへ変換する</strong>手法。
+</p>
+<p style="margin-bottom:0">利点は3つ。</p>
+<ul style="margin-bottom:0">
+<li><strong>数KBで済む</strong>（PNGの3.4MBに対して）</li>
+<li><strong>Gitの差分が読める</strong>（「矢印を1本足した」が分かる）</li>
+<li><strong>修正が容易</strong>（テキストを1行直すだけ）</li>
+</ul>
+</div>
+
+<div class="tw">
+<table>
+<thead><tr><th>名前</th><th>テキスト差分</th><th>ビルド時SVG</th><th>日本語</th><th>手描き/古典調</th><th>AWSアイコン</th></tr></thead>
+<tbody>
+<tr style="background:var(--good-bg)"><td><strong>D2</strong> <span class="tag">推奨</span></td><td class="ok">◎</td><td class="ok">◎</td><td class="ok"><strong>◎</strong></td><td class="ok"><strong>◎ スケッチ描画</strong></td><td>○ 外部SVG</td></tr>
+<tr><td>Mermaid</td><td class="ok">◎</td><td class="ok">◎</td><td>○</td><td>○ hand-drawn look</td><td>○ Iconify</td></tr>
+<tr><td>PlantUML</td><td class="ok">◎</td><td class="ok">◎</td><td>○ JVMフォント依存</td><td>△</td><td class="ok"><strong>◎ AWS stdlib</strong></td></tr>
+<tr><td>Graphviz DOT</td><td class="ok">◎</td><td class="ok">◎</td><td>○ Pango依存</td><td>△ クラシック技術図</td><td>△</td></tr>
+<tr><td>Structurizr</td><td class="ok">◎</td><td class="ok">◎</td><td>○</td><td class="ng">×</td><td>○</td></tr>
+<tr><td>Pikchr</td><td class="ok">◎</td><td class="ok">◎</td><td>○</td><td>○ 古典的線画</td><td class="ng">×</td></tr>
+<tr><td>svgbob</td><td class="ok">◎</td><td class="ok">◎</td><td class="q">△ 等幅幅計算</td><td>○ ASCII風</td><td class="ng">×</td></tr>
+<tr><td>Excalidraw</td><td class="q"><strong>△ JSON差分</strong></td><td class="ok">◎</td><td>○</td><td class="ok">◎</td><td>○</td></tr>
+<tr><td>draw.io</td><td class="q"><strong>△ XML差分</strong></td><td class="ok">◎</td><td>○</td><td>△</td><td class="ok">◎</td></tr>
+<tr><td>tldraw</td><td class="q"><strong>△ JSON差分</strong></td><td>○</td><td>○</td><td class="ok">◎</td><td>△</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box term">
+<span class="t">D2 が第一推奨の理由</span>
+<ul>
+<li>MPL-2.0・2026-08も更新（最新タグ番号は<strong>未確認</strong>）</li>
+<li><strong>CJK（日本語）を正式に扱い、カスタムフォント指定も可能</strong></li>
+<li><strong>sketchモードとカスタムテーマで、黒インク・セピア・羊皮紙調に寄せられる</strong> → ヴィクトリア朝テーマと合う</li>
+<li><code>astro-d2</code> でAstroのビルド時にSVGを生成できる</li>
+</ul>
+<p style="margin-bottom:0">
+⚠ <strong>自動レイアウトの結果がバージョン更新で変わる可能性があるので、CIではバージョンを固定します。</strong>
+</p>
+</div>
+
+<div class="box why">
+<span class="t">ビルド時SVG vs クライアント描画</span>
+<p style="margin-bottom:0">
+Mermaidなどは「ブラウザ側でJavaScriptを動かして図を描く」こともできますが、
+<strong>自分のサイトではビルド時SVG一択</strong>です。<br>
+JavaScript不要・初回表示が速い・印刷できる・検索エンジンに載る・
+<strong>ブラウザへ描画用ライブラリを送らなくて済む</strong>。
+</p>
+</div>
+
+<h4>コード化する6枚（優先順）</h4>
+
+<ol>
+<li><code>03_ns_delegation.png</code> — D2。レジストラと権威DNSの境界をコンテナ化</li>
+<li><code>02_dns_resolution.png</code> — D2の番号付きフロー</li>
+<li><code>08_subdomain_concept.png</code> — D2の階層・分岐図（<strong>特に相性がよい</strong>）</li>
+<li><code>01_overview.png</code> — D2。利用者→お名前.com→Route 53→ACM→CloudFront</li>
+<li><code>09_s3_oac.png</code> — D2、またはPlantUML + AWSアイコン</li>
+<li><code>04_https_cert.png</code> — Mermaid <code>sequenceDiagram</code> または D2</li>
+</ol>
+
+<h4>各図で確認する項目</h4>
+
+<div class="box">
+<ul style="margin-bottom:0">
+<li>☐ <strong>360px幅で日本語が欠けない</strong></li>
+<li>☐ SVGに <code>role="img"</code>、タイトル、説明がある（読み上げ対応）</li>
+<li>☐ セピア・黒・深緑の既存配色に合う</li>
+<li>☐ <strong>CIとローカルでレイアウトが一致する</strong>（バージョン固定）</li>
+<li>☐ <strong>ソース差分だけで変更内容をレビューできる</strong></li>
+<li>☐ <strong>元のPNGより内容が理解しやすい</strong> ← <strong>これが満たせないならコード化しない</strong></li>
+</ul>
+</div>
+
+<h4>ディレクトリ</h4>
+
+<pre><code>src/
+  diagrams/            ← D2ソース（Git差分が読める）
+    overview.d2
+    dns-resolution.d2
+    ns-delegation.d2
+  illustrations/
+    source/            ← 挿絵の原本（最適化前）
+  icons/aws/
+public/
+  generated-diagrams/  ← ビルドで生成されたSVG
+  illustrations/       ← 最適化済み画像</code></pre>
+
+<h3>13.2 日本語まわり ── 最初の調査で完全に抜けていた領域</h3>
+
+<h4>BudouX ── 見出しの改行を自然にする</h4>
+
+<div class="box term">
+<span class="t">何が問題か</span>
+<p>
+日本語は単語の間に空白がないので、<strong>ブラウザは文の途中の変な位置で改行します。</strong>
+</p>
+<pre style="margin:.6rem 0"><code>✗ ブラウザ任せ:    独自ドメインとHTTPS化の仕
+                   組み解説
+
+✓ BudouX:          独自ドメインと
+                   HTTPS化の仕組み解説</code></pre>
+<p style="margin-bottom:0">
+<strong>google/budoux</strong>（Apache-2.0・npm 0.9.0・2026-08）は、
+機械学習モデルで<strong>文節の切れ目</strong>を判定し、そこで改行させます。
+</p>
+</div>
+
+<p>
+現在は <code>case-01:30</code>、<code>case-02:30</code>、<code>case-03:30</code> に
+<strong>手動で <code>&lt;br&gt;</code> を入れて</strong>対処していますね。それが不要になります。
+</p>
+
+<pre><code>.heading-ja {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}</code></pre>
+
+<div class="box warn">
+<p style="margin-bottom:0">
+⚠ <strong>BudouXは形態素解析器ではありません。</strong>
+本文全体ではなく、<strong>見出し・カードタイトルに限定</strong>して使ってください。
+</p>
+</div>
+
+<h4>Yaku Han JP / MP ── 約物（句読点・括弧）の詰め</h4>
+
+<div class="box term">
+<span class="t">用語：約物（やくもの）</span>
+<p style="margin-bottom:0">
+句読点・括弧・記号のこと。日本語フォントでは、これらが<strong>1文字分の幅</strong>を持つため、
+「」（ ） 、 。 が連続すると<strong>不自然に間延びして見えます。</strong>
+</p>
+</div>
+
+<p>
+<strong>qrac/yakuhanjp</strong>（OFL-1.1 AND MIT・4.1.1系）は、
+<strong>約物だけを半角幅に調整する専用フォント</strong>です。
+</p>
+
+<p>
+現在の <code>style.css:18</code> は Cormorant Garamond ＋ 日本語明朝の組み合わせなので、
+<strong>ゴシック用の YakuHanJP ではなく、明朝用の YakuHanMP を先頭に置くほうが合います。</strong>
+</p>
+
+<pre><code>font-family: "Yaku Han MP", "Cormorant Garamond", "Yu Mincho", "游明朝", serif;</code></pre>
+
+<p class="mini">
+⚠ 本文すべてへ直ちに適用せず、<strong>見出し・カード・キャプションで視覚比較してから広げてください。</strong>
+（<code>yakuhanmp</code> は別プロジェクトではなく YakuHanJP パッケージに含まれる明朝用CSSです）
+</p>
+
+<h4>textlint ── 日本語の校正</h4>
+
+<div class="tw">
+<table>
+<thead><tr><th>名前</th><th>ライセンス／状況</th><th>何をするか</th></tr></thead>
+<tbody>
+<tr><td><strong>textlint</strong></td><td>MIT・v15.8.0（2026-08）</td><td>自然言語向けのlint（誤りの自動指摘）ツール本体</td></tr>
+<tr><td><strong>textlint-rule-preset-<br>ja-technical-writing</strong></td><td>MIT・v12.0.2（2026-01）<br>2026-07も更新</td><td>冗長表現・長すぎる文・同一助詞の連続・弱い表現を検出</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box warn">
+<ul style="margin-bottom:0">
+<li>⚠ <strong>物語調の記事にデフォルト設定をそのまま当てると厳しすぎます。</strong>文長や感嘆符のルールを調整してください</li>
+<li>⚠ <strong>Markdown原稿に対して実行します</strong>（生成後のHTMLではなく）。Markdown移行後に本領を発揮します</li>
+</ul>
+</div>
+
+<h4>日本語の全文検索</h4>
+
+<p>
+第1ラウンドの調査で「Pagefindの <code>Intl.Segmenter</code> は形態素解析器ではない」という限界を指摘しました。
+その先の選択肢が<strong>形態素解析器</strong>（kuromoji.js / lindera / vibrato / TinySegmenter）です。
+</p>
+
+<div class="box">
+<p style="margin-bottom:0">
+<strong>ただし</strong>：記事が数十本の規模では、Pagefind ＋ frontmatterの <code>searchTerms</code>（別表記の登録）で
+十分な可能性が高いです。<strong>形態素解析器の導入は、検索品質に実際に不満が出てからで構いません。</strong>
+</p>
+</div>
+
+<h4>各フレームワークの日本語検索対応（参考）</h4>
+
+<div class="tw">
+<table>
+<thead><tr><th>フレームワーク</th><th>標準検索</th><th>日本語の扱い</th></tr></thead>
+<tbody>
+<tr style="background:var(--good-bg)"><td><strong>Starlight</strong></td><td><strong>Pagefind</strong></td><td class="ok"><strong>良好。</strong>ビルド時索引＋ブラウザ側CJK分割。追加サーバー不要</td></tr>
+<tr><td>Nextra</td><td>Pagefind</td><td class="ok">良好</td></tr>
+<tr><td>Material for MkDocs</td><td>Lunr + lunr-languages</td><td>「lang: ja」を<strong>公式サポート</strong></td></tr>
+<tr><td>VitePress</td><td>MiniSearch</td><td class="q"><strong>日本語複合語の精度は要検証</strong></td></tr>
+<tr><td>Docusaurus</td><td>Algolia DocSearchが公式第一</td><td class="q"><strong>ローカル検索は公式標準ではない</strong></td></tr>
+<tr><td>mdBook</td><td>elasticlunr</td><td class="ng"><strong>英語・空白区切り中心</strong></td></tr>
+<tr><td>Docsify</td><td>search plugin + IndexedDB</td><td class="ng">日本語分割の公式保証は確認できず</td></tr>
+</tbody>
+</table>
+</div>
+
+
+<h2 id="p14"><span class="num">14</span>インフラと運営<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<h3>14.1 🔴 デプロイのワークフローが動いていない</h3>
+
+<div class="box danger">
+<span class="t">見つかった重大な問題</span>
+<pre style="margin:.6rem 0"><code>現在:  02.homework/05.week5/.github/workflows/deploy-web.yml
+必要:  .github/workflows/deploy-web.yml   ← リポジトリ直下</code></pre>
+<p style="margin-bottom:0">
+<strong>GitHub Actions が認識するのは、リポジトリ直下の <code>.github/workflows/</code> だけです。</strong>
+現在のファイルはGit管理下にありますが、<strong>このリポジトリでは一度も実行されていません。</strong><br>
+ルートへ移す際は、<code>working-directory</code>／<code>paths</code>／<code>.nvmrc</code>のパス／
+lockfileのパスも <code>02.homework/05.week5/...</code> に直す必要があります。
+</p>
+</div>
+
+<h3>14.2 🔴 <code>vendor/</code> が <code>.gitignore</code> から漏れている</h3>
+
+<div class="box danger">
+<pre style="margin:.6rem 0"><code>01.lesson/06.week6/memo-app/src/vendor/   93MB / 8,794ファイル
+.gitignore に "vendor" の記述: 0件</code></pre>
+<p>
+week6 は<strong>まだ未コミット</strong>です。
+<strong>この状態で <code>git add .</code> すると、Laravelのvendorが丸ごとリポジトリに入ります。</strong>
+一度入ると履歴から消すのは面倒なので、<strong>コミット前の今が直すタイミング</strong>です。
+</p>
+<pre style="margin-bottom:0"><code># Dependencies
+node_modules/
+vendor/          ← これを追加</code></pre>
+</div>
+
+<h3>14.3 リポジトリ運営ファイルの現況</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>項目</th><th>現況</th><th>評価</th></tr></thead>
+<tbody>
+<tr><td><strong>ルート <code>.github/</code></strong></td><td class="ng"><strong>なし</strong></td><td>Workflow・Dependabot・Issue Templateが機能しない</td></tr>
+<tr><td>ルート <code>package.json</code></td><td>なし</td><td>5個のNodeプロジェクトが独立。<strong>現段階では無理にまとめなくてよい</strong></td></tr>
+<tr><td><code>.gitignore</code></td><td>あり</td><td class="q"><code>.env*</code>/<code>node_modules</code>/<code>dist</code>は除外。<strong><code>vendor/</code>が無い</strong></td></tr>
+<tr><td><code>.nvmrc</code></td><td><code>week5/web/</code>のみ（値<code>22</code>）</td><td>リポジトリ全体のNode固定になっていない</td></tr>
+<tr><td><code>.editorconfig</code></td><td><code>week5/</code>だけ</td><td><strong>ルートへ昇格すべき</strong></td></tr>
+<tr><td><code>LICENSE</code></td><td class="ng"><strong>なし</strong></td><td><strong>公開していても再利用許諾がない</strong></td></tr>
+<tr><td>帰属表示</td><td>体系的なファイルなし</td><td>Fontsource/OFL、tldrのCC-BYを管理できていない</td></tr>
+<tr><td><strong>秘密情報</strong></td><td class="ok"><strong>実キーは検出されず</strong></td><td>AWS JSONはARNとプレースホルダーのみ。<strong>ただし検知CIがない</strong></td></tr>
+<tr><td>Actions参照</td><td><code>checkout@v4</code>等の可変タグ</td><td>Workflowを移した後は<strong>SHA固定</strong>が必要</td></tr>
+<tr><td>AWS認証</td><td class="ok"><strong>OIDC前提</strong></td><td class="ok"><strong>長期アクセスキーを使わない良い設計</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>14.4 いま5分で入れて、いちばん事故を防ぐ3つ</h3>
+
+<h4>① AWS Budget（実費$1・予測$5で通知）</h4>
+
+<p>
+個人のAWS学習で最も怖いのは、<strong>課金に気づかず月末まで放置すること</strong>です。
+Budget監視自体は無料です。
+</p>
+
+<pre><code># infra/billing-budget.yml
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  AlertEmail: { Type: String }
+Resources:
+  LearningBudget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetName: personal-learning-monthly
+        BudgetLimit: { Amount: 5, Unit: USD }
+        BudgetType: COST
+        TimeUnit: MONTHLY
+      NotificationsWithSubscribers:
+        - Notification: { ComparisonOperator: GREATER_THAN,
+                          NotificationType: ACTUAL,
+                          Threshold: 1, ThresholdType: ABSOLUTE_VALUE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref AlertEmail }]
+        - Notification: { ComparisonOperator: GREATER_THAN,
+                          NotificationType: FORECASTED,
+                          Threshold: 5, ThresholdType: ABSOLUTE_VALUE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref AlertEmail }]</code></pre>
+
+<pre><code>aws cloudformation deploy --stack-name personal-learning-budget \
+  --template-file infra/billing-budget.yml \
+  --parameter-overrides AlertEmail=your-address@example.com</code></pre>
+
+<p class="mini">⚠ <strong>これは「課金を停止」する機能ではありません。</strong>早期検知のためのものです。</p>
+
+<h4>② Gitleaks（AWSキー等の漏洩を履歴込みで検査）</h4>
+
+<div class="box term">
+<span class="t">用語：secret scanning（秘密情報の走査）</span>
+<p style="margin-bottom:0">
+コードの中にAWSのアクセスキーやパスワードが<strong>うっかりコミットされていないか</strong>を自動検査する仕組み。
+<strong>一度コミットすると、あとで消してもGitの履歴には残り続けます。</strong>だから検知が重要です。
+</p>
+</div>
+
+<p>ルートの <code>.github/workflows/secrets.yml</code> に配置します。</p>
+
+<h4>③ Dependabot（npmとActionsの放置を防ぐ）</h4>
+
+<div class="box term">
+<span class="t">用語：Dependabot</span>
+<p style="margin-bottom:0">
+使っているライブラリに<strong>新しいバージョンや脆弱性の修正が出たとき、自動でプルリクエストを作ってくれる</strong>GitHubの機能。
+</p>
+</div>
+
+<p>
+<strong>第一推奨。</strong>ルートの <code>.github/dependabot.yml</code> で npm と GitHub Actions をまとめて管理します。
+GitHub組み込みなので追加アカウントも常駐サーバーも不要。
+<strong>散在する5個のlockfileと、将来ルートへ移すActionsのSHAを同時に更新できます。</strong>
+高度なグルーピングが必要になるまでは、Renovateより運用負荷が低いです。
+</p>
+
+<h3>14.5 IaC ── 生JSON手書きの置き換え</h3>
+
+<div class="box term">
+<span class="t">用語：IaC（Infrastructure as Code／コードとしてのインフラ）</span>
+<p style="margin-bottom:0">
+サーバーやネットワークの設定を、<strong>手作業ではなくコードで管理する</strong>こと。
+「誰が・いつ・何を変えたか」がGitに残り、<strong>同じ環境を再現できる</strong>ようになります。
+</p>
+</div>
+
+<div class="tw">
+<table>
+<thead><tr><th>名前</th><th>ライセンス／状況</th><th>判定</th></tr></thead>
+<tbody>
+<tr style="background:var(--good-bg)"><td><strong>AWS CDK</strong></td><td>Apache-2.0・v2.262系（2026-07頃）</td><td class="ok"><strong>第一推奨。</strong>既存のNode.js環境をそのまま使える。<code>&lt;ACCOUNT_ID&gt;</code>等のプレースホルダー運用が消える。<code>cdk diff</code>で適用前に確認できる</td></tr>
+<tr><td>OpenTofu</td><td>MPL-2.0・v1.12.1前後（2026-05）</td><td class="q">HCL・state・provider lockが増える。<strong>静的サイト一つにはstate管理が過剰</strong></td></tr>
+<tr><td>Terraform</td><td class="ng"><strong>v1.6以降 BUSL-1.1</strong>（4年後MPL-2.0）</td><td class="ng"><strong>厳密には現在の新バージョンはOSI型OSSではない。OSS重視ならOpenTofu</strong></td></tr>
+<tr><td>CloudFormation</td><td>AWSサービス本体</td><td class="q">AWSの仕組みを最も直接学べるが記述量が多い。<strong>「生JSONの再発明」を「巨大なYAML手書き」に置き換えやすい</strong></td></tr>
+<tr><td>SST</td><td>MIT・v4.15系（2026-05）</td><td class="ng">フルスタック向け。<strong>静的ファイルだけには抽象化が大きい</strong></td></tr>
+<tr><td>Pulumi</td><td>Apache-2.0・v3.244系（2026-05）</td><td class="ng">Pulumi stateが加わる。<strong>個人静的サイトにはCDKより一段重い</strong></td></tr>
+<tr><td>Serverless Framework</td><td class="ng">v4のnpm配布物に<strong>プロプライエタリ部分を含む</strong></td><td class="ng"><strong>不採用</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<h4>CDK の単一Stackに含めるもの</h4>
+<ol>
+<li>非公開S3バケット</li>
+<li>CloudFront Origin Access Control</li>
+<li>Distribution</li>
+<li>ResponseHeadersPolicy</li>
+<li>GitHub OIDC Provider</li>
+<li>mainブランチまたはGitHub Environmentに限定したIAM Role</li>
+<li>S3同期とCloudFront invalidationだけを許す最小権限</li>
+<li>バケット名・Distribution ID・Role ARNのOutputs</li>
+</ol>
+
+<div class="box warn">
+<p style="margin-bottom:0">
+確認しておくとよい点：現在の信頼ポリシーにある <code>sub</code> の形式について、
+GitHubのimmutable subject claim対応状況を確認してください。
+<code>configure-aws-credentials</code> の最新ドキュメントでは、
+<strong>2026-07-15以降に作成されたリポジトリ</strong>について組織ID・リポジトリIDを含む形式も説明されています。
+</p>
+</div>
+
+<h3>14.6 そもそもS3+CloudFrontが最適か</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>選択肢</th><th>無料枠・独自ドメイン</th><th>学習効果</th><th>判定</th></tr></thead>
+<tbody>
+<tr><td><strong>S3 + CloudFront</strong></td><td><strong>CloudFrontに月額0USDの定額Freeプラン登場。</strong>100GB転送・100万リクエスト・S3 5GB相当</td><td class="ok"><strong>IAM・OAC・DNS・TLS・CDN・キャッシュを深く学べる</strong></td><td class="ok"><strong>AWS学習が目的なら維持</strong></td></tr>
+<tr><td>Cloudflare Pages</td><td>Free で月500 builds、1サイト20,000ファイル、100 custom domains</td><td class="q">Git/CDN/DNSは学べるが<strong>AWS学習にはならない</strong></td><td class="ok"><strong>公開だけが目的なら第一推奨。</strong>apexドメイン利用時はネームサーバー移管が必要</td></tr>
+<tr><td>GitHub Pages</td><td>公開repoなら無料</td><td class="ok">Git/GitHub Actions学習との相性が最高</td><td class="q">高度なヘッダー制御に弱い</td></tr>
+<tr><td>Netlify</td><td class="q">Freeは<strong>月300 credits</strong></td><td>フォーム・redirect・previewを学べる</td><td class="q"><strong>2025年以降のcredit制では上限到達時にサイトが停止する</strong></td></tr>
+<tr><td>Vercel</td><td>Hobbyは個人・非商用向け無料</td><td>Next.jsなら学習価値が高い</td><td class="q"><strong>素の静的HTMLには機能過多</strong></td></tr>
+<tr><td>Deno Deploy</td><td>Free tier</td><td>—</td><td class="ng"><strong>新Deployは現時点でUS/EUの2リージョン。</strong>Deploy Classicは2026-07-20終了済み</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box term">
+<span class="t">判断</span>
+<ul style="margin-bottom:0">
+<li><strong>公開だけが目的なら</strong> → Cloudflare Pages（AWSリソース・IAM・invalidationの管理が消える）</li>
+<li><strong>AWSを学ぶことが目的なら</strong> → S3+CloudFrontを継続し、CDK化する</li>
+</ul>
+<p style="margin-bottom:0; margin-top:.7rem">
+<strong>速度について</strong>：公開ベンチマークだけで順位は決められません。
+静的サイトなら<strong>ホスト間の差より「未最適化PNG 69MB」の影響のほうが大きい可能性が高い</strong>です。
+</p>
+</div>
+
+<h3>14.7 品質チェックのCI</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>名前</th><th>ライセンス／状況</th><th>頻度</th><th>注意点</th></tr></thead>
+<tbody>
+<tr><td><strong>HTML-Validate</strong></td><td>MIT・v11.6.0（2026-07）</td><td class="ok"><strong>毎push</strong></td><td>厳格ルールを一度に有効化すると修正量が多い</td></tr>
+<tr><td><strong>lychee</strong>（リンク切れ検査）</td><td>Apache-2.0・安定版0.21系</td><td>毎PRまたは週次</td><td><strong>外部サイトの429/403で偽陽性。</strong>除外・retry設定が必要</td></tr>
+<tr><td>pa11y-ci（アクセシビリティ）</td><td>LGPL-3.0・v4.0.1</td><td>main または週次</td><td>Chromium起動分CIが重い。<strong>自動検査で全a11y問題は見つからない</strong></td></tr>
+<tr><td>Lighthouse CI</td><td>Apache-2.0・0.15.1系</td><td>性能改善期間だけ</td><td><strong>性能値は揺れる。</strong>最初から100点必須にしない</td></tr>
+<tr><td>Unlighthouse</td><td>MIT・v0.18.0（2026-06）</td><td>定期・手元監査</td><td>Node 22.18以上。Lighthouse CIと重複しやすい</td></tr>
+<tr><td>axe-core</td><td>MPL-2.0・v4.12.1（2026-06）</td><td>—</td><td>Playwright等との統合向け</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box warn">
+<p style="margin-bottom:0">
+<strong>これらを全部同時に毎pushへ入れるのは逆効果です。</strong>
+ブラウザ起動系は一つから始めてください。
+</p>
+</div>
+
+<h3>14.8 CSSの土台 ── クラスレスCSSは「導入しない」</h3>
+
+<div class="box term">
+<span class="t">用語：クラスレスCSS</span>
+<p style="margin-bottom:0">
+CSSを1枚読み込むだけで、<strong>class属性を書かなくても素のHTMLが整って見える</strong>ライブラリ。
+Pico.css、Water.css、Simple.css など。
+</p>
+</div>
+
+<div class="box">
+<p>
+学習サイトには理論上 Pico.css か Simple.css が合いますが、<strong>今回は導入しないのが妥当</strong>です。
+</p>
+<p style="margin-bottom:0">
+<code>assets/style.css</code> はすでに色・書体・カード・記事・表・コード・ナビを一貫して定義しています。
+<strong>クラスレスCSSを足すと、303行が減るのではなく「外部CSSを打ち消す上書き」が増えます。</strong><br>
+→ <strong>クラスレスCSSの適所は、今後作る一時的な授業メモや検証HTMLです。</strong>
+</p>
+</div>
+
+<p><strong>CSSの最終結論:</strong></p>
+<ul>
+<li>Pico等のクラスレスCSSは<strong>重ねない</strong></li>
+<li><code>modern-normalize</code> は必要なら<strong>土台だけ</strong>借りる</li>
+<li><strong>Open Props は余白・easeの考え方だけ借りる</strong></li>
+<li><strong>CUBE CSS と <code>@layer</code> で既存CSSを整理する</strong></li>
+<li>機械チェックを入れるなら <strong>stylelint</strong> を第一候補に</li>
+<li><strong>vanilla-extract / Panda / PostCSS単体導入はしない</strong></li>
+</ul>
+
+<h3>14.9 その他の運営ツール</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>領域</th><th>推奨</th></tr></thead>
+<tbody>
+<tr><td>Git hooks（コミット前の自動処理）</td><td><strong>lefthook</strong>（husky / simple-git-hooks / pre-commit と比較）</td></tr>
+<tr><td>staged fileだけ処理</td><td>lint-staged / nano-staged</td></tr>
+<tr><td>コミットメッセージ・リリース</td><td>commitlint + Conventional Commits、changesets / release-please</td></tr>
+<tr><td><strong>Node 22の固定</strong></td><td><strong>ルートに <code>.nvmrc</code> を置く。</strong>mise / volta / asdf / fnm / corepack</td></tr>
+<tr><td><code>.editorconfig</code></td><td><strong>ルートへ昇格</strong></td></tr>
+<tr><td>Markdown品質</td><td>markdownlint、textlint（13.2節）</td></tr>
+<tr><td><strong>LICENSE</strong></td><td><strong>現状なし。</strong>学習用なら MIT / CC-BY / Unlicense / 敢えて付けない から選ぶ</td></tr>
+<tr><td>ライセンス検査</td><td>REUSE(FSFE) / licensee / license-checker</td></tr>
+<tr><td><strong>第三者素材の帰属</strong></td><td><strong><code>Third-party notices</code> を作る</strong>（Fontsource OFL、tldrのCC-BY、アイコン）</td></tr>
+<tr><td>AWSリソースの掃除</td><td>aws-nuke、cloud-custodian、Infracost</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="p15"><span class="num">15</span>何から手を付けるか<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<h3>15.1 全体の着手順</h3>
+
+<p><strong>全部やる必要はありません。</strong>効果の大きい順に並べます。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th class="num">#</th><th>やること</th><th>効果</th><th>章</th></tr></thead>
+<tbody>
+<tr style="background:var(--danger-bg)"><td class="num">0</td><td><strong><code>.gitignore</code> に <code>vendor/</code> を追加</strong></td><td>93MB・8,794ファイルの流入を防ぐ</td><td>14.2</td></tr>
+<tr><td class="num">1</td><td><strong>Starlight を新規に立てる</strong>（既存HTMLは消さない）</td><td>器ができる</td><td>10</td></tr>
+<tr><td class="num">2</td><td><strong>記事4本をMarkdown化。slugは維持</strong></td><td>URLが壊れない</td><td>10</td></tr>
+<tr><td class="num">3</td><td><strong>ゲーム2本を <code>public/works/</code> へ無改造でコピー</strong></td><td>二重管理が消える</td><td>10.6</td></tr>
+<tr style="background:var(--good-bg)"><td class="num">4</td><td><strong>埋もれているMarkdown 8,800行をサイドバーに載せる</strong></td><td class="ok"><strong>公開量が一気に増える。最も即効性がある</strong></td><td>1.2 / 11</td></tr>
+<tr><td class="num">5</td><td>frontmatter に <code>id</code>／<code>kind</code>／<code>order</code>／<code>prerequisites</code> を入れる</td><td>ドメインモデルが乗る</td><td>9.3</td></tr>
+<tr><td class="num">6</td><td><strong>IndexedDBに完了状態とイベント。エクスポートを先に作る</strong></td><td><strong>学習状態モデル（B）を獲得</strong></td><td>9.4</td></tr>
+<tr><td class="num">7</td><td>図解をD2でコード化（技術図6枚のみ）</td><td>69MB問題の根治</td><td>13.1</td></tr>
+<tr><td class="num">8</td><td>Git Dungeon を isomorphic-git へ</td><td>判定が正しくなる</td><td>8.5</td></tr>
+<tr><td class="num">9</td><td><code>ts-fsrs</code> で復習キュー</td><td>定着</td><td>9.5</td></tr>
+<tr><td class="num">10</td><td>かけらを習慣レイヤーへ</td><td>二重管理の回避</td><td>9.6 / 11.4</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="box term">
+<span class="t">重要</span>
+<p style="margin-bottom:0">
+<strong>1〜4 だけでも、いまより遥かに「学習サイト」になります。</strong>
+5以降は学習状態モデルの実装なので、<strong>必要を感じてからで構いません。</strong>
+</p>
+</div>
+
+<h3>15.2 最初の1週間（具体的な作業）</h3>
+
+<div class="card">
+<h4 style="margin-top:0">1日目 — 素の状態を固定する</h4>
+<pre><code>npm create astro@latest -- --template starlight</code></pre>
+<p style="margin-bottom:0">タイトル・説明・サイトURLを設定。<strong>ビルドが成功することを確認してコミット。</strong></p>
+</div>
+
+<div class="card">
+<h4 style="margin-top:0">2日目 — 既存記事を「1本だけ」移植する</h4>
+<p style="margin-bottom:0">
+AWS記事を1本Markdown化。PNGを移す。見出し・コードブロック・リンク・モバイル表示を確認。<br>
+<strong>残り3本を一括移植する前に、変換ルールを決めること。</strong>
+</p>
+</div>
+
+<div class="card">
+<h4 style="margin-top:0">3日目 — ゲームを無改造で置く</h4>
+<p style="margin-bottom:0">
+<code>public/works/linux-story-quest/</code> と <code>git-dungeon/</code> へコピー。<br>
+相対URL・画像・<code>localStorage</code> が動くか確認。<strong>まずはレッスンから別ページで開く形で十分。</strong>
+</p>
+</div>
+
+<div class="card">
+<h4 style="margin-top:0">4日目 — 教材構造を作る</h4>
+<p style="margin-bottom:0">
+<code>Webインフラ / Linux / Git / 授業メモ</code> の4セクションを作る。<br>
+各レッスンに「<strong>目的</strong>」「<strong>前提</strong>」「<strong>教材</strong>」「<strong>手を動かす</strong>」「<strong>振り返り</strong>」を置く。<br>
+<strong>記事とゲームを同じコース上に並べる。</strong>
+</p>
+</div>
+
+<div class="card">
+<h4 style="margin-top:0">5日目 — 作品一覧と「かけら」</h4>
+<p style="margin-bottom:0">
+<code>/works</code> ページを追加。3アプリをカード表示。<br>
+<strong>「教材」「成果物」「日常利用アプリ」をラベルで区別する。</strong>
+</p>
+</div>
+
+<div class="card">
+<h4 style="margin-top:0">6日目 — 静的デプロイ</h4>
+<p style="margin-bottom:0">サブパス・404・ゲームの直接URL・画像URLを確認。</p>
+</div>
+
+<div class="card" style="border-left:4px solid var(--good-line)">
+<h4 style="margin-top:0">7日目 — 採用判定</h4>
+<p>次を満たせば継続します。</p>
+<ul style="margin-bottom:0">
+<li>☐ 記事追加が<strong>Markdown一枚</strong>で済む</li>
+<li>☐ ゲームが<strong>改造なし</strong>で動く</li>
+<li>☐ スマートフォンで<strong>教材 → ゲーム → 教材</strong>へ戻れる</li>
+<li>☐ ビルドと公開が<strong>一コマンドまたはpush</strong>で完了する</li>
+</ul>
+</div>
+
+<h3>15.3 やらなくてよいこと（大事）</h3>
+
+<div class="box warn">
+<p>次は<strong>いま手を付けなくて構いません。</strong>やると複雑さだけが増えます。</p>
+<ul style="margin-bottom:0">
+<li><strong>ルーター</strong>（History APIのままでよい。4画面しかない）</li>
+<li><strong>状態管理ライブラリ</strong>（<code>state.js</code> の基盤は約20行しかない。残りはドメインロジックで消えない）</li>
+<li><strong>IndexedDB への「かけら」の移行</strong>（学習サイト統合時でよい）</li>
+<li><strong>Service Worker / PWA</strong>（<strong>フォント4.5MBを減らしてからでないと、初回オフライン準備が重くなる</strong>）</li>
+<li><strong>Lighthouse CI</strong>（性能改善期間だけ）</li>
+<li><strong>Phaser / v86 / WebContainers</strong>（教材設計より環境構築に時間を取られる）</li>
+<li><strong>CMS</strong>（一人で編集するうちは VS Code で十分）</li>
+<li><strong>認証・アカウント</strong>（入れた瞬間に責任が発生する。4.3節ルール5）</li>
+<li><strong>SRSの自作</strong>（まずAnkiをそのまま使う。SRS実装自体が学習課題になる場合を除く）</li>
+</ul>
+</div>
+
+
+<h2 id="p16"><span class="num">16</span>用語集<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<p>この資料に出てきた用語を、五十音・アルファベット順にまとめます。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>用語</th><th>意味</th><th>節</th></tr></thead>
+<tbody>
+<tr><td><strong>アセット（asset）</strong></td><td>画像・フォント・動画など、コード以外の資産</td><td>2.3</td></tr>
+<tr><td><strong>ASI</strong></td><td>Automatic Semicolon Insertion。JavaScriptが改行位置に自動でセミコロンを補う仕様。<strong>改行を消すと意味が変わる原因</strong></td><td>12.1</td></tr>
+<tr><td><strong>AST</strong></td><td>抽象構文木。文字列をプログラムが扱いやすい構造に変換したもの</td><td>8.2</td></tr>
+<tr><td><strong>Attempt</strong></td><td>挑戦。1回ごとの試行記録。<strong>完了（Completion）とは別概念</strong></td><td>4.3</td></tr>
+<tr><td><strong>BPE</strong></td><td>Byte Pair Encoding。よく出る文字の並びを記号に置き換える圧縮方式。<strong>今回は不要と判明</strong></td><td>12.2</td></tr>
+<tr><td><strong>Brotli</strong></td><td>gzipより新しい転送用圧縮。CloudFrontが自動で行う</td><td>2.7</td></tr>
+<tr><td><strong>BudouX</strong></td><td>日本語を文節で区切り、自然な改行位置を作るGoogle製ライブラリ</td><td>13.2</td></tr>
+<tr><td><strong>バンドル（bundle）</strong></td><td>バラバラのファイルを1つにまとめること</td><td>2.3</td></tr>
+<tr><td><strong>CDN</strong></td><td>Content Delivery Network。世界中にコピーを置き、近い場所から配る仕組み</td><td>2.7</td></tr>
+<tr><td><strong>CI / CD</strong></td><td>Continuous Integration / Delivery。変更のたびに自動でテスト・公開する仕組み</td><td>3.1</td></tr>
+<tr><td><strong>Content Collections</strong></td><td>Astroの機能。同じ構造のMarkdown群にスキーマと型検査を与える</td><td>2.4</td></tr>
+<tr><td><strong>contentVersion</strong></td><td>教材内容の版番号。<strong>上げても完了を取り消さない</strong></td><td>9.3</td></tr>
+<tr><td><strong>CORS</strong></td><td>ブラウザが別ドメインへの通信を制限する仕組み。<strong>ブラウザからGitHubへpushできない理由</strong></td><td>8.5</td></tr>
+<tr><td><strong>CSP</strong></td><td>Content Security Policy。ページが読み込める資源を制限するセキュリティ設定</td><td>10.6</td></tr>
+<tr><td><strong>dangling commit</strong></td><td>どのブランチからも参照されない孤児コミット。<strong>グラフ比較の落とし穴</strong></td><td>8.4</td></tr>
+<tr><td><strong>diagram as code</strong></td><td>図をテキストで記述し、ビルド時にSVGへ変換する手法</td><td>13.1</td></tr>
+<tr><td><strong>ドメインモデル</strong></td><td>その世界にどんな「もの」があり、どう関係しているかの見取り図</td><td>2.6</td></tr>
+<tr><td><strong>DST</strong></td><td>Daylight Saving Time（夏時間）。<strong>23時間の日・25時間の日が発生する</strong></td><td>12.3</td></tr>
+<tr><td><strong>第一級の概念</strong></td><td>そのシステムが独立した「もの」として正面から扱っているもの</td><td>2.6</td></tr>
+<tr><td><strong>eviction（退去）</strong></td><td>ブラウザがストレージ圧迫時に古いデータを捨てること。<strong>永続保証がない理由</strong></td><td>2.5</td></tr>
+<tr><td><strong>exemplar</strong></td><td>Exercismの模範解答。<strong>表示用ではなく、テストと仕様の整合性を保証する実行可能資料</strong></td><td>5.2</td></tr>
+<tr><td><strong>frontmatter</strong></td><td>Markdownの先頭に <code>---</code> で囲んで書く「この文書についての情報」</td><td>2.4</td></tr>
+<tr><td><strong>FSRS</strong></td><td>Free Spaced Repetition Scheduler。最新世代の間隔反復アルゴリズム</td><td>9.5</td></tr>
+<tr><td><strong>Gitleaks</strong></td><td>コードに秘密情報が混入していないか検査するツール</td><td>14.4</td></tr>
+<tr><td><strong>H5P</strong></td><td>LMS間で移植できるインタラクティブ教材のパッケージ形式</td><td>6 / 10.6</td></tr>
+<tr><td><strong>IaC</strong></td><td>Infrastructure as Code。インフラ設定をコードで管理すること</td><td>14.5</td></tr>
+<tr><td><strong>IndexedDB</strong></td><td>ブラウザ内のデータベース。非同期・構造化データ・索引が使える</td><td>2.5</td></tr>
+<tr><td><strong>innerHTML</strong></td><td>要素の中身をHTMLとして差し替えるAPI。<strong>ユーザー入力を混ぜるとXSSになる</strong></td><td>12.6</td></tr>
+<tr><td><strong>Intl.Segmenter</strong></td><td>ブラウザ標準の文字列分割API。<strong>形態素解析器ではない</strong></td><td>13.2</td></tr>
+<tr><td><strong>isomorphic-git</strong></td><td>ブラウザで動く純JavaScript製のGit実装（MIT）</td><td>8.5</td></tr>
+<tr><td><strong>kind</strong></td><td>この資料での Unit の種類。<code>article</code>／<code>exercise</code>／<code>project</code></td><td>7.1</td></tr>
+<tr><td><strong>lint / linter</strong></td><td>コードや文章の誤り・悪い書き方を自動で指摘するツール</td><td>3.1</td></tr>
+<tr><td><strong>LMS</strong></td><td>Learning Management System。受講者の学習を管理するシステム</td><td>4.3</td></tr>
+<tr><td><strong>localStorage</strong></td><td>ブラウザ内の簡易保存領域。<strong>文字列のみ・同期・約5〜10MiB</strong></td><td>2.5</td></tr>
+<tr><td><strong>LRS</strong></td><td>Learning Record Store。xAPIの学習記録を貯めるサーバー。<strong>今回は作らない</strong></td><td>6.1</td></tr>
+<tr><td><strong>LTI</strong></td><td>Learning Tools Interoperability。外部ツールをLMSに教材として埋め込む標準</td><td>6</td></tr>
+<tr><td><strong>Markdown</strong></td><td>記号だけで見出しやリストを表せる軽い記法</td><td>2.4</td></tr>
+<tr><td><strong>minify / minifier</strong></td><td>コードから空白・改行・コメントを削って小さくすること／その道具</td><td>2.3 / 12.1</td></tr>
+<tr><td><strong>OIDC</strong></td><td>OpenID Connect。GitHub ActionsからAWSへ<strong>長期キーなしで</strong>認証する仕組み</td><td>14.3</td></tr>
+<tr><td><strong>Open Badges</strong></td><td>修了証・バッジを検証可能な形で表現する標準</td><td>6</td></tr>
+<tr><td><strong>OSS</strong></td><td>オープンソースソフトウェア。<strong>「無料」ではなく「条件付きで自由」</strong></td><td>2.1</td></tr>
+<tr><td><strong>Pagefind</strong></td><td>生成済みHTMLを索引化する静的サイト検索。<strong>日本語のCJK分割に対応</strong></td><td>13.2</td></tr>
+<tr><td><strong>popstate</strong></td><td>ブラウザの戻る／進むで発生するイベント</td><td>9.7</td></tr>
+<tr><td><strong>postMessage</strong></td><td>iframeと親ページの間で安全にデータをやりとりするAPI</td><td>10.6</td></tr>
+<tr><td><strong>prerequisites</strong></td><td>前提条件。<strong><code>order</code>（表示順）とは別概念</strong></td><td>9.3</td></tr>
+<tr><td><strong>QuotaExceededError</strong></td><td>ストレージ容量オーバーのエラー。<strong>現在catchされていない</strong></td><td>12.6</td></tr>
+<tr><td><strong>SCORM</strong></td><td>教材をZIPにまとめてLMSと進捗をやりとりする古い標準</td><td>6</td></tr>
+<tr><td><strong>secret scanning</strong></td><td>コード中の秘密情報（鍵・パスワード）の混入を自動検査すること</td><td>14.4</td></tr>
+<tr><td><strong>seed</strong></td><td>乱数の種。<strong>同じ課題から違う問題（variant）を生成し、再現もできる</strong></td><td>5.2</td></tr>
+<tr><td><strong>SPA</strong></td><td>Single Page Application。1枚のHTMLで画面を切り替えるアプリ</td><td>—</td></tr>
+<tr><td><strong>srcset</strong></td><td>画面サイズに応じて異なる画像を配信するHTMLの仕組み</td><td>12.4</td></tr>
+<tr><td><strong>SRS</strong></td><td>Spaced Repetition System（間隔反復）。忘れかけに復習する仕組み</td><td>9.5</td></tr>
+<tr><td><strong>SSG</strong></td><td>Static Site Generator。Markdown等から静的HTMLを生成する道具</td><td>2.2 / 3.1</td></tr>
+<tr><td><strong>Starlight</strong></td><td>Astro公式のドキュメント用ツールキット（MIT）。<strong>今回の第一推奨</strong></td><td>10</td></tr>
+<tr><td><strong>tombstone</strong></td><td>削除済みを示す印。同期で「削除」を伝えるために使う</td><td>9.4</td></tr>
+<tr><td><strong>トランスパイル</strong></td><td>新しい書き方を古い環境向けに書き換えること</td><td>2.3</td></tr>
+<tr><td><strong>Unit</strong></td><td>この資料での学習の単位。<strong>記事も演習も成果物も、すべてUnit</strong></td><td>7.1</td></tr>
+<tr><td><strong>unicode-range</strong></td><td>「このフォントファイルはこの文字範囲を担当する」と宣言するCSS。<strong>日本語フォント分割配信の要</strong></td><td>12.5</td></tr>
+<tr><td><strong>variant</strong></td><td>同じ課題から生成される変種の問題</td><td>5.2</td></tr>
+<tr><td><strong>Vite</strong></td><td>現在の主流のビルドツール。<strong><code>build.js</code> 159行を10〜20行に置き換える</strong></td><td>2.3</td></tr>
+<tr><td><strong>xAPI</strong></td><td>学習イベントを <code>actor</code>／<code>verb</code>／<code>object</code> で表す標準。<strong>形だけ借りる</strong></td><td>6.1</td></tr>
+<tr><td><strong>XSS</strong></td><td>Cross-Site Scripting。ユーザー入力に混ぜられたスクリプトが実行される脆弱性</td><td>12.6</td></tr>
+<tr><td><strong>約物（やくもの）</strong></td><td>句読点・括弧・記号。日本語では1文字分の幅を持つため間延びして見える</td><td>13.2</td></tr>
+</tbody>
+</table>
+</div>
+
+
+<h2 id="p17"><span class="num">17</span>この資料の信頼度<a href="#" class="toplink">↑ 目次へ</a></h2>
+
+<h3>17.1 どうやって調べたか</h3>
+
+<div class="box">
+<p>
+<strong>codex CLI（gpt-5.6-sol）にWeb検索を付けて、12トラックを並列で走らせました。</strong>
+3ラウンドに分かれています。
+</p>
+<div class="tw" style="margin:.7rem 0 0">
+<table>
+<thead><tr><th>ラウンド</th><th>観点</th><th>トラック</th></tr></thead>
+<tbody>
+<tr><td>第1</td><td>自作したものを何で置き換えるか</td><td>SSG／SPA基盤／ユーティリティ／インフラ</td></tr>
+<tr><td>第2</td><td>第1で抜けた領域</td><td>図解と日本語／ブラウザ実行基盤／ドキュメント基盤とCMS／リポジトリ運営</td></tr>
+<tr><td><strong>第3</strong></td><td><strong>学習サイトを作るという観点（本題）</strong></td><td><strong>LMSのドメインモデル／演習と判定／アーキテクチャ／既製品</strong></td></tr>
+</tbody>
+</table>
+</div>
+<p style="margin-bottom:0; margin-top:.7rem">
+その結果を、Claude Code が<strong>リポジトリの実測値と突き合わせて統合・編集</strong>しました。
+</p>
+</div>
+
+<h3>17.2 どこまで信用してよいか</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>情報の種類</th><th>信頼度</th><th>備考</th></tr></thead>
+<tbody>
+<tr><td><strong>リポジトリの実測値</strong><br>（行数・ファイルサイズ・圧縮率・DSTバグの再現）</td><td class="ok"><strong>高い</strong></td><td><strong>実際にコマンドを実行して測定。この資料の中で最も確実</strong></td></tr>
+<tr><td><strong>設計上の考え方</strong><br>（二つのモデル、状態一致の原理、完了条件の分岐）</td><td class="ok"><strong>高い</strong></td><td>複数の独立した調査が同じ結論に到達した</td></tr>
+<tr><td><strong>バージョン番号・リリース日</strong></td><td class="q"><strong>中</strong></td><td class="q"><strong>Web検索由来。全件を再確認したわけではない。採用前にnpm/GitHubで最新を確認すること</strong></td></tr>
+<tr><td><strong>ライセンス表記</strong></td><td class="q"><strong>中</strong></td><td class="q"><strong>必ず個別リポジトリのLICENSEファイルを直接確認すること</strong></td></tr>
+<tr><td>「未確認」と書かれた項目</td><td class="ng"><strong>不明</strong></td><td class="ng"><strong>調べても確認できなかった。推測で埋めていない</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>17.3 調査どうしが食い違った点（と、その裁定）</h3>
+
+<p>
+12本を並列で走らせたため、<strong>4箇所で推奨が競合しました。</strong>
+どう裁定したかを明示します。<strong>あなたが違う判断をしてもよい</strong>ところです。
+</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>論点</th><th>競合した推奨</th><th>裁定と理由</th></tr></thead>
+<tbody>
+<tr>
+  <td><strong>サイトの器</strong></td>
+  <td>Astro単体 ／ <strong>Starlight</strong> ／ Quartz ／ next-course-starter</td>
+  <td><strong>Starlight。</strong>記事は順序を持つ教材でありブログではない。next-course-starterはReact＋保守状況が未確認、QuartzはVictorian CSSの移植が重い</td>
+</tr>
+<tr>
+  <td><strong>Gitエンジン</strong></td>
+  <td>isomorphic-git ／ 小型自作モデル</td>
+  <td><strong>isomorphic-git。</strong>原理（状態で判定）は両者一致。<strong>学習サイトなので、自分のGit理解が間違っていたときにゲームも一緒に間違うのを避けたい。</strong>CIで本物のgitと付き合わせられる</td>
+</tr>
+<tr>
+  <td><strong>日付ライブラリ</strong></td>
+  <td>自作継続 ／ date-fns</td>
+  <td><strong><code>differenceInCalendarDays</code> だけ</strong> date-fns に。<strong>DSTバグは実在するがJSTでは出ないので優先度は低い</strong></td>
+</tr>
+<tr>
+  <td><strong>SRS</strong></td>
+  <td>Ankiをそのまま使う ／ ts-fsrsで自作</td>
+  <td><strong>両方。</strong>サイト内の復習キューは <code>ts-fsrs</code>、それとは別にAnkiを使う。<strong>SRS実装自体が学習課題になる場合を除き、作り込まない</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<h3>17.4 特に注意が必要なライセンス（再掲）</h3>
+
+<div class="box danger">
+<ul style="margin-bottom:0">
+<li><strong>Terraform = BUSL-1.1</strong>（OSI型OSSではない。OSS重視ならOpenTofu）</li>
+<li><strong>Outline = BSL 1.1</strong>（同上）</li>
+<li><strong>CheerpX = プロプライエタリ</strong>（Community条件では<strong>自己ホスト不可</strong>）</li>
+<li><strong>Zola = EUPL-1.2</strong>（2026年にライセンス変更）</li>
+<li><strong>ZenFS = LGPL-3.0-or-later</strong></li>
+<li><strong>wasm-git = GPL-2.0 + linking exception</strong></li>
+<li><strong>Anki = AGPL-3.0-or-later</strong></li>
+<li><strong>H5P = GPL-3.0</strong></li>
+<li><strong>pngquant = GPL-3.0 または商用</strong></li>
+<li><strong>roadmap.sh = コンテンツ再配布禁止</strong>（リンクのみ）</li>
+<li><strong>The Odin Project = CC BY-NC-SA</strong>（<strong>非商用</strong>）</li>
+<li><strong>Full Stack Open = CC BY-NC-SA 3.0</strong>（同上）</li>
+<li><strong>tldr 本文 = CC BY-4.0</strong>（帰属表示が必須）</li>
+<li><strong>OverTheWire Bandit = OSSではない</strong>（All rights reserved・再配布禁止）</li>
+</ul>
+</div>
+
+<div class="box danger">
+<span class="t">セキュリティ上の注意</span>
+<ul style="margin-bottom:0">
+<li><strong>Judge0 は 1.13.0 以前に重大な sandbox escape（サンドボックス脱出）の脆弱性。使うなら必ず 1.13.1 以降</strong></li>
+<li><strong>fflate は 0.8.2 以前に 2026年公開の DoS 問題。使うなら 0.8.3 以降</strong></li>
+<li><strong>oxc-minify は公式npmが「alpha、誤った結果を返す可能性」と明記。本番に使わない</strong></li>
+<li><strong>Static CMS は 2024-09-09 に archive、開発終了。採用不可</strong></li>
+</ul>
+</div>
+
+<h3>17.5 関連ドキュメント</h3>
+
+<p>この資料は、<code>laboratory/</code> の内容を1本にまとめたものです。個別に詳しく見たい場合:</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>ファイル</th><th>内容</th></tr></thead>
+<tbody>
+<tr><td><code>README.md</code></td><td>目次・結論・裁定</td></tr>
+<tr><td><code>10-learning-site-elements.md</code></td><td>学習サイトの構成要素（本資料 4〜7章）</td></tr>
+<tr><td><code>11-exercise-and-grading.md</code></td><td>演習と正誤判定（本資料 8章）</td></tr>
+<tr><td><code>12-architecture.md</code></td><td>アーキテクチャ（本資料 9章）</td></tr>
+<tr><td><code>13-ready-made-oss.md</code></td><td>既製品（本資料 10章）</td></tr>
+<tr><td><code>14-mapping.md</code></td><td>資産の当てはめ（本資料 11章）</td></tr>
+<tr><td><code>00-inventory.md</code> 〜 <code>08-repo-ops.md</code></td><td>技術リファレンス（本資料 12〜14章）</td></tr>
+<tr><td><strong><code>raw/</code></strong></td><td><strong>codexの編集前の原文16ファイル。この資料で省略した細部はここにある</strong></td></tr>
+</tbody>
+</table>
+</div>
+
+<hr>
+
+<div class="box term" style="margin-top:3rem">
+<span class="t">最後に</span>
+<p>
+この資料の結論を一文にすると、こうなります。
+</p>
+<p style="font-size:1.05rem; margin-bottom:0">
+<strong>遠回りだったのは「器」を自作したことであって、「中身」を作ったことではありません。</strong><br>
+器（出版モデル）は Starlight が持ってきてくれます。
+足すべきは学習状態モデルだけ。そして<strong>日本語の教材文8,800行、60日ルール、
+ヴィクトリア朝のCSS、RPGの世界観、初学者がつまずく順番の理解 ——
+これらはどんなOSSからも手に入らない、あなただけの資産です。</strong>
+</p>
+</div>
+
+<p class="mini" style="margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--line)">
+作成: 2026-08-25 ／ 調査: codex CLI（gpt-5.6-sol）＋ Web検索 12トラック並列、
+統合と実測: Claude Code ／ 対象: <code>/home/shimizu/study/spartan_school</code>
+</p>
+
+</main>
+</div>
+</body>
+</html>
