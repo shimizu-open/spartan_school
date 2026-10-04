@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laravelで学ぶ 機能追加の考え方 — 「何がしたい」から「動いた」まで</title>
+<style>
+:root{
+  --navy:#12314e; --b700:#2a6fae; --b600:#3b82c4; --b200:#bcdaf1; --b100:#dcebf8; --b50:#f0f7fd;
+  --paper:#fff; --bg:#e4eff9; --ink:#12314e; --muted:#5b7893; --line:#cfe1f2;
+  --amber:#b8712c; --amber-bg:#fdf2e4; --amber-line:#edd3ae;
+  --green:#2c7a5e; --green-bg:#e8f6f0; --red:#c0392b; --red-bg:#fdecea;
+  --code-bg:#0e2840;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink); line-height:1.9; font-size:16px;
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Noto Sans JP",Meiryo,sans-serif}
+.wrap{max-width:960px; margin:0 auto; padding:0 16px 80px}
+.hero{background:linear-gradient(165deg,#1b4f7e,#3b82c4); color:#fff; padding:40px 16px 44px; margin-bottom:28px; border-radius:0 0 28px 28px}
+.hero-in{max-width:928px; margin:0 auto}
+.hero h1{margin:0; font-size:32px; line-height:1.35}
+.hero p{margin:14px 0 0; font-size:17px; background:rgba(255,255,255,.14); border-left:4px solid rgba(255,255,255,.7); padding:10px 16px; border-radius:0 12px 12px 0}
+nav{background:var(--paper); border-radius:16px; padding:16px 22px; margin:0 0 22px; font-size:15px}
+nav ol{margin:4px 0 0; padding-left:22px; columns:2; column-gap:30px}
+nav a{color:var(--b700); text-decoration:none}
+section{background:var(--paper); border-radius:20px; padding:28px 28px 30px; margin:0 0 22px; box-shadow:0 8px 28px rgba(18,49,78,.09)}
+h2{margin:0 0 12px; font-size:24px; line-height:1.4; display:flex; gap:12px; align-items:center}
+h2 .num{flex:none; width:34px; height:34px; border-radius:50%; background:var(--b700); color:#fff; font-size:16px; display:grid; place-items:center}
+h3{margin:28px 0 8px; font-size:18px; color:var(--b700)}
+p{margin:8px 0}
+ul,ol{margin:6px 0; padding-left:22px}
+code{background:var(--b50); border:1px solid var(--line); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--code-bg); color:#e6f0fa; padding:14px 16px; border-radius:12px; overflow-x:auto; font-size:13.5px; line-height:1.7; margin:10px 0}
+pre code{background:none; border:0; padding:0; color:inherit}
+.note{background:var(--amber-bg); border:1px solid var(--amber-line); border-radius:12px; padding:12px 16px; margin:14px 0}
+.ok{background:var(--green-bg); border:1px solid #bfe3d4; border-radius:12px; padding:12px 16px; margin:14px 0}
+.ng{background:var(--red-bg); border:1px solid #f3c4bd; border-radius:12px; padding:12px 16px; margin:14px 0}
+.fig{border:1px solid var(--line); border-radius:14px; padding:14px; margin:14px 0; background:#fbfdff; overflow-x:auto}
+.fig svg{display:block; width:100%; min-width:680px; height:auto}
+.cap{font-size:14px; color:var(--muted); margin:8px 4px 0}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%; font-size:14.5px; margin:10px 0}
+th,td{border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; line-height:1.65}
+th{background:var(--b100)}
+td.hi{background:var(--amber-bg); font-weight:700; white-space:nowrap}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+.n{background:#dcebf8; border-bottom:2px solid var(--b600); padding:0 3px; border-radius:3px; font-weight:700}
+.v{background:#fdf2e4; border-bottom:2px solid var(--amber); padding:0 3px; border-radius:3px; font-weight:700}
+.r{background:#e8f6f0; border-bottom:2px solid var(--green); padding:0 3px; border-radius:3px; font-weight:700}
+.step{display:flex; gap:14px; margin:14px 0; align-items:flex-start}
+.step .b{flex:none; min-width:54px; text-align:center; background:var(--navy); color:#fff; border-radius:10px; font-weight:800; padding:4px 8px; font-size:14px}
+.step .c{flex:1; min-width:0}
+.step .c > p:first-child{margin-top:0}
+.sheet{border:2px dashed var(--b600); border-radius:14px; padding:18px 20px; background:var(--b50)}
+.sheet td{background:#fff; height:44px}
+.sheet th{width:34%}
+@media(max-width:720px){.grid2{grid-template-columns:1fr} .hero h1{font-size:25px} section{padding:22px 18px} nav ol{columns:1}}
+@media print{body{background:#fff} section,nav{box-shadow:none; border:1px solid #ccc; break-inside:avoid}}
+/* svg */
+.bx{fill:#fff; stroke:var(--b600); stroke-width:1.5}
+.bxa{fill:var(--amber-bg); stroke:var(--amber); stroke-width:1.5}
+.bxg{fill:var(--green-bg); stroke:var(--green); stroke-width:1.5}
+.tt{fill:var(--ink); font-size:14px; font-weight:700}
+.ts{fill:var(--muted); font-size:12px}
+.fl{fill:none; stroke:var(--b700); stroke-width:2}
+.ds{fill:none; stroke:var(--muted); stroke-width:1.3; stroke-dasharray:5 5}
+
+h2.part{margin:34px 4px 14px; font-size:15px; letter-spacing:.12em; color:var(--b700); border-bottom:2px solid var(--b200); padding-bottom:4px; display:block}
+nav ol{list-style:none; padding-left:0}
+nav li.p{font-weight:700; color:var(--navy); margin-top:8px; break-after:avoid}
+a{color:var(--b700)}
+td.bad{background:var(--red-bg)}
+.tag{display:inline-block; font-size:12px; font-weight:700; padding:1px 9px; border-radius:999px; vertical-align:middle}
+.must{background:var(--red-bg); color:var(--red)} .opt{background:var(--b100); color:var(--b700)}
+.hd{fill:var(--navy)} .hdt{fill:#fff; font-size:13px; font-weight:700}
+.box{fill:#fff; stroke:var(--b600); stroke-width:1.5}
+.ln{stroke:var(--line); stroke-width:1}
+.fk{fill:var(--amber-bg)}
+.tx{fill:var(--ink); font-size:13px}
+.lbl{fill:var(--b700); font-size:14px; font-weight:700}
+.sm{fill:var(--muted); font-size:12px}
+.arr{fill:none; stroke:var(--amber); stroke-width:2}
+.arrx{fill:none; stroke:var(--red); stroke-width:2; stroke-dasharray:5 4}
+.redt{fill:var(--red); font-size:13px; font-weight:700}
+h2 .ht{flex:1; min-width:0}
+.k{flex:none; display:inline-block; font-size:12px; font-weight:700; padding:2px 12px; border-radius:999px; line-height:1.7; white-space:nowrap}
+.k.c{background:var(--green-bg); color:var(--green); border:1px solid #bfe3d4}
+.k.l{background:var(--red-bg); color:var(--red); border:1px solid #f3c4bd}
+</style>
+</head>
+<body>
+<div class="hero"><div class="hero-in">
+  <h1>Laravelで学ぶ 機能追加の考え方<br>「何がしたい」から「動いた」まで</h1>
+  <p>機能を足すときの<b>考え方</b>は、フレームワークが変わっても同じです。その考え方を、Laravel の<b>動くコード</b>で確かめます。</p>
+</div></div>
+
+<div class="wrap">
+
+<nav><p style="margin:0 0 10px; color:var(--muted); font-size:14px">対象：CRUD（一覧・作成・編集・削除）を一度作ったことがあり、次に「自分で機能を足す」段階の人。コード例は Laravel（11以降）です。</p><b>目次</b>
+<ol>
+<li class="p">第1部　考え方の流れ</li>
+<li><a href="#intro">1. この資料が答える4つの問い</a></li>
+<li><a href="#flow">2. よくある流れと、実際の流れ</a></li>
+<li><a href="#vmodel">3. 全体図：考える向きと作る向きは逆</a></li>
+<li><a href="#steps">4. 9ステップを1つずつ</a></li>
+<li class="p">第2部　何が要るかを決める</li>
+<li><a href="#need">5. 「◯◯を作るなら何が必ず要る？」は、3つの問いで決まる</a></li>
+<li><a href="#why">6. 「もの」が増えるとき：なぜテーブルを分けるのか</a></li>
+<li><a href="#three">7. つなぎ方は3種類。違いは「番号欄をどこに置くか」だけ</a></li>
+<li><a href="#order">8. なぜ「奥から手前へ」作るのか</a></li>
+<li class="p">第3部　Laravel で書く</li>
+<li><a href="#map">9. 共通の役割と、Laravel での名前</a></li>
+<li><a href="#has">10. 関係の宣言：番号欄を持つ側が belongsTo</a></li>
+<li><a href="#errors">11. なぜその部品が必要か：抜けるとこのエラーが出る</a></li>
+<li class="p">第4部　例で通す（ToDo アプリ）</li>
+<li><a href="#ex1">12. 通し例1：タスクを手順に分ける（「もの」と「操作」が増える）</a></li>
+<li><a href="#ex2">13. 通し例2：プロジェクトでまとめる（同じ質問、違う答え）</a></li>
+<li><a href="#ex3">14. 通し例3：テーブルが増えない機能（締め切り・絞り込み）</a></li>
+<li class="p">第5部　自分でやる</li>
+<li><a href="#sheet">15. 設計シート（書き込み用）</a></li>
+<li><a href="#practice">16. チュートリアルを「考える練習」に変える方法</a></li>
+</ol></nav>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+  <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2a6fae"/></marker>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b8712c"/></marker>
+  <marker id="ahb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2a6fae"/></marker>
+</defs></svg>
+
+<h2 class="part">第1部　考え方の流れ</h2>
+
+<section id="intro">
+  <h2><span class="num">1</span><span class="ht">この資料が答える4つの問い</span><span class="k c">共通</span></h2>
+  <p>チュートリアルを写して動かせるようになったあと、多くの人がここで止まります。</p>
+  <div class="scroll"><table>
+    <tr><th style="width:52%">問い</th><th>答えがある章</th></tr>
+    <tr><td>機能を足すとき、<b>何から考えればいい？</b></td><td><a href="#flow">2章</a>〜<a href="#steps">4章</a></td></tr>
+    <tr><td>ということは、◯◯を作るなら<b>何と何が必ず要る？</b></td><td><a href="#need">5章</a></td></tr>
+    <tr><td><b>なぜその順番</b>で作るの？</td><td><a href="#order">8章</a></td></tr>
+    <tr><td><b>なぜその部品が必要</b>なの？ どこに何を書くの？</td><td><a href="#map">9章</a>〜<a href="#errors">11章</a></td></tr>
+  </table></div>
+  <p>身につけたいのは<b>「機能を足すときの考え方」</b>で、これはフレームワークや言語が変わっても同じです。Laravel は、その考え方を<b>動くコードで確かめるための題材</b>として使います。例は ToDo アプリ（タスクの一覧・作成・編集・削除ができている状態）です。</p>
+  <div class="scroll"><table>
+    <tr><th style="width:18%">見出しの印</th><th>意味</th></tr>
+    <tr><td><span class="k c">共通</span></td><td>どのフレームワークでも同じ考え方。ここが本題です</td></tr>
+    <tr><td><span class="k l">Laravel</span></td><td>その考え方を Laravel でどう書くか。他のフレームワークなら名前が変わるだけです</td></tr>
+  </table></div>
+</section>
+
+<section id="flow">
+  <h2><span class="num">2</span><span class="ht">よくある流れと、実際の流れ</span><span class="k c">共通</span></h2>
+  <p>機能を足すとき、多くの人はこういう流れを思い浮かべます。骨格としては正しいです。</p>
+  <pre><code>どんな機能が必要か → 何を考えるか → 何が必要か → どの順で作るか → どこに何を書くか → 動くまで</code></pre>
+  <p>ここまではフレームワークに関係のない話です。実際に手を動かしている人の頭の中は、ここに<b>4つ</b>足されています。</p>
+  <div class="scroll"><table>
+    <tr><th style="width:30%">足されるもの</th><th>中身</th></tr>
+    <tr><td class="hi">① 「何を考えるか」の正体は<br>ルールを質問で引き出すこと</td><td>「タスクに手順を付けたい」だけでは作れません。<b>何件まで？ 消したらどうなる？ 空でもいい？</b> と自分に質問して、答えを決める。コードの大半は、この答えを書き写したものです。</td></tr>
+    <tr><td class="hi">② 名詞と動詞に分ける</td><td>「何が必要か」を機械的に出す方法。<b>名詞 → テーブル</b>、<b>動詞 → URLとコントローラのメソッド</b>になります。</td></tr>
+    <tr><td class="hi">③ 考える向きと作る向きは逆</td><td>考えるのは<b>画面（外）からデータ（内）へ</b>。作るのは<b>データ（内）から画面（外）へ</b>。</td></tr>
+    <tr><td class="hi">④ 1本ずつ通して、その都度確かめる</td><td>全部書いてから動かすのではなく、「表示だけ」「追加だけ」と<b>細く1本通して確認</b>してから次へ。エラーの原因が直前に書いた数行に絞られます。</td></tr>
+  </table></div>
+  <div class="note">もう1つ正直な話：この流れは<b>一直線には進みません</b>。作っている途中で「あ、消したときのことを決めてなかった」と気づいて前の段に戻る、を何度もやります。戻るのは失敗ではなく、普通の進み方です。</div>
+</section>
+
+<section id="vmodel">
+  <h2><span class="num">3</span><span class="ht">全体図：考える向きと作る向きは逆</span><span class="k c">共通</span></h2>
+  <div class="fig">
+    <svg viewBox="0 0 860 430" role="img" aria-label="左側で考えて下で作り、右側で確かめるV字の図">
+      <text class="tt" x="20" y="22" style="fill:#2a6fae">考える（外 → 内）</text>
+      <text class="tt" x="840" y="22" text-anchor="end" style="fill:#2c7a5e">確かめる（内 → 外）</text>
+      <!-- dashed links -->
+      <path class="ds" d="M260,62H600M300,142H560M340,222H520M380,302H480"/>
+      <text class="ts" x="430" y="56" text-anchor="middle">ここで決めたことを、ここで確かめる</text>
+      <!-- left -->
+      <rect class="bx" x="20" y="36" width="240" height="52" rx="10"/><text class="tt" x="34" y="58">① 何がしたい？</text><text class="ts" x="34" y="77">要求をユーザーの言葉で1文</text>
+      <rect class="bx" x="60" y="116" width="240" height="52" rx="10"/><text class="tt" x="74" y="138">② 画面でどう使う？</text><text class="ts" x="74" y="157">操作（動詞）を全部書き出す</text>
+      <rect class="bx" x="100" y="196" width="240" height="52" rx="10"/><text class="tt" x="114" y="218">③ ルールは？</text><text class="ts" x="114" y="237">何件まで・消したら・上限・空は</text>
+      <rect class="bx" x="140" y="276" width="240" height="52" rx="10"/><text class="tt" x="154" y="298">④ データの形は？</text><text class="ts" x="154" y="317">名詞→テーブル、関係→外部キー</text>
+      <!-- bottom -->
+      <rect class="bxa" x="310" y="362" width="240" height="56" rx="10"/><text class="tt" x="430" y="386" text-anchor="middle">⑤ 作る</text><text class="ts" x="430" y="405" text-anchor="middle">奥から手前へ、1本ずつ通す</text>
+      <!-- right -->
+      <rect class="bxg" x="480" y="276" width="240" height="52" rx="10"/><text class="tt" x="494" y="298">⑥ データを見て確かめる</text><text class="ts" x="494" y="317">tinker・GUIツール</text>
+      <rect class="bxg" x="520" y="196" width="240" height="52" rx="10"/><text class="tt" x="534" y="218">⑦ ルールを破って確かめる</text><text class="ts" x="534" y="237">空で送信・2件目・親を削除</text>
+      <rect class="bxg" x="560" y="116" width="240" height="52" rx="10"/><text class="tt" x="574" y="138">⑧ 画面で操作して確かめる</text><text class="ts" x="574" y="157">書き出した動詞を全部やる</text>
+      <rect class="bxg" x="600" y="36" width="240" height="52" rx="10"/><text class="tt" x="614" y="58">⑨ 要求は満たせた？</text><text class="ts" x="614" y="77">できたら次の機能へ</text>
+      <!-- flow arrows -->
+      <path class="fl" marker-end="url(#a1)" d="M140,88 L160,114"/>
+      <path class="fl" marker-end="url(#a1)" d="M180,168 L200,194"/>
+      <path class="fl" marker-end="url(#a1)" d="M220,248 L240,274"/>
+      <path class="fl" marker-end="url(#a1)" d="M260,328 C270,370 285,388 307,390"/>
+      <path class="fl" marker-end="url(#a1)" d="M550,390 C575,388 590,370 599,331"/>
+      <path class="fl" marker-end="url(#a1)" d="M620,276 L638,251"/>
+      <path class="fl" marker-end="url(#a1)" d="M660,196 L678,171"/>
+      <path class="fl" marker-end="url(#a1)" d="M700,116 L718,91"/>
+    </svg>
+    <p class="cap">左で決めたことは、同じ高さの右で確かめます。③で「1タスクに1つだけ」と決めたなら、⑦で「2つ目を作ろうとして弾かれる」ことを確かめる、という対応です。</p>
+  </div>
+  <div class="grid2">
+    <div class="ok"><b>なぜ画面から考えるのか</b><br>使う人に見えるのは画面だけだからです。テーブルから考え始めると「使われない列」や「足りない列」が出ます。画面での操作を先に書き出すと、必要なデータが逆算できます。</div>
+    <div class="ok"><b>なぜデータから作るのか</b><br>画面はデータが無いと何も表示できず、確認できないからです。さらに、<b>テーブルの形は後から変えるのが一番大変</b>（既存データがある）なので、最初に固めます。画面は後からいくらでも直せます。</div>
+  </div>
+</section>
+
+<section id="steps">
+  <h2><span class="num">4</span><span class="ht">9ステップを1つずつ</span><span class="k c">共通</span></h2>
+
+  <div class="step"><div class="b">①</div><div class="c">
+    <p><b>何がしたい？ ― 1文で書く</b></p>
+    <p>「<b>誰が</b>・<b>何に</b>・<b>何をしたい</b>」。技術の言葉（テーブル、外部キー）はまだ使いません。<br>例：「大きなタスクを細かい手順に分けて、1つずつ片付けたい」</p>
+  </div></div>
+
+  <div class="step"><div class="b">②</div><div class="c">
+    <p><b>画面でどう使う？ ― 動詞を全部書き出す</b></p>
+    <p>どの画面で、何を押して、何が起きて、そのあとどの画面にいるか。<b>「やらないこと」もここで決めます</b>（例：手順の並べ替えは作らない）。作る量はここで決まります。</p>
+  </div></div>
+
+  <div class="step"><div class="b">③</div><div class="c">
+    <p><b>ルールは？ ― 決まった質問を自分にする</b></p>
+    <div class="scroll"><table>
+      <tr><th style="width:32%">質問</th><th>決まること（共通）</th><th>Laravelでの書き方</th></tr>
+      <tr><td>Aひとつに、Bはいくつ？<br>Bひとつは、Aいくつに付く？</td><td>関係の種類（1対多／1対1／多対多）＝外部キーの置き場所</td><td><code>hasMany</code>／<code>hasOne</code>／<code>belongsToMany</code></td></tr>
+      <tr><td>親を消したら、子はどうなる？</td><td>連鎖して消すか</td><td><code>cascadeOnDelete()</code></td></tr>
+      <tr><td>空でもいい？ 最大何文字？ どんな値ならOK？</td><td>入力チェックと、列の型・長さ</td><td><code>$request->validate([…])</code><br><code>string('title', 100)</code></td></tr>
+      <tr><td>同じものを2回入れていい？</td><td>一意制約を付けるか</td><td><code>unique()</code>／<code>primary([…])</code></td></tr>
+      <tr><td>誰が作るデータ？（使う人／最初から用意）</td><td>入力画面を作るか、初期データで入れるか</td><td>フォーム／Seeder</td></tr>
+      <tr><td>いつ操作する？（単独で／何かのついでに）</td><td>専用のURLと処理が要るか、既存に足すか</td><td>Route・Controller を新規／既存に追加</td></tr>
+      <tr><td>終わったらどの画面に戻る？</td><td>処理後の遷移先</td><td><code>redirect()->route(…)</code></td></tr>
+      <tr><td>一覧にも出す？</td><td>関連データのまとめ読みが要るか（N+1対策）</td><td><code>with()</code></td></tr>
+    </table></div>
+  </div></div>
+
+  <div class="step"><div class="b">④</div><div class="c">
+    <p><b>データの形は？ ― 名詞と動詞に分ける</b></p>
+    <p>②③で書いた文から、<span class="n">名詞</span>と<span class="v">動詞</span>を拾います。</p>
+    <ul>
+      <li><span class="n">名詞</span> → テーブル（とモデル）。その名詞が持つ情報 → カラム。</li>
+      <li>名詞どうしの関係 → 外部キー（③の最初の質問の答えで置き場所が決まる。図は <a href="#three">7章</a>）。</li>
+      <li><span class="v">動詞</span> → URL と Controller のメソッド（下の変換表）。</li>
+    </ul>
+    <div class="scroll"><table>
+      <tr><th>動詞</th><th>HTTPメソッド＋URL（共通）</th><th>Laravelでのメソッド名</th></tr>
+      <tr><td>一覧を見る</td><td><code>GET /tasks</code></td><td>index</td></tr>
+      <tr><td>1件を見る</td><td><code>GET /tasks/{task}</code></td><td>show</td></tr>
+      <tr><td>作る</td><td><code>POST /tasks</code></td><td>store</td></tr>
+      <tr><td>変える</td><td><code>PUT /tasks/{task}</code></td><td>update</td></tr>
+      <tr><td>消す</td><td><code>DELETE /tasks/{task}</code></td><td>destroy</td></tr>
+      <tr><td>「このタスクの」○○を作る</td><td><code>POST /tasks/{task}/steps</code></td><td>store</td></tr>
+      <tr><td>「このタスクに1つしかない」○○を設定する</td><td><code>PUT /tasks/{task}/recurrence</code>（単数形・IDなし）</td><td>update</td></tr>
+    </table></div>
+    <p>URLは「どのデータの話か」が分かるように作ります。親が必要なら親の番号をURLに入れる、が基本です。</p>
+  </div></div>
+
+  <div class="step"><div class="b">⑤</div><div class="c">
+    <p><b>作る ― どこに何を書くか</b>（なぜ奥から作るかは <a href="#order">8章</a>、抜けたときのエラーは <a href="#errors">11章</a>）</p>
+    <div class="scroll"><table>
+      <tr><th style="width:38%">決めたこと</th><th>置き場所の役割（共通）</th><th>Laravelでは</th></tr>
+      <tr><td>データの形、DBに絶対守らせたい制約</td><td>スキーマ定義</td><td>マイグレーション（<code>database/migrations/</code>）</td></tr>
+      <tr><td>テーブル同士のつながり、入れてよい列、型の変換</td><td>モデル</td><td><code>app/Models/</code></td></tr>
+      <tr><td>URL と担当の対応</td><td>ルーティング</td><td><code>routes/web.php</code></td></tr>
+      <tr><td>入力チェック、処理の手順、戻り先</td><td>コントローラ</td><td><code>app/Http/Controllers/</code></td></tr>
+      <tr><td>見た目、フォーム、ボタン</td><td>ビュー（テンプレート）</td><td><code>resources/views/</code></td></tr>
+      <tr><td>最初から入れておくデータ</td><td>初期データ投入</td><td>シーダー（<code>database/seeders/</code>）</td></tr>
+    </table></div>
+    <p>「100文字まで」のような制約は、<b>マイグレーション（<code>string('title', 100)</code>）とコントローラ（<code>max:100</code>）の2か所</b>に書きます。コントローラは「親切なエラーメッセージを出す係」、DBは「最後の砦」です。</p>
+  </div></div>
+
+  <div class="step"><div class="b">⑥〜⑨</div><div class="c">
+    <p><b>確かめる ― 内側から順に</b></p>
+    <ul>
+      <li>⑥ <b>データ</b>：tinker で作って取り出せるか。GUIツールで行が入っているか。</li>
+      <li>⑦ <b>ルール</b>：わざと破る。空で送る、上限＋1文字、2件目、親を消す。<b>弾かれることを確かめるのが目的</b>。</li>
+      <li>⑧ <b>画面</b>：②で書いた動詞を上から全部やる。</li>
+      <li>⑨ <b>要求</b>：①の1文を読み直して、できるようになったか。</li>
+    </ul>
+  </div></div>
+</section>
+
+<h2 class="part">第2部　何が要るかを決める</h2>
+
+<section id="need">
+  <h2><span class="num">5</span><span class="ht">「◯◯を作るなら何が必ず要る？」は、3つの問いで決まる</span><span class="k c">共通</span></h2>
+  <p>「機能ごとに必要な部品を覚える」必要はありません。足したい機能について、次の3つを確かめれば部品が出ます。3つは別々の問いなので、<b>全部に答えます</b>（「はい」が2つ以上になることも普通です）。</p>
+  <div class="fig"><svg viewBox="0 0 860 322" role="img" aria-label="機能に必要な部品を決める3つの問い"><rect class="bx" x="20" y="16" width="330" height="56" rx="10"/><text class="tt" x="34" y="39">Q1. 新しい「もの」が増える？</text><text class="ts" x="34" y="59">名詞。何件になるか分からないもの</text><rect class="bxa" x="470" y="16" width="370" height="56" rx="10"/><text class="tt" x="655" y="49" text-anchor="middle">テーブル ＋ モデル ＋ 関係の宣言</text><path class="fl" marker-end="url(#a1)" d="M350,44 H466"/><text class="ts" x="408" y="36" text-anchor="middle">はい</text><path class="ds" d="M185,72 V94"/><rect class="bx" x="20" y="94" width="330" height="56" rx="10"/><text class="tt" x="34" y="117">Q2. 今あるものに「性質」が増える？</text><text class="ts" x="34" y="137">1つにつき値が1つだけのもの</text><rect class="bxa" x="470" y="94" width="370" height="56" rx="10"/><text class="tt" x="655" y="127" text-anchor="middle">既存テーブルに列 ＋ 入力欄 ＋ 入力チェック</text><path class="fl" marker-end="url(#a1)" d="M350,122 H466"/><text class="ts" x="408" y="114" text-anchor="middle">はい</text><path class="ds" d="M185,150 V172"/><rect class="bx" x="20" y="172" width="330" height="56" rx="10"/><text class="tt" x="34" y="195">Q3. 新しい「操作」が増える？</text><text class="ts" x="34" y="215">動詞。専用のボタンやURLが要るもの</text><rect class="bxa" x="470" y="172" width="370" height="56" rx="10"/><text class="tt" x="655" y="205" text-anchor="middle">ルート ＋ コントローラのメソッド ＋ ボタン</text><path class="fl" marker-end="url(#a1)" d="M350,200 H466"/><text class="ts" x="408" y="192" text-anchor="middle">はい</text><rect class="bxg" x="20" y="250" width="330" height="56" rx="10"/><text class="tt" x="34" y="273">3つとも「いいえ」</text><text class="ts" x="34" y="293">見方が変わるだけ（絞り込み・並び順）</text><rect class="bxa" x="470" y="250" width="370" height="56" rx="10"/><text class="tt" x="655" y="283" text-anchor="middle">既存の一覧処理と画面を直す</text><path class="fl" marker-end="url(#a1)" d="M350,278 H466"/><text class="ts" x="408" y="270" text-anchor="middle">なら</text></svg></div>
+  <div class="scroll"><table>
+    <tr><th>機能の例</th><th>もの</th><th>性質</th><th>操作</th><th>必ず要る部品</th></tr>
+    <tr><td>タスクに「手順」を付けて、1つずつ完了にする</td><td class="hi">はい</td><td>―</td><td class="hi">はい</td><td>テーブル・モデル・関係の宣言 ＋ ルート・コントローラ・フォーム</td></tr>
+    <tr><td>タスクに締め切り日を付ける</td><td>―</td><td class="hi">はい</td><td>―</td><td>列の追加 ＋ 既存フォームに入力欄 ＋ 入力チェック</td></tr>
+    <tr><td>タスクをプロジェクトにまとめる</td><td class="hi">はい</td><td class="hi">はい</td><td>―（※）</td><td>テーブル・モデル・関係の宣言 ＋ 既存テーブルに列 ＋ 既存フォームに選択欄</td></tr>
+    <tr><td>ボタン1つで「完了／未完了」を切り替える</td><td>―</td><td>―</td><td class="hi">はい</td><td>ルート ＋ コントローラのメソッド ＋ ボタン</td></tr>
+    <tr><td>未完了だけ表示する、締め切り順に並べる</td><td>―</td><td>―</td><td>―</td><td>既存の一覧処理と画面を直すだけ</td></tr>
+  </table></div>
+  <p class="cap">※ プロジェクト自体を画面から作らせるなら「操作」も「はい」になり、プロジェクト用のルート・コントローラ・画面が増えます。</p>
+  <div class="ok"><b>部品は2つのグループに分かれます。</b><br>
+    ・<b>データのつながり</b>：テーブル（または列）、モデル、関係の宣言。これだけで対話環境からは使えます。<br>
+    ・<b>人が触る入口</b>：ルート、コントローラ、画面。「その操作に専用のボタンやURLが要るか」で、新しく作るか既存に足すかが決まります。</div>
+</section>
+
+<section id="why">
+  <h2><span class="num">6</span><span class="ht">「もの」が増えるとき：なぜテーブルを分けるのか</span><span class="k c">共通</span></h2>
+  <p>「タスクに手順を付けたい」と思ったとき、いちばん素朴な発想は<b>今のテーブルに列を足す</b>ことです。やってみると、すぐ行き詰まります。</p>
+  <div class="ng"><b>✕ 素朴案：tasks に step 列を足す</b>
+    <div class="scroll"><table>
+      <tr><th>id</th><th>title</th><th>step1</th><th>step2</th><th>step3</th></tr>
+      <tr><td>1</td><td>勉強会の準備</td><td>スライドを作る</td><td>会場を予約する</td><td class="bad">（空）</td></tr>
+      <tr><td>2</td><td>買い物</td><td>牛乳を買う</td><td class="bad">（空）</td><td class="bad">（空）</td></tr>
+    </table></div>
+    4つ目の手順が来たら列を足すためにテーブルを変更。手順が無いタスクは空欄だらけ。「手順ごとの完了チェック」を持たせようとすると列がさらに倍になります。<b>何件になるか分からないものは、列では持てません。</b>
+  </div>
+  <div class="ok"><b>○ 手順は別のテーブルにして、1件＝1行にする</b><br>
+    行は何行でも増やせます。ただし別テーブルにすると<b>「この手順は、どのタスクのもの？」が分からなくなる</b>。そこで手順の行に<b>「タスクの番号を書く欄」</b>を足します。これが外部キー（<code>task_id</code>）です。</div>
+  <p>逆に、<b>1つのタスクに必ず1つしか無い情報</b>（締め切り日、優先度）は、列を足すだけで済みます。「もの」か「性質」かの見分け方はここです。</p>
+</section>
+
+<section id="three">
+  <h2><span class="num">7</span><span class="ht">つなぎ方は3種類。違いは「番号欄をどこに置くか」だけ</span><span class="k c">共通</span></h2>
+  <p>オレンジ色の列が外部キー（番号欄）、矢印が「この番号の行を指している」です。</p>
+
+  <h3>1対多：番号欄は「多」の側に置く</h3>
+  <div class="fig"><svg viewBox="0 0 860 200" role="img" aria-label="steps の task_id が tasks の id を指す図"><text class="lbl" x="40" y="36">steps（多の側）</text><text class="lbl" x="580" y="36">tasks（1の側）</text><rect class="fk" x="290" y="82" width="110" height="96"/><rect class="hd" x="40" y="50" width="360" height="32"/><rect x="40" y="50" width="360" height="128" style="fill:none;stroke:#3b82c4;stroke-width:1.5"/><path class="ln" d="M40,114H400M40,146H400M90,50V178M290,50V178"/><text class="hdt" x="65" y="71" text-anchor="middle">id</text><text class="hdt" x="102" y="71">title</text><text class="hdt" x="345" y="71" text-anchor="middle">task_id</text><text class="tx" x="65" y="103" text-anchor="middle">1</text><text class="tx" x="102" y="103">スライドを作る</text><text class="tx" x="345" y="103" text-anchor="middle">1</text><text class="tx" x="65" y="135" text-anchor="middle">2</text><text class="tx" x="102" y="135">会場を予約する</text><text class="tx" x="345" y="135" text-anchor="middle">1</text><text class="tx" x="65" y="167" text-anchor="middle">3</text><text class="tx" x="102" y="167">牛乳を買う</text><text class="tx" x="345" y="167" text-anchor="middle">2</text><rect class="hd" x="580" y="50" width="240" height="32"/><rect x="580" y="50" width="240" height="96" style="fill:none;stroke:#3b82c4;stroke-width:1.5"/><path class="ln" d="M580,114H820M640,50V146"/><text class="hdt" x="610" y="71" text-anchor="middle">id</text><text class="hdt" x="652" y="71">title</text><text class="tx" x="610" y="103" text-anchor="middle">1</text><text class="tx" x="652" y="103">勉強会の準備</text><text class="tx" x="610" y="135" text-anchor="middle">2</text><text class="tx" x="652" y="135">買い物</text><path class="arr" marker-end="url(#ah)" d="M400,98 C480,98 500,94 576,94"/><path class="arr" marker-end="url(#ah)" d="M400,130 C490,130 490,102 576,102"/><path class="arr" marker-end="url(#ah)" d="M400,162 C490,162 490,130 576,130"/></svg>
+    <p class="cap">task_id に同じ「1」が何回出てきてもよい → だから1つのタスクに手順が何件でも付く。逆に tasks 側に step_id を置くと1つしか書けません。<b>だから番号欄は「多」の側</b>。</p>
+  </div>
+
+  <h3>1対1：1対多に「同じ番号は1回だけ」を足しただけ</h3>
+  <div class="fig"><svg viewBox="0 0 860 220" role="img" aria-label="recurrences の task_id は一意なので同じタスクを2回指せない図"><text class="lbl" x="40" y="36">recurrences（繰り返し設定）</text><text class="redt" x="340" y="40" text-anchor="middle">一意制約 ↓</text><text class="lbl" x="580" y="36">tasks</text><rect class="fk" x="280" y="82" width="120" height="64"/><rect class="hd" x="40" y="50" width="360" height="32"/><rect x="40" y="50" width="360" height="96" style="fill:none;stroke:#3b82c4;stroke-width:1.5"/><path class="ln" d="M40,114H400M90,50V146M280,50V146"/><text class="hdt" x="65" y="71" text-anchor="middle">id</text><text class="hdt" x="102" y="71">rule</text><text class="hdt" x="340" y="71" text-anchor="middle">task_id</text><text class="tx" x="65" y="103" text-anchor="middle">1</text><text class="tx" x="102" y="103">毎週 月曜</text><text class="tx" x="340" y="103" text-anchor="middle">1</text><text class="tx" x="65" y="135" text-anchor="middle">2</text><text class="tx" x="102" y="135">毎月 1日</text><text class="tx" x="340" y="135" text-anchor="middle">2</text><rect x="40" y="154" width="360" height="32" style="fill:#fdecea;stroke:#c0392b;stroke-width:1.5;stroke-dasharray:5 4"/><text class="redt" x="65" y="175" text-anchor="middle">✕</text><text class="tx" x="102" y="175">毎日</text><text class="redt" x="340" y="175" text-anchor="middle">1（2回目）</text><text class="redt" x="40" y="208">↑ 2件目はデータベースが拒否する</text><rect class="hd" x="580" y="50" width="240" height="32"/><rect x="580" y="50" width="240" height="96" style="fill:none;stroke:#3b82c4;stroke-width:1.5"/><path class="ln" d="M580,114H820M640,50V146"/><text class="hdt" x="610" y="71" text-anchor="middle">id</text><text class="hdt" x="652" y="71">title</text><text class="tx" x="610" y="103" text-anchor="middle">1</text><text class="tx" x="652" y="103">ゴミ出し</text><text class="tx" x="610" y="135" text-anchor="middle">2</text><text class="tx" x="652" y="135">家賃の振込</text><path class="arr" marker-end="url(#ah)" d="M400,98 H576"/><path class="arr" marker-end="url(#ah)" d="M400,130 H576"/><path class="arrx" d="M400,170 C470,170 480,150 500,128"/><text class="redt" x="497" y="126">✕</text></svg>
+    <p class="cap">テーブルの形は1対多と同じ。番号欄に一意制約（unique）を付けるだけ。「1件まで」を守っているのはアプリのコードではなく<b>データベース</b>です。</p>
+  </div>
+  <div class="note"><b>1対1は、たいてい列で足ります。</b> 締め切り日のように値が1つなら、別テーブルにせず列を足すほうが単純です。別テーブルにするのは、①その情報が複数の列のかたまりで、②ほとんどの行には無く、③本体とは別のタイミングで設定・解除する、といった場合です（図の「繰り返し設定」がその例）。</div>
+
+  <h3>多対多：どちらに置いても足りない → 「線だけのテーブル」を真ん中に作る</h3>
+  <div class="fig"><svg viewBox="0 0 860 215" role="img" aria-label="中間テーブル member_task が tasks と members の両方を指す図"><text class="lbl" x="20" y="36">tasks</text><text class="lbl" x="330" y="36">member_task（中間テーブル）</text><text class="lbl" x="620" y="36">members</text><rect class="hd" x="20" y="50" width="220" height="32"/><rect x="20" y="50" width="220" height="96" style="fill:none;stroke:#3b82c4;stroke-width:1.5"/><path class="ln" d="M20,114H240M70,50V146"/><text class="hdt" x="45" y="71" text-anchor="middle">id</text><text class="hdt" x="82" y="71">title</text><text class="tx" x="45" y="103" text-anchor="middle">1</text><text class="tx" x="82" y="103">スライドを作る</text><text class="tx" x="45" y="135" text-anchor="middle">2</text><text class="tx" x="82" y="135">会場を予約する</text><rect class="fk" x="330" y="82" width="200" height="96"/><rect class="hd" x="330" y="50" width="200" height="32"/><rect x="330" y="50" width="200" height="128" style="fill:none;stroke:#3b82c4;stroke-width:1.5"/><path class="ln" d="M330,114H530M330,146H530M430,50V178"/><text class="hdt" x="380" y="71" text-anchor="middle">task_id</text><text class="hdt" x="480" y="71" text-anchor="middle">member_id</text><text class="tx" x="380" y="103" text-anchor="middle">1</text><text class="tx" x="480" y="103" text-anchor="middle">2</text><text class="tx" x="380" y="135" text-anchor="middle">2</text><text class="tx" x="480" y="135" text-anchor="middle">1</text><text class="tx" x="380" y="167" text-anchor="middle">2</text><text class="tx" x="480" y="167" text-anchor="middle">3</text><rect class="hd" x="620" y="50" width="200" height="32"/><rect x="620" y="50" width="200" height="128" style="fill:none;stroke:#3b82c4;stroke-width:1.5"/><path class="ln" d="M620,114H820M620,146H820M670,50V178"/><text class="hdt" x="645" y="71" text-anchor="middle">id</text><text class="hdt" x="682" y="71">name</text><text class="tx" x="645" y="103" text-anchor="middle">1</text><text class="tx" x="682" y="103">佐藤</text><text class="tx" x="645" y="135" text-anchor="middle">2</text><text class="tx" x="682" y="135">鈴木</text><text class="tx" x="645" y="167" text-anchor="middle">3</text><text class="tx" x="682" y="167">田中</text><path class="arr" marker-end="url(#ah)" d="M330,98 H244"/><path class="arr" marker-end="url(#ah)" d="M330,130 H244"/><path class="arr" marker-end="url(#ah)" d="M330,162 C290,162 290,138 244,138"/><path class="arr" marker-end="url(#ah)" d="M530,98 C575,98 575,130 616,130"/><path class="arr" marker-end="url(#ah)" d="M530,130 C575,130 575,98 616,98"/><path class="arr" marker-end="url(#ah)" d="M530,162 H616"/><text class="sm" x="330" y="200">1行 ＝ 「このタスクを、この人が担当」という線1本</text></svg>
+    <p class="cap">タスクに担当者は何人でも、担当者もタスクをいくつでも。<b>どちらも「多」なので、どちらのテーブルにも番号欄を置けない</b> → 番号欄2つだけのテーブルを別に作ります。担当に入れる＝行が増える、外す＝行が消える。</p>
+  </div>
+
+  <h3>どれになるかは、質問2つで決まる</h3>
+  <div class="scroll"><table>
+    <tr><th>Q1. Aひとつに、Bはいくつ？</th><th>Q2. Bひとつは、Aいくつに付く？</th><th>答え</th><th>番号欄の置き場所</th></tr>
+    <tr><td>たくさん</td><td>1つだけ</td><td class="hi">1対多</td><td>B のテーブルに「A の番号」</td></tr>
+    <tr><td>1つだけ</td><td>1つだけ</td><td class="hi">1対1</td><td>A に列を足す。または B のテーブルに「A の番号」＋一意制約</td></tr>
+    <tr><td>たくさん</td><td>たくさん</td><td class="hi">多対多</td><td>中間テーブルに「A の番号」と「B の番号」</td></tr>
+  </table></div>
+</section>
+
+<section id="order">
+  <h2><span class="num">8</span><span class="ht">なぜ「奥から手前へ」作るのか</span><span class="k c">共通</span></h2>
+  <p>チュートリアルの手順はたいてい <b>マイグレーション → モデル → migrate → コントローラ → ルート → ビュー</b>。これはリクエストが流れる向きの<b>ちょうど逆</b>です。</p>
+  <div class="fig">
+    <svg viewBox="0 0 860 225" role="img" aria-label="リクエストは画面からテーブルへ流れ、作る順番はその逆">
+      <text class="lbl" x="20" y="28">リクエストが進む向き</text>
+      <path d="M190,23 H836" style="fill:none;stroke:#2a6fae;stroke-width:2" marker-end="url(#ahb)"/>
+      <g>
+        <rect class="box" x="20" y="50" width="140" height="78" rx="10"/><text class="lbl" x="90" y="80" text-anchor="middle">View</text><text class="sm" x="90" y="102" text-anchor="middle">画面・フォーム</text><text class="sm" x="90" y="118" text-anchor="middle">（お客さんの窓口）</text>
+        <rect class="box" x="190" y="50" width="140" height="78" rx="10"/><text class="lbl" x="260" y="80" text-anchor="middle">Route</text><text class="sm" x="260" y="102" text-anchor="middle">URL → 担当を決める</text><text class="sm" x="260" y="118" text-anchor="middle">（受付）</text>
+        <rect class="box" x="360" y="50" width="140" height="78" rx="10"/><text class="lbl" x="430" y="80" text-anchor="middle">Controller</text><text class="sm" x="430" y="102" text-anchor="middle">チェックして指示</text><text class="sm" x="430" y="118" text-anchor="middle">（担当者）</text>
+        <rect class="box" x="530" y="50" width="140" height="78" rx="10"/><text class="lbl" x="600" y="80" text-anchor="middle">Model</text><text class="sm" x="600" y="102" text-anchor="middle">PHP ⇄ SQL</text><text class="sm" x="600" y="118" text-anchor="middle">（通訳）</text>
+        <rect x="700" y="50" width="140" height="78" rx="10" style="fill:#fdf2e4;stroke:#b8712c;stroke-width:1.5"/><text class="lbl" x="770" y="80" text-anchor="middle">テーブル</text><text class="sm" x="770" y="102" text-anchor="middle">データの置き場所</text><text class="sm" x="770" y="118" text-anchor="middle">（倉庫）</text>
+      </g>
+      <path d="M160,89H186" style="fill:none;stroke:#2a6fae;stroke-width:2" marker-end="url(#ahb)"/><path d="M330,89H356" style="fill:none;stroke:#2a6fae;stroke-width:2" marker-end="url(#ahb)"/><path d="M500,89H526" style="fill:none;stroke:#2a6fae;stroke-width:2" marker-end="url(#ahb)"/><path d="M670,89H696" style="fill:none;stroke:#2a6fae;stroke-width:2" marker-end="url(#ahb)"/>
+      <g style="font-size:20px;font-weight:800;fill:#b8712c" text-anchor="middle">
+        <text x="90" y="160">⑤</text><text x="260" y="160">④</text><text x="430" y="160">③</text><text x="600" y="160">②</text><text x="770" y="160">①</text>
+      </g>
+      <path d="M836,195 H190" class="arr" marker-end="url(#ah)"/>
+      <text x="20" y="200" style="fill:#b8712c;font-size:14px;font-weight:700">作る順番（奥から）</text>
+    </svg>
+    <p class="cap">倉庫が無いのに通訳は雇えない。通訳がいないのに担当者は指示できない。担当者がいないのに受付は案内できない。窓口（フォーム）は送り先のURLが決まってから作る。</p>
+  </div>
+
+  <div class="grid2">
+    <div class="ng"><b>本当に順番が固定のところ</b>
+      <ul style="margin:6px 0 0; padding-left:20px">
+        <li><b>親のテーブル → 子のテーブル</b>の順（tasks → steps）。外部キーは「指す先」が先に存在しないと作れない（中間テーブルは、つなぐ両方のテーブルが先に必要）</li>
+        <li><b>migrate はデータを触る前に</b>。ファイルを書いただけではテーブルは出来ていない</li>
+      </ul>
+    </div>
+    <div class="ok"><b>実はどの順でも動くところ</b>
+      <ul style="margin:6px 0 0; padding-left:20px">
+        <li>Model／Controller／Route／View を書く順番。<b>画面を開く瞬間に全部そろっていればOK</b></li>
+        <li>奥から作るのは「途中で確認しやすい」から。テーブル＋モデルだけで tinker で試せる</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<h2 class="part">第3部　Laravel で書く</h2>
+
+<section id="map">
+  <h2><span class="num">9</span><span class="ht">共通の役割と、Laravel での名前</span><span class="k l">Laravel</span></h2>
+  <p>ここまでに出てきた役割は、Laravel ではこう呼ばれます。他のフレームワークでも<b>役割は同じで、名前と置き場所が違うだけ</b>です。</p>
+  <div class="scroll"><table>
+    <tr><th>役割（共通）</th><th>Laravel</th><th>Rails</th><th>Django</th></tr>
+    <tr><td>テーブルの形を決めて、変更を記録する</td><td class="hi">マイグレーション</td><td>マイグレーション</td><td>マイグレーション</td></tr>
+    <tr><td>テーブルをコードから扱う窓口</td><td class="hi">Eloquent モデル</td><td>Active Record モデル</td><td>モデル</td></tr>
+    <tr><td>テーブル同士の関係を宣言する</td><td class="hi"><code>hasMany</code> / <code>belongsTo</code> / <code>belongsToMany</code></td><td><code>has_many</code> / <code>belongs_to</code></td><td><code>ForeignKey</code> / <code>ManyToManyField</code></td></tr>
+    <tr><td>URL と担当を結ぶ</td><td class="hi"><code>routes/web.php</code></td><td><code>config/routes.rb</code></td><td><code>urls.py</code></td></tr>
+    <tr><td>入力を確かめ、処理し、次の画面を決める</td><td class="hi">コントローラ</td><td>コントローラ</td><td>ビュー（View）</td></tr>
+    <tr><td>画面を組み立てる</td><td class="hi">Blade ビュー</td><td>ERB ビュー</td><td>テンプレート</td></tr>
+    <tr><td>初期データを入れる</td><td class="hi">シーダー</td><td><code>db/seeds.rb</code></td><td>フィクスチャ</td></tr>
+    <tr><td>対話的にデータを確かめる</td><td class="hi"><code>php artisan tinker</code></td><td><code>rails console</code></td><td><code>manage.py shell</code></td></tr>
+  </table></div>
+  <p class="cap">Django では処理役を「ビュー」、画面を「テンプレート」と呼ぶので、名前が1つずつずれます。役割で見れば同じです。</p>
+</section>
+
+<section id="has">
+  <h2><span class="num">10</span><span class="ht">関係の宣言：番号欄を持つ側が belongsTo</span><span class="k l">Laravel</span></h2>
+  <p>テーブルを作っただけでは、Laravel は「どの列でつながっているか」を知りません。モデルにメソッドを書いて教えます。どれを書くかは、番号欄の場所で<b>自動的に決まります</b>。</p>
+  <div class="scroll"><table>
+    <tr><th>自分のテーブルに <code>○○_id</code> が…</th><th>書くもの</th><th>読み方</th></tr>
+    <tr><td><b>ある</b></td><td><code>belongsTo</code></td><td>「私は相手の番号を持っている＝相手に属している」</td></tr>
+    <tr><td><b>ない</b>（相手は複数）</td><td><code>hasMany</code></td><td>「相手のテーブルから、私の番号が書かれた行を全部探して」</td></tr>
+    <tr><td><b>ない</b>（相手は1件）</td><td><code>hasOne</code></td><td>「相手のテーブルから、私の番号が書かれた行を1件探して」</td></tr>
+    <tr><td><b>どちらにもない</b>（中間テーブルにある）</td><td>両方 <code>belongsToMany</code></td><td>「中間テーブルを経由して探して」</td></tr>
+  </table></div>
+<pre><code>// app/Models/Task.php … task_id を持っていない側
+public function steps()
+{
+    return $this->hasMany(Step::class);      // 相手（steps）の task_id を見に行く
+}
+
+// app/Models/Step.php … task_id を持っている側
+public function task()
+{
+    return $this->belongsTo(Task::class);    // 自分（steps）の task_id を使う
+}</code></pre>
+  <p>宣言しておくと、SQL を書かずにこう書けます。</p>
+<pre><code>$task->steps                       // このタスクの手順ぜんぶ
+$task->steps()->create([...])      // task_id を自動で入れて1行追加
+$step->task                        // この手順の親タスク</code></pre>
+  <div class="note"><b>向きを逆に書くと、エラーにならずに空が返ることがあります。</b> Task に <code>belongsTo(Step::class)</code> と書くと、Laravel は tasks テーブルの <code>step_id</code> を探します。そんな列は無いので、結果はいつも <code>null</code> です。「関係が取れない」ときは、まず向きを疑います。</div>
+</section>
+
+<section id="errors">
+  <h2><span class="num">11</span><span class="ht">なぜその部品が必要か：抜けるとこのエラーが出る</span><span class="k l">Laravel</span></h2>
+  <p>部品1つにつき役割は1つ。抜けると、たいてい抜けた部品の名前がエラー文にそのまま出ます。エラーは「次に何を作るか」を教えてくれる案内です。</p>
+  <div class="scroll"><table>
+    <tr><th>部品</th><th>役割</th><th>無い／忘れたときに起きること</th></tr>
+    <tr><td>マイグレーション<br>＋ <code>migrate</code></td><td>データを置く場所を作る</td><td><code>Base table or view not found: 1146 Table '….steps' doesn't exist</code></td></tr>
+    <tr><td>モデル</td><td>テーブルをコードから扱う窓口</td><td><code>Class "App\Models\Step" not found</code></td></tr>
+    <tr><td><code>$fillable</code></td><td>フォームから入れてよい列の許可リスト</td><td><code>Add [title] to fillable property to allow mass assignment</code>（空のとき）。一部だけ抜けていると<b>エラー無しでその列だけ保存されない</b></td></tr>
+    <tr><td>関係の宣言</td><td>どの列でつながるかを教える</td><td><code>Call to undefined method App\Models\Task::steps()</code></td></tr>
+    <tr><td>ルート</td><td>URL と担当を結ぶ</td><td><code>Route [tasks.steps.store] not defined.</code>／直接アクセスなら 404</td></tr>
+    <tr><td>コントローラ</td><td>入力チェック → 処理 → 次の画面</td><td><code>Target class [StepController] does not exist.</code>／<code>Method …::store does not exist.</code></td></tr>
+    <tr><td>画面（フォーム）</td><td>人が操作する入口</td><td>エラーは出ない。<b>押す場所が無いだけ</b></td></tr>
+    <tr><td><code>@csrf</code></td><td>自分のサイトのフォームから来た証明</td><td><code>419 Page Expired</code></td></tr>
+    <tr><td><code>@method('PATCH')</code> など</td><td>HTML のフォームは GET と POST しか送れないため</td><td><code>The POST method is not supported for route …</code></td></tr>
+  </table></div>
+</section>
+
+<h2 class="part">第4部　例で通す（ToDo アプリ）</h2>
+
+<section id="ex1">
+  <h2><span class="num">12</span><span class="ht">通し例1：タスクを手順に分ける（「もの」と「操作」が増える）</span><span class="k l">Laravel</span></h2>
+
+  <h3>① 何がしたい？</h3>
+  <p>「大きなタスクを細かい手順に分けて、1つずつ片付けたい」</p>
+
+  <h3>② 画面でどう使う？</h3>
+  <ul>
+    <li>タスクの<b>詳細画面</b>で、<span class="n">手順</span>を<span class="v">足す</span> → 同じ画面に戻り、足したものが見える</li>
+    <li>手順のチェックを<span class="v">付ける／外す</span> → 同じ画面に戻る</li>
+    <li>いらない手順を<span class="v">消す</span> → 同じ画面に戻る</li>
+    <li>一覧画面に「3件中2件完了」のように<span class="v">進み具合を出す</span></li>
+    <li><b>やらない</b>：手順の文言の編集、並べ替え</li>
+  </ul>
+
+  <h3>③ ルールを決める → ④⑤ それがコードのどこになるか</h3>
+  <div class="scroll"><table>
+    <tr><th style="width:34%">決めたルール</th><th>コードになった姿</th><th style="width:20%">書く場所</th></tr>
+    <tr><td>1つのタスクに手順は何件でも。手順は1つのタスクだけに属する</td><td>steps テーブルに <code>foreignId('task_id')</code><br><code>hasMany</code> ／ <code>belongsTo</code></td><td>マイグレーション<br>モデル2つ</td></tr>
+    <tr><td>存在しないタスクの手順は作れない</td><td><code>->constrained()</code></td><td>マイグレーション</td></tr>
+    <tr><td>タスクを消したら手順も消える</td><td><code>->cascadeOnDelete()</code></td><td>マイグレーション</td></tr>
+    <tr><td>手順は空ではダメ、100文字まで</td><td><code>string('title', 100)</code><br><code>'title' => 'required|max:100'</code></td><td>マイグレーション<br>コントローラ</td></tr>
+    <tr><td>足した直後は「未完了」</td><td><code>boolean('is_done')->default(false)</code></td><td>マイグレーション</td></tr>
+    <tr><td>「このタスクの」手順として足す。タスク番号はフォームからは受け取らない</td><td><code>POST /tasks/{task}/steps</code><br><code>$task->steps()->create($validated)</code><br><code>$fillable = ['title']</code></td><td>ルート<br>コントローラ<br>モデル</td></tr>
+    <tr><td>チェックは押すたびに反転する</td><td><code>PATCH /steps/{step}/toggle</code><br><code>$step->is_done = ! $step->is_done; $step->save();</code></td><td>ルート<br>コントローラ</td></tr>
+    <tr><td>操作のあとは親タスクの詳細に戻る</td><td><code>redirect()->route('tasks.show', $step->task)</code><br>（消すときは、<b>消す前に</b>親を取っておく）</td><td>コントローラ</td></tr>
+    <tr><td>一覧に進み具合を出す</td><td><code>Task::withCount(['steps', 'steps as done_count' => fn ($q) => $q->where('is_done', true)])</code></td><td>コントローラ</td></tr>
+    <tr><td>編集・並べ替えはやらない</td><td>そのためのルートもメソッドも<b>作らない</b></td><td>―</td></tr>
+  </table></div>
+  <p>コードの1行1行は、このどれかのルールに対応しています。<b>対応するルールが言えない行は、まだ理解できていない行</b>です。</p>
+
+  <h3>⑤ 作る順番（1本ずつ通す）</h3>
+  <p><b>「表示」を「追加」より先に作る</b>のがコツです。追加できたかどうかを見る手段が先に要るからです。</p>
+  <div class="scroll"><table>
+    <tr><th>#</th><th>書くもの</th><th>その場でやる確認</th></tr>
+    <tr><td>1</td><td>マイグレーション → <code>migrate</code></td><td>DBクライアントで steps テーブルと task_id 列が出来ている</td></tr>
+    <tr><td>2</td><td>Step モデル、Task に <code>steps()</code></td><td>tinker：<code>$t = App\Models\Task::first();</code><br><code>$t->steps()->create(['title' => 'テスト']);</code><br><code>$t->steps;</code> で返ってくる</td></tr>
+    <tr><td>3</td><td>詳細画面に<b>表示だけ</b></td><td>ブラウザで、2で入れた「テスト」が見える</td></tr>
+    <tr><td>4</td><td>追加：ルート → コントローラ → フォーム</td><td>画面から足せる。空で送るとエラーが出る</td></tr>
+    <tr><td>5</td><td>チェック切替：ルート → コントローラ → ボタン</td><td>押すたびに is_done が 0⇄1 になる</td></tr>
+    <tr><td>6</td><td>削除：ルート → コントローラ → ボタン</td><td>消せて、同じ詳細画面に戻る</td></tr>
+    <tr><td>7</td><td>―</td><td>手順付きのタスクを消す → steps の行も消えている</td></tr>
+  </table></div>
+</section>
+
+<section id="ex2">
+  <h2><span class="num">13</span><span class="ht">通し例2：プロジェクトでまとめる（同じ質問、違う答え）</span><span class="k l">Laravel</span></h2>
+  <p>「タスクをプロジェクトごとにまとめたい」。これも1対多ですが、今度は<b>今あるタスクが「多」の側</b>です。番号欄は「多」の側に置くので、<b>既存の tasks テーブルに列が増えます</b>。</p>
+  <div class="fig"><svg viewBox="0 0 860 215" role="img" aria-label="tasks の project_id が projects の id を指す図"><text class="lbl" x="40" y="36">tasks（多の側・既存のテーブル）</text><text class="lbl" x="580" y="36">projects（1の側・新しく作る）</text><rect class="fk" x="280" y="82" width="120" height="96"/><rect class="hd" x="40" y="50" width="360" height="32"/><rect x="40" y="50" width="360" height="128" style="fill:none;stroke:#3b82c4;stroke-width:1.5"/><path class="ln" d="M40,114H400M40,146H400M90,50V178M280,50V178"/><text class="hdt" x="65" y="71" text-anchor="middle">id</text><text class="hdt" x="102" y="71">title</text><text class="hdt" x="340" y="71" text-anchor="middle">project_id</text><text class="tx" x="65" y="103" text-anchor="middle">1</text><text class="tx" x="102" y="103">スライドを作る</text><text class="tx" x="340" y="103" text-anchor="middle">1</text><text class="tx" x="65" y="135" text-anchor="middle">2</text><text class="tx" x="102" y="135">会場を予約する</text><text class="tx" x="340" y="135" text-anchor="middle">1</text><text class="tx" x="65" y="167" text-anchor="middle">3</text><text class="tx" x="102" y="167">牛乳を買う</text><text class="tx" x="340" y="167" text-anchor="middle">NULL</text><rect class="hd" x="580" y="50" width="240" height="32"/><rect x="580" y="50" width="240" height="96" style="fill:none;stroke:#3b82c4;stroke-width:1.5"/><path class="ln" d="M580,114H820M640,50V146"/><text class="hdt" x="610" y="71" text-anchor="middle">id</text><text class="hdt" x="652" y="71">name</text><text class="tx" x="610" y="103" text-anchor="middle">1</text><text class="tx" x="652" y="103">勉強会</text><text class="tx" x="610" y="135" text-anchor="middle">2</text><text class="tx" x="652" y="135">引っ越し</text><path class="arr" marker-end="url(#ah)" d="M400,98 C480,98 500,94 576,94"/><path class="arr" marker-end="url(#ah)" d="M400,130 C490,130 490,102 576,102"/><text class="sm" x="40" y="202">NULL ＝ どのプロジェクトにも入っていないタスク</text></svg>
+    <p class="cap">通し例1では新しいテーブル（steps）に番号欄がありました。今回は既存のテーブル（tasks）に番号欄を足します。どちらに足すかは「どちらが多か」で決まります。</p>
+  </div>
+  <div class="scroll"><table>
+    <tr><th style="width:30%">質問</th><th style="width:30%">通し例1（手順）の答え</th><th>今回（プロジェクト）の答え → コード</th></tr>
+    <tr><td>どちらが「多」？</td><td>新しく作る手順</td><td>既存のタスク → <code>Schema::table('tasks', …)</code> で <code>project_id</code> を足す。Task が <code>belongsTo</code>、Project が <code>hasMany</code></td></tr>
+    <tr><td>親なしでもいい？</td><td>ダメ（手順は必ずタスクに付く）</td><td>いい（どこにも入れないタスクがある） → <code>->nullable()</code>、<code>'project_id' => 'nullable|exists:projects,id'</code></td></tr>
+    <tr><td>親を消したら？</td><td>一緒に消える</td><td><b>タスクは残して、所属だけ外す</b> → <code>->nullOnDelete()</code></td></tr>
+    <tr><td>いつ操作する？</td><td>単独で（専用のボタン）</td><td>タスクの作成・編集のついでに選ぶ → 専用ルートなし。既存フォームに選択欄、<code>$fillable</code> に <code>project_id</code></td></tr>
+    <tr><td>誰が作るデータ？</td><td>使う人</td><td>決めること。最初は初期データで数個入れておき、あとで作成画面を足してもよい</td></tr>
+    <tr><td>一覧にも出す？</td><td>件数だけ</td><td>プロジェクト名を出す → <code>Task::with('project')</code></td></tr>
+  </table></div>
+<pre><code>// tasks に列を足すマイグレーション（projects テーブルを先に作っておく）
+Schema::table('tasks', function (Blueprint $table) {
+    $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
+});</code></pre>
+  <div class="ok"><b>「親を消したら？」の答えが変わると、コードは1語だけ変わります</b>（<code>cascadeOnDelete</code> → <code>nullOnDelete</code>）。しかし使う人にとっては「タスクが全部消える」か「残る」かの大きな違いです。<b>コードの量と、決めることの重さは比例しません。</b></div>
+
+  <h3>一覧で関連を表示するときの落とし穴（N+1）</h3>
+  <div class="grid2">
+    <div class="ng"><b>まとめ読みなし（11回）</b>
+<pre><code>タスク10件ください         ← 1回
+タスク1のプロジェクトは？   ← +1
+タスク2のプロジェクトは？   ← +1
+ …
+タスク10のプロジェクトは？  ← +1</code></pre>
+      ループの中で <code>$task->project</code> に触るたび、その場で SQL が走ります。100件なら101回。
+    </div>
+    <div class="ok"><b><code>with('project')</code> あり（2回）</b>
+<pre><code>タスク10件ください         ← 1回
+そのタスクのプロジェクトを
+まとめてください            ← 1回
+
+ </code></pre>
+      先にまとめて取り、各タスクに配ります。何件でも2回。
+    </div>
+  </div>
+  <p>これは Laravel に限らず、モデル経由でデータを取る仕組み（ORM）全般で起きます。<b>「ループの中で関連に触るなら、先にまとめて読む」</b>と覚えておけば足ります。</p>
+</section>
+
+<section id="ex3">
+  <h2><span class="num">14</span><span class="ht">通し例3：テーブルが増えない機能（締め切り・絞り込み）</span><span class="k l">Laravel</span></h2>
+  <p>同じ流れで考えると、「今回は新しいテーブルは要らない」と分かる機能があります。<b>作らないと判断するのも設計</b>です。</p>
+
+  <h3>締め切り日を付ける（「性質」が増える）</h3>
+  <div class="scroll"><table>
+    <tr><th style="width:22%">ステップ</th><th>考えたこと</th></tr>
+    <tr><td>② 画面</td><td>作成・編集フォームで日付を<span class="v">選ぶ</span>。一覧と詳細に出す</td></tr>
+    <tr><td>③ ルール</td><td>1つのタスクに締め切りは1つ。無くてもいい。過去の日付は？（<b>決める</b>：編集時に困るので許す）</td></tr>
+    <tr><td>④ データ</td><td>値が1つだけ → <b>列で足りる</b>。<code>$table->date('due_date')->nullable()</code></td></tr>
+    <tr><td>⑤ 作る</td><td>列追加のマイグレーション → <code>$fillable</code> と <code>casts</code>（日付として扱う） → バリデーションに <code>'due_date' => 'nullable|date'</code> → フォームに入力欄 → 表示</td></tr>
+    <tr><td>新しく作らないもの</td><td>テーブル、モデル、ルート、コントローラ。<b>既存の保存処理にそのまま乗る</b></td></tr>
+  </table></div>
+
+  <h3>未完了だけ表示する・締め切り順に並べる（「見方」が増える）</h3>
+  <div class="scroll"><table>
+    <tr><th style="width:22%">ステップ</th><th>考えたこと</th></tr>
+    <tr><td>② 画面</td><td>一覧で「未完了だけ」を<span class="v">選ぶ</span>と絞り込まれる。締め切りが近い順に並ぶ</td></tr>
+    <tr><td>③ ルール</td><td>何も選ばなければ全部。<b>締め切りが無いタスクはどこに並ぶ？</b>（決める：最後）。ページを送っても絞り込みは続く</td></tr>
+    <tr><td>④ データ</td><td>追加なし。「見る」の条件が増えるだけなので<b>ルートも追加なし</b>（<code>GET /tasks?status=open</code>）</td></tr>
+    <tr><td>⑤ 作る</td><td>一覧の処理に条件と並び順を足す → 一覧に絞り込みリンク</td></tr>
+  </table></div>
+<pre><code>$tasks = Task::with('project')
+    ->when($request->query('status') === 'open', fn ($q) => $q->where('is_done', false))
+    ->orderByRaw('due_date is null')   // 締め切りなしを最後に
+    ->orderBy('due_date')
+    ->paginate(10)
+    ->withQueryString();               // ページ送りでも ?status=open を引き継ぐ</code></pre>
+  <div class="note"><b>「締め切りなしはどこに並ぶ？」は、書いてみるまで気づきにくいルールです。</b> 何も決めずに <code>orderBy('due_date')</code> と書くと、MySQL では締め切りなしが先頭に来ます。動かして「あれ？」と思ったら、③に戻ってルールを足す。この往復が普通の進み方です。</div>
+</section>
+
+<h2 class="part">第5部　自分でやる</h2>
+
+<section id="sheet">
+  <h2><span class="num">15</span><span class="ht">設計シート（書き込み用）</span><span class="k c">共通</span></h2>
+  <p>コードを書く前に、これを埋めます。紙でもテキストファイルでも構いません。埋まらない欄が「まだ決めていないこと」です。</p>
+  <div class="sheet">
+    <table>
+      <tr><th>① 何がしたい（1文）</th><td></td></tr>
+      <tr><th>② 画面での操作（動詞を全部）<br>どの画面で／終わったらどの画面</th><td></td></tr>
+      <tr><th>② やらないこと</th><td></td></tr>
+      <tr><th>③ Aひとつに Bはいくつ？<br>Bひとつは Aいくつに付く？</th><td></td></tr>
+      <tr><th>③ 親を消したら？</th><td></td></tr>
+      <tr><th>③ 入力の条件（必須・上限・許す値）</th><td></td></tr>
+      <tr><th>③ 同じものを2回入れていい？</th><td></td></tr>
+      <tr><th>③ 誰が作るデータ？</th><td></td></tr>
+      <tr><th>③ 単独で操作？ 何かのついで？</th><td></td></tr>
+      <tr><th>④ 名詞 → テーブルとカラム<br>外部キーの置き場所</th><td></td></tr>
+      <tr><th>④ 動詞 → メソッド＋URL＋担当</th><td></td></tr>
+      <tr><th>⑤ 作る順番と、各段の確認方法</th><td></td></tr>
+      <tr><th>⑦ わざと破るルール</th><td></td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="practice">
+  <h2><span class="num">16</span><span class="ht">チュートリアルを「考える練習」に変える方法</span><span class="k c">共通</span></h2>
+  <p>チュートリアルは④（データの形）までが済んだ状態で渡されるので、上から写すだけでは①〜④の練習になりません。同じ教材を練習に変える方法は次の3つです。</p>
+  <ol>
+    <li><b>写し終えたコードは、逆向きに読む。</b> 1行ずつ見て「これはどのルールを書いたもの？」を言う。<a href="#ex1">12章</a>のような「ルール → コード」の対応表を自分で作ってみる。</li>
+    <li><b>次の章は、コードを見る前に設計シートを埋める。</b> 見出しの1文だけ読んで、テーブル・URL・コントローラのメソッドを自分で予想する。そのあとコードと比べ、<b>違ったところの理由</b>を考える。</li>
+    <li><b>自分で足す機能は、シートを埋めてから書く。</b> ここは答えが無いので、本番と同じ条件です。まず<a href="#need">5章</a>の3つの問い（もの・性質・操作）から。</li>
+  </ol>
+  <div class="note">予想とお手本が違っていても、動けばどちらも正解のことが多いです。大事なのは<b>「なぜそうしたか」を自分のルールで説明できること</b>です。</div>
+</section>
+
+
+</div>
+</body>
+</html>

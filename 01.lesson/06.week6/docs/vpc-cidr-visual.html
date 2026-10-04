@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VPC・サブネット・CIDR 図解 — 「場所づくり」の回を読み解く</title>
+<style>
+:root{
+  --navy:#12314e; --b700:#2a6fae; --b600:#3b82c4; --b200:#bcdaf1; --b100:#dcebf8; --b50:#f0f7fd;
+  --paper:#fff; --bg:#e4eff9; --ink:#12314e; --muted:#5b7893; --line:#cfe1f2;
+  --amber:#b8712c; --amber-bg:#fdf2e4; --amber-line:#edd3ae;
+  --green:#2c7a5e; --green-bg:#e8f6f0; --red:#c0392b; --red-bg:#fdecea;
+  --code-bg:#0e2840;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink); line-height:1.9; font-size:16px;
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI","Noto Sans JP",Meiryo,sans-serif}
+.wrap{max-width:960px; margin:0 auto; padding:0 16px 80px}
+.hero{background:linear-gradient(165deg,#1b4f7e,#3b82c4); color:#fff; padding:40px 16px 44px; margin-bottom:28px; border-radius:0 0 28px 28px}
+.hero-in{max-width:928px; margin:0 auto}
+.hero h1{margin:0; font-size:32px; line-height:1.35}
+.hero p{margin:14px 0 0; font-size:17px; background:rgba(255,255,255,.14); border-left:4px solid rgba(255,255,255,.7); padding:10px 16px; border-radius:0 12px 12px 0}
+nav{background:var(--paper); border-radius:16px; padding:16px 22px; margin:0 0 22px; font-size:15px}
+nav ol{margin:4px 0 0; padding-left:22px; columns:2; column-gap:30px}
+nav a{color:var(--b700); text-decoration:none}
+section{background:var(--paper); border-radius:20px; padding:28px 28px 30px; margin:0 0 22px; box-shadow:0 8px 28px rgba(18,49,78,.09)}
+h2{margin:0 0 12px; font-size:24px; line-height:1.4; display:flex; gap:12px; align-items:center}
+h2 .num{flex:none; width:34px; height:34px; border-radius:50%; background:var(--b700); color:#fff; font-size:16px; display:grid; place-items:center}
+h3{margin:28px 0 8px; font-size:18px; color:var(--b700)}
+p{margin:8px 0}
+ul,ol{margin:6px 0; padding-left:22px}
+code{background:var(--b50); border:1px solid var(--line); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:ui-monospace,Consolas,monospace}
+pre{background:var(--code-bg); color:#e6f0fa; padding:14px 16px; border-radius:12px; overflow-x:auto; font-size:13.5px; line-height:1.7; margin:10px 0}
+pre code{background:none; border:0; padding:0; color:inherit}
+.note{background:var(--amber-bg); border:1px solid var(--amber-line); border-radius:12px; padding:12px 16px; margin:14px 0}
+.ok{background:var(--green-bg); border:1px solid #bfe3d4; border-radius:12px; padding:12px 16px; margin:14px 0}
+.ng{background:var(--red-bg); border:1px solid #f3c4bd; border-radius:12px; padding:12px 16px; margin:14px 0}
+.fig{border:1px solid var(--line); border-radius:14px; padding:14px; margin:14px 0; background:#fbfdff; overflow-x:auto}
+.fig svg{display:block; width:100%; min-width:680px; height:auto}
+.cap{font-size:14px; color:var(--muted); margin:8px 4px 0}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse; width:100%; font-size:14.5px; margin:10px 0}
+th,td{border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top; line-height:1.65}
+th{background:var(--b100)}
+td.hi{background:var(--amber-bg); font-weight:700}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+.n{background:#dcebf8; border-bottom:2px solid var(--b600); padding:0 3px; border-radius:3px; font-weight:700}
+.v{background:#fdf2e4; border-bottom:2px solid var(--amber); padding:0 3px; border-radius:3px; font-weight:700}
+.r{background:#e8f6f0; border-bottom:2px solid var(--green); padding:0 3px; border-radius:3px; font-weight:700}
+.step{display:flex; gap:14px; margin:14px 0; align-items:flex-start}
+.step .b{flex:none; min-width:54px; text-align:center; background:var(--navy); color:#fff; border-radius:10px; font-weight:800; padding:4px 8px; font-size:14px}
+.step .c{flex:1; min-width:0}
+.step .c > p:first-child{margin-top:0}
+.sheet{border:2px dashed var(--b600); border-radius:14px; padding:18px 20px; background:var(--b50)}
+.sheet td{background:#fff; height:44px}
+.sheet th{width:34%}
+@media(max-width:720px){.grid2{grid-template-columns:1fr} .hero h1{font-size:25px} section{padding:22px 18px} nav ol{columns:1}}
+@media print{body{background:#fff} section,nav{box-shadow:none; border:1px solid #ccc; break-inside:avoid}}
+/* svg */
+.bx{fill:#fff; stroke:var(--b600); stroke-width:1.5}
+.bxa{fill:var(--amber-bg); stroke:var(--amber); stroke-width:1.5}
+.bxg{fill:var(--green-bg); stroke:var(--green); stroke-width:1.5}
+.tt{fill:var(--ink); font-size:14px; font-weight:700}
+.ts{fill:var(--muted); font-size:12px}
+.fl{fill:none; stroke:var(--b700); stroke-width:2}
+.ds{fill:none; stroke:var(--muted); stroke-width:1.3; stroke-dasharray:5 5}
+
+h2.part{margin:34px 4px 14px; font-size:15px; letter-spacing:.12em; color:var(--b700); border-bottom:2px solid var(--b200); padding-bottom:4px; display:block}
+nav ol{list-style:none; padding-left:0}
+nav li.p{font-weight:700; color:var(--navy); margin-top:8px; break-after:avoid}
+a{color:var(--b700)}
+td.bad{background:var(--red-bg)}
+.tag{display:inline-block; font-size:12px; font-weight:700; padding:1px 9px; border-radius:999px; vertical-align:middle}
+.must{background:var(--red-bg); color:var(--red)} .opt{background:var(--b100); color:var(--b700)}
+.hd{fill:var(--navy)} .hdt{fill:#fff; font-size:13px; font-weight:700}
+.box{fill:#fff; stroke:var(--b600); stroke-width:1.5}
+.ln{stroke:var(--line); stroke-width:1}
+.fk{fill:var(--amber-bg)}
+.tx{fill:var(--ink); font-size:13px}
+.lbl{fill:var(--b700); font-size:14px; font-weight:700}
+.sm{fill:var(--muted); font-size:12px}
+.arr{fill:none; stroke:var(--amber); stroke-width:2}
+.arrx{fill:none; stroke:var(--red); stroke-width:2; stroke-dasharray:5 4}
+.redt{fill:var(--red); font-size:13px; font-weight:700}
+
+.bf{fill:#12314e;stroke:#12314e} .bs{fill:#fdf2e4;stroke:#b8712c} .bz{fill:#e8f6f0;stroke:#2c7a5e} .be{fill:#fff;stroke:#cfe1f2}
+.btf{fill:#fff;font-size:12px;font-family:ui-monospace,Consolas,monospace} .btd{fill:#12314e;font-size:12px;font-family:ui-monospace,Consolas,monospace}
+.big{fill:#12314e;font-size:17px;font-weight:800} .g{fill:none;stroke:#2c7a5e;stroke-width:3}
+.addr{font-family:ui-monospace,Consolas,monospace;font-size:26px;font-weight:800;letter-spacing:.04em}
+.addr .a{color:#12314e;border-bottom:4px solid #12314e} .addr .b{color:#b8712c;border-bottom:4px solid #b8712c} .addr .c{color:#2c7a5e;border-bottom:4px solid #2c7a5e}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0;background:var(--b50)} summary{cursor:pointer;font-weight:700}
+</style>
+</head>
+<body>
+<div class="hero"><div class="hero-in">
+  <h1>VPC・サブネット・CIDR 図解<br>「場所づくり」の回を読み解く</h1>
+  <p>この回でやっているのは<b>サーバーを置く場所を用意すること</b>だけ。つまずきやすい <b>CIDR（10.0.0.0/20 の読み方）</b>を、スイッチの絵で最初から説明します。</p>
+</div></div>
+<div class="wrap">
+<nav><b>目次</b>
+<ol>
+<li><a href="#s1">1. この回でやっていること：サーバーを置く「場所」を作る</a></li>
+<li><a href="#s2">2. 作る4つのもの：自宅のネットワークに置き換える</a></li>
+<li><a href="#s3">3. 出来上がりの形</a></li>
+<li><a href="#s4">4. IPアドレスは、スイッチ32個でできている</a></li>
+<li><a href="#s5">5. CIDR は「範囲」の書き方。/ の後ろは固定するスイッチの数</a></li>
+<li><a href="#s6">6. /20 は、3つ目の数字の「途中」まで固定する</a></li>
+<li><a href="#s7">7. VPC とサブネットの関係：大きい範囲を、小分けにする</a></li>
+<li><a href="#s8">8. 最後の数字（0〜255）は、サーバーを置いたときに配られる</a></li>
+<li><a href="#s9">9. ルートテーブル：パブリックとプライベートの違いは1行だけ</a></li>
+<li><a href="#s10">10. つまずきやすいところ</a></li>
+<li><a href="#s11">11. 確認問題</a></li>
+</ol></nav>
+<section id="s1">
+  <h2><span class="num">1</span>この回でやっていること：サーバーを置く「場所」を作る</h2>
+  <p>この回ではサーバーは1台も作りません。<b>次の回でサーバー（EC2）を置くための場所</b>を用意しているだけです。「何がしたいか」から逆算すると、こうなります。</p>
+  <div class="scroll"><table>
+    <tr><th>逆算</th><th>必要なもの</th><th>どの回</th></tr>
+    <tr><td>友達に URL を送って、メモアプリを見せたい</td><td>―</td><td>―</td></tr>
+    <tr><td>→ 24時間動いていて、インターネットから届くコンピュータが要る</td><td>EC2</td><td>②</td></tr>
+    <tr><td>→ そのコンピュータを置く、ネットワーク上の場所が要る</td><td class="hi">VPC・サブネット</td><td class="hi">①（今回）</td></tr>
+    <tr><td>→ その場所がインターネットにつながっている必要がある</td><td class="hi">IGW・ルートテーブル</td><td class="hi">①（今回）</td></tr>
+  </table></div>
+  <p>AWS は「置く場所が無いとサーバーを作れない」ので、場所づくりが最初に来ています。</p>
+</section>
+
+<section id="s2">
+  <h2><span class="num">2</span>作る4つのもの：自宅のネットワークに置き換える</h2>
+  <p>自宅では、買ってきたルーターがこの4つを全部やってくれています。AWS ではそれを1つずつ手で作ります。</p>
+  <div class="scroll"><table>
+    <tr><th>AWS で作るもの</th><th>自宅で言うと</th><th>無いとどうなるか</th></tr>
+    <tr><td><b>VPC</b></td><td>自宅の Wi-Fi のネットワーク全体</td><td>サーバーを置く場所が無い</td></tr>
+    <tr><td><b>サブネット</b></td><td>その中の部屋分け</td><td>VPC の中のどこに置くか指定できない</td></tr>
+    <tr><td><b>IGW</b>（インターネットゲートウェイ）</td><td>回線につながる出入口</td><td>外と一切つながらない</td></tr>
+    <tr><td><b>ルートテーブル</b></td><td>「外あての通信は出入口へ送る」という決まり</td><td>出入口があっても、誰もそこへ向かわない</td></tr>
+  </table></div>
+  <div class="note"><b>作る順番にも理由があります。</b> サブネットは VPC の中に作るので VPC が先。IGW は VPC に取り付けるので VPC が先。ルートテーブルは「IGW へ送る」と書くので IGW が先。後ろのものは、前のものを材料にしています。</div>
+</section>
+
+<section id="s3">
+  <h2><span class="num">3</span>出来上がりの形</h2>
+  <div class="fig"><svg viewBox="0 0 860 460" role="img" aria-label="この回が終わった時点の構成図"><rect x="360" y="8" width="140" height="36" rx="18" style="fill:#fff;stroke:#5b7893;stroke-width:1.5"/><text class="tt" x="430" y="31" text-anchor="middle">インターネット</text><rect x="30" y="100" width="800" height="345" rx="14" style="fill:#f0f7fd;stroke:#2a6fae;stroke-width:2"/><text class="lbl" x="46" y="126">VPC　memo-vpc　10.0.0.0/20</text><text class="sm" x="247" y="158">AZ：ap-northeast-1a</text><text class="sm" x="637" y="158">AZ：ap-northeast-1c</text><path class="g" d="M430,44 V78 M430,122 V142 H235 V168 M430,142 H625 V168"/><rect x="345" y="78" width="170" height="44" rx="8" style="fill:#e8f6f0;stroke:#2c7a5e;stroke-width:2"/><text class="tt" x="430" y="97" text-anchor="middle">memo-igw</text><text class="sm" x="430" y="114" text-anchor="middle">インターネットへの出入口</text><rect x="70" y="168" width="330" height="92" rx="10" class="bxg"/><text class="tt" x="84" y="194">memo-public-1a</text><text class="tx" x="84" y="216">10.0.0.0/24</text><text class="sm" x="84" y="238">ルート表：memo-public-rt</text><text class="sm" x="84" y="254">0.0.0.0/0 → memo-igw あり ＝ 外に出られる</text><rect x="460" y="168" width="330" height="92" rx="10" class="bxg"/><text class="tt" x="474" y="194">memo-public-1c</text><text class="tx" x="474" y="216">10.0.1.0/24</text><text class="sm" x="474" y="238">ルート表：memo-public-rt</text><text class="sm" x="474" y="254">0.0.0.0/0 → memo-igw あり ＝ 外に出られる</text><rect x="70" y="322" width="330" height="92" rx="10" class="bx"/><text class="tt" x="84" y="348">memo-private-1a</text><text class="tx" x="84" y="370">10.0.8.0/24</text><text class="sm" x="84" y="392">ルート表：メイン</text><text class="sm" x="84" y="408">0.0.0.0/0 の行なし ＝ 外に出られない</text><rect x="460" y="322" width="330" height="92" rx="10" class="bx"/><text class="tt" x="474" y="348">memo-private-1c</text><text class="tx" x="474" y="370">10.0.9.0/24</text><text class="sm" x="474" y="392">ルート表：メイン</text><text class="sm" x="474" y="408">0.0.0.0/0 の行なし ＝ 外に出られない</text><text class="sm" x="235" y="290" text-anchor="middle">↑ 次の回で、ここに EC2 を1台置く</text></svg>
+    <p class="cap">緑の線が「インターネットへ出られる道」です。上の2つ（パブリック）にだけ届いています。下の2つ（プライベート）には道がありません。</p>
+  </div>
+  <div class="ok"><b>今回のアプリで実際に使うのは <code>memo-public-1a</code> の1つだけです。</b><br>
+    プライベートの2つと、AZ が 1c のほうは、今回は使いません。「サーバーを増やすときに必要になる定石の形」として先に作っています。ここが腹落ちしなくても、先に進めます。</div>
+
+  <h3>「建物と部屋」で読む</h3>
+  <p>この図は、離れた場所にある2つの建物と、その中の部屋として読めます。</p>
+<pre><code>東京リージョン
+└─ VPC memo-vpc（2つの建物にまたがる、自分専用のネットワーク）
+   │
+   ├─ 建物 1a
+   │   ├─ 部屋A：memo-public-1a   10.0.0.0/24   外への道あり
+   │   └─ 部屋B：memo-private-1a  10.0.8.0/24   外への道なし
+   │
+   └─ 建物 1c
+       ├─ 部屋A：memo-public-1c   10.0.1.0/24   外への道あり
+       └─ 部屋B：memo-private-1c  10.0.9.0/24   外への道なし</code></pre>
+  <div class="scroll"><table>
+    <tr><th>図の中のもの</th><th>建物と部屋で言うと</th><th>ポイント</th></tr>
+    <tr><td>リージョン</td><td>建物が集まっている地域</td><td>地上に実在するデータセンターの集まり</td></tr>
+    <tr><td>アベイラビリティーゾーン（1a、1c）</td><td>離れた場所にある別々の建物</td><td><b>物理的に離れているのはここだけ</b></td></tr>
+    <tr><td>VPC</td><td>2つの建物をまたいで引いた、自分専用の内線網</td><td>建物が違っても、同じ VPC の中ならそのまま通じる（<code>local</code>）</td></tr>
+    <tr><td>サブネット</td><td>建物の中の部屋</td><td>別の町ではない。<b>同じ建物の中の、番号の区切り</b></td></tr>
+    <tr><td>IGW</td><td>敷地に1つだけある、外への出入口</td><td>インターネットとつながる口はここだけ</td></tr>
+    <tr><td>ルートテーブル</td><td>部屋の壁に貼った道案内</td><td>「外あては出入口へ」と書いてある部屋だけ、外に出られる</td></tr>
+    <tr><td>EC2（次の回）</td><td>部屋の中に置く機械</td><td>建物 1a の部屋A に1台置く</td></tr>
+  </table></div>
+  <div class="note"><b>同じ建物の中のパブリックとプライベートは、場所が違うのではありません。</b> 違うのは、番号の範囲と、壁に貼ってある道案内だけです。プライベートの部屋も、VPC の中の他の部屋とは通信できます（道案内の1行目 <code>10.0.0.0/20 → local</code> は持っているため）。</div>
+
+  <h3>たとえは2つあります</h3>
+  <p>この資料では、場面によって2つのたとえを使っています。同じものを別の角度から見ているだけなので、そのとき分かりやすいほうで読んでください。</p>
+  <div class="scroll"><table>
+    <tr><th></th><th>建物と部屋</th><th>町と番地（<a href="#s7">7章</a>・<a href="#s8">8章</a>）</th></tr>
+    <tr><td>向いている場面</td><td>全体の配置をつかむ。「どこに何があり、どこが外とつながるか」</td><td>番号の読み方をつかむ。「<code>10.0.8.37</code> のどこが何を表すか」</td></tr>
+    <tr><td>VPC</td><td>建物をまたぐ内線網</td><td>市</td></tr>
+    <tr><td>サブネット</td><td>部屋</td><td>町</td></tr>
+    <tr><td>サーバー1台</td><td>部屋の中の機械</td><td>番地</td></tr>
+    <tr><td>うまく表せないもの</td><td>番号の範囲（CIDR）の入れ子</td><td>アベイラビリティーゾーン（建物が2つあること）</td></tr>
+  </table></div>
+</section>
+
+<section id="s4">
+  <h2><span class="num">4</span>IPアドレスは、スイッチ32個でできている</h2>
+  <p>IPアドレスは、ネットワークにつながる機械に1つずつ付く番号（住所）です。<code>10.0.0.5</code> のように、<code>.</code> で区切った4つの数字で書きます。</p>
+
+  <h3>スイッチ1個 ＝ 1ビット</h3>
+  <p>コンピュータの中には、0 か 1 のどちらかしか入らない箱が並んでいます。この箱1個を「1ビット」と呼びます。オフ（0）かオン（1）かのスイッチだと思ってください。スイッチが1個増えるごとに、表せるパターンは倍になります。</p>
+  <div class="scroll"><table>
+    <tr><th>スイッチの数</th><th>並べ方</th><th>パターン数</th></tr>
+    <tr><td>1個</td><td><code>0</code>、<code>1</code></td><td>2</td></tr>
+    <tr><td>2個</td><td><code>00</code>、<code>01</code>、<code>10</code>、<code>11</code></td><td>4</td></tr>
+    <tr><td>4個</td><td><code>0000</code> 〜 <code>1111</code></td><td>16</td></tr>
+    <tr><td>8個</td><td><code>00000000</code> 〜 <code>11111111</code></td><td class="hi">256</td></tr>
+  </table></div>
+  <p>256通りに 0 から番号を振ると 0〜255。<b>IPアドレスの数字1つが 0〜255 なのは、スイッチ8個で表しているから</b>です。</p>
+
+  <h3>数字が4つあるので、全部で32個</h3>
+  <div class="fig"><svg viewBox="0 0 860 120" role="img" aria-label="10.0.0.5 を32個のスイッチで表した図"><text class="big" x="169.0" y="34" text-anchor="middle">10</text><text class="big" x="345.0" y="34" text-anchor="middle">0</text><text class="big" x="521.0" y="34" text-anchor="middle">0</text><text class="big" x="697.0" y="34" text-anchor="middle">5</text><rect class="be" x="90" y="50" width="18" height="26" rx="3"/><text class="btd" x="99.0" y="68" text-anchor="middle">0</text><rect class="be" x="110" y="50" width="18" height="26" rx="3"/><text class="btd" x="119.0" y="68" text-anchor="middle">0</text><rect class="be" x="130" y="50" width="18" height="26" rx="3"/><text class="btd" x="139.0" y="68" text-anchor="middle">0</text><rect class="be" x="150" y="50" width="18" height="26" rx="3"/><text class="btd" x="159.0" y="68" text-anchor="middle">0</text><rect class="be" x="170" y="50" width="18" height="26" rx="3"/><text class="btd" x="179.0" y="68" text-anchor="middle">1</text><rect class="be" x="190" y="50" width="18" height="26" rx="3"/><text class="btd" x="199.0" y="68" text-anchor="middle">0</text><rect class="be" x="210" y="50" width="18" height="26" rx="3"/><text class="btd" x="219.0" y="68" text-anchor="middle">1</text><rect class="be" x="230" y="50" width="18" height="26" rx="3"/><text class="btd" x="239.0" y="68" text-anchor="middle">0</text><rect class="be" x="266" y="50" width="18" height="26" rx="3"/><text class="btd" x="275.0" y="68" text-anchor="middle">0</text><rect class="be" x="286" y="50" width="18" height="26" rx="3"/><text class="btd" x="295.0" y="68" text-anchor="middle">0</text><rect class="be" x="306" y="50" width="18" height="26" rx="3"/><text class="btd" x="315.0" y="68" text-anchor="middle">0</text><rect class="be" x="326" y="50" width="18" height="26" rx="3"/><text class="btd" x="335.0" y="68" text-anchor="middle">0</text><rect class="be" x="346" y="50" width="18" height="26" rx="3"/><text class="btd" x="355.0" y="68" text-anchor="middle">0</text><rect class="be" x="366" y="50" width="18" height="26" rx="3"/><text class="btd" x="375.0" y="68" text-anchor="middle">0</text><rect class="be" x="386" y="50" width="18" height="26" rx="3"/><text class="btd" x="395.0" y="68" text-anchor="middle">0</text><rect class="be" x="406" y="50" width="18" height="26" rx="3"/><text class="btd" x="415.0" y="68" text-anchor="middle">0</text><rect class="be" x="442" y="50" width="18" height="26" rx="3"/><text class="btd" x="451.0" y="68" text-anchor="middle">0</text><rect class="be" x="462" y="50" width="18" height="26" rx="3"/><text class="btd" x="471.0" y="68" text-anchor="middle">0</text><rect class="be" x="482" y="50" width="18" height="26" rx="3"/><text class="btd" x="491.0" y="68" text-anchor="middle">0</text><rect class="be" x="502" y="50" width="18" height="26" rx="3"/><text class="btd" x="511.0" y="68" text-anchor="middle">0</text><rect class="be" x="522" y="50" width="18" height="26" rx="3"/><text class="btd" x="531.0" y="68" text-anchor="middle">0</text><rect class="be" x="542" y="50" width="18" height="26" rx="3"/><text class="btd" x="551.0" y="68" text-anchor="middle">0</text><rect class="be" x="562" y="50" width="18" height="26" rx="3"/><text class="btd" x="571.0" y="68" text-anchor="middle">0</text><rect class="be" x="582" y="50" width="18" height="26" rx="3"/><text class="btd" x="591.0" y="68" text-anchor="middle">0</text><rect class="be" x="618" y="50" width="18" height="26" rx="3"/><text class="btd" x="627.0" y="68" text-anchor="middle">0</text><rect class="be" x="638" y="50" width="18" height="26" rx="3"/><text class="btd" x="647.0" y="68" text-anchor="middle">0</text><rect class="be" x="658" y="50" width="18" height="26" rx="3"/><text class="btd" x="667.0" y="68" text-anchor="middle">0</text><rect class="be" x="678" y="50" width="18" height="26" rx="3"/><text class="btd" x="687.0" y="68" text-anchor="middle">0</text><rect class="be" x="698" y="50" width="18" height="26" rx="3"/><text class="btd" x="707.0" y="68" text-anchor="middle">0</text><rect class="be" x="718" y="50" width="18" height="26" rx="3"/><text class="btd" x="727.0" y="68" text-anchor="middle">1</text><rect class="be" x="738" y="50" width="18" height="26" rx="3"/><text class="btd" x="747.0" y="68" text-anchor="middle">0</text><rect class="be" x="758" y="50" width="18" height="26" rx="3"/><text class="btd" x="767.0" y="68" text-anchor="middle">1</text><path d="M90,82 v6 H248 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="169.0" y="104" text-anchor="middle">スイッチ8個</text><path d="M266,82 v6 H424 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="345.0" y="104" text-anchor="middle">スイッチ8個</text><path d="M442,82 v6 H600 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="521.0" y="104" text-anchor="middle">スイッチ8個</text><path d="M618,82 v6 H776 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="697.0" y="104" text-anchor="middle">スイッチ8個</text></svg>
+    <p class="cap"><code>10.0.0.5</code> をスイッチで書いたもの。人間が読みやすいように、8個ずつ区切って数字に直したのが、ふだん見ている IPアドレスです。</p>
+  </div>
+</section>
+
+<section id="s5">
+  <h2><span class="num">5</span>CIDR は「範囲」の書き方。/ の後ろは固定するスイッチの数</h2>
+  <p>VPC を作るとき、「このネットワークではこの範囲の番号を使います」と AWS に伝えます。毎回「〜から〜まで」と書くのは長いので、短く書く方法が決まっています。それが CIDR（サイダー）です。</p>
+<pre><code>10.0.0.0 〜 10.0.0.255   ←→   10.0.0.0/24</code></pre>
+  <p><code>/</code> の後ろの数字は、<b>「左から何個のスイッチを固定するか」</b>です。固定した残りが、自由に使える部分になります。</p>
+  <div class="fig"><svg viewBox="0 0 860 205" role="img" aria-label="/8 /16 /24 で固定されるスイッチの比較"><text class="lbl" x="20" y="39">/8</text><rect class="bf" x="90" y="20" width="18" height="26" rx="3"/><rect class="bf" x="110" y="20" width="18" height="26" rx="3"/><rect class="bf" x="130" y="20" width="18" height="26" rx="3"/><rect class="bf" x="150" y="20" width="18" height="26" rx="3"/><rect class="bf" x="170" y="20" width="18" height="26" rx="3"/><rect class="bf" x="190" y="20" width="18" height="26" rx="3"/><rect class="bf" x="210" y="20" width="18" height="26" rx="3"/><rect class="bf" x="230" y="20" width="18" height="26" rx="3"/><rect class="bz" x="266" y="20" width="18" height="26" rx="3"/><rect class="bz" x="286" y="20" width="18" height="26" rx="3"/><rect class="bz" x="306" y="20" width="18" height="26" rx="3"/><rect class="bz" x="326" y="20" width="18" height="26" rx="3"/><rect class="bz" x="346" y="20" width="18" height="26" rx="3"/><rect class="bz" x="366" y="20" width="18" height="26" rx="3"/><rect class="bz" x="386" y="20" width="18" height="26" rx="3"/><rect class="bz" x="406" y="20" width="18" height="26" rx="3"/><rect class="bz" x="442" y="20" width="18" height="26" rx="3"/><rect class="bz" x="462" y="20" width="18" height="26" rx="3"/><rect class="bz" x="482" y="20" width="18" height="26" rx="3"/><rect class="bz" x="502" y="20" width="18" height="26" rx="3"/><rect class="bz" x="522" y="20" width="18" height="26" rx="3"/><rect class="bz" x="542" y="20" width="18" height="26" rx="3"/><rect class="bz" x="562" y="20" width="18" height="26" rx="3"/><rect class="bz" x="582" y="20" width="18" height="26" rx="3"/><rect class="bz" x="618" y="20" width="18" height="26" rx="3"/><rect class="bz" x="638" y="20" width="18" height="26" rx="3"/><rect class="bz" x="658" y="20" width="18" height="26" rx="3"/><rect class="bz" x="678" y="20" width="18" height="26" rx="3"/><rect class="bz" x="698" y="20" width="18" height="26" rx="3"/><rect class="bz" x="718" y="20" width="18" height="26" rx="3"/><rect class="bz" x="738" y="20" width="18" height="26" rx="3"/><rect class="bz" x="758" y="20" width="18" height="26" rx="3"/><text class="sm" x="786" y="38">約1,677万個</text><text class="lbl" x="20" y="85">/16</text><rect class="bf" x="90" y="66" width="18" height="26" rx="3"/><rect class="bf" x="110" y="66" width="18" height="26" rx="3"/><rect class="bf" x="130" y="66" width="18" height="26" rx="3"/><rect class="bf" x="150" y="66" width="18" height="26" rx="3"/><rect class="bf" x="170" y="66" width="18" height="26" rx="3"/><rect class="bf" x="190" y="66" width="18" height="26" rx="3"/><rect class="bf" x="210" y="66" width="18" height="26" rx="3"/><rect class="bf" x="230" y="66" width="18" height="26" rx="3"/><rect class="bf" x="266" y="66" width="18" height="26" rx="3"/><rect class="bf" x="286" y="66" width="18" height="26" rx="3"/><rect class="bf" x="306" y="66" width="18" height="26" rx="3"/><rect class="bf" x="326" y="66" width="18" height="26" rx="3"/><rect class="bf" x="346" y="66" width="18" height="26" rx="3"/><rect class="bf" x="366" y="66" width="18" height="26" rx="3"/><rect class="bf" x="386" y="66" width="18" height="26" rx="3"/><rect class="bf" x="406" y="66" width="18" height="26" rx="3"/><rect class="bz" x="442" y="66" width="18" height="26" rx="3"/><rect class="bz" x="462" y="66" width="18" height="26" rx="3"/><rect class="bz" x="482" y="66" width="18" height="26" rx="3"/><rect class="bz" x="502" y="66" width="18" height="26" rx="3"/><rect class="bz" x="522" y="66" width="18" height="26" rx="3"/><rect class="bz" x="542" y="66" width="18" height="26" rx="3"/><rect class="bz" x="562" y="66" width="18" height="26" rx="3"/><rect class="bz" x="582" y="66" width="18" height="26" rx="3"/><rect class="bz" x="618" y="66" width="18" height="26" rx="3"/><rect class="bz" x="638" y="66" width="18" height="26" rx="3"/><rect class="bz" x="658" y="66" width="18" height="26" rx="3"/><rect class="bz" x="678" y="66" width="18" height="26" rx="3"/><rect class="bz" x="698" y="66" width="18" height="26" rx="3"/><rect class="bz" x="718" y="66" width="18" height="26" rx="3"/><rect class="bz" x="738" y="66" width="18" height="26" rx="3"/><rect class="bz" x="758" y="66" width="18" height="26" rx="3"/><text class="sm" x="786" y="84">65,536個</text><text class="lbl" x="20" y="131">/24</text><rect class="bf" x="90" y="112" width="18" height="26" rx="3"/><rect class="bf" x="110" y="112" width="18" height="26" rx="3"/><rect class="bf" x="130" y="112" width="18" height="26" rx="3"/><rect class="bf" x="150" y="112" width="18" height="26" rx="3"/><rect class="bf" x="170" y="112" width="18" height="26" rx="3"/><rect class="bf" x="190" y="112" width="18" height="26" rx="3"/><rect class="bf" x="210" y="112" width="18" height="26" rx="3"/><rect class="bf" x="230" y="112" width="18" height="26" rx="3"/><rect class="bf" x="266" y="112" width="18" height="26" rx="3"/><rect class="bf" x="286" y="112" width="18" height="26" rx="3"/><rect class="bf" x="306" y="112" width="18" height="26" rx="3"/><rect class="bf" x="326" y="112" width="18" height="26" rx="3"/><rect class="bf" x="346" y="112" width="18" height="26" rx="3"/><rect class="bf" x="366" y="112" width="18" height="26" rx="3"/><rect class="bf" x="386" y="112" width="18" height="26" rx="3"/><rect class="bf" x="406" y="112" width="18" height="26" rx="3"/><rect class="bf" x="442" y="112" width="18" height="26" rx="3"/><rect class="bf" x="462" y="112" width="18" height="26" rx="3"/><rect class="bf" x="482" y="112" width="18" height="26" rx="3"/><rect class="bf" x="502" y="112" width="18" height="26" rx="3"/><rect class="bf" x="522" y="112" width="18" height="26" rx="3"/><rect class="bf" x="542" y="112" width="18" height="26" rx="3"/><rect class="bf" x="562" y="112" width="18" height="26" rx="3"/><rect class="bf" x="582" y="112" width="18" height="26" rx="3"/><rect class="bz" x="618" y="112" width="18" height="26" rx="3"/><rect class="bz" x="638" y="112" width="18" height="26" rx="3"/><rect class="bz" x="658" y="112" width="18" height="26" rx="3"/><rect class="bz" x="678" y="112" width="18" height="26" rx="3"/><rect class="bz" x="698" y="112" width="18" height="26" rx="3"/><rect class="bz" x="718" y="112" width="18" height="26" rx="3"/><rect class="bz" x="738" y="112" width="18" height="26" rx="3"/><rect class="bz" x="758" y="112" width="18" height="26" rx="3"/><text class="sm" x="786" y="130">256個</text><text class="sm" x="169.0" y="166" text-anchor="middle">1つ目の数字</text><text class="sm" x="345.0" y="166" text-anchor="middle">2つ目の数字</text><text class="sm" x="521.0" y="166" text-anchor="middle">3つ目の数字</text><text class="sm" x="697.0" y="166" text-anchor="middle">4つ目の数字</text><rect class="bf" x="90" y="180" width="18" height="16" rx="3"/><text class="sm" x="116" y="193">固定（動かせない）</text><rect class="bz" x="270" y="180" width="18" height="16" rx="3"/><text class="sm" x="296" y="193">自由（動かせる）</text></svg>
+    <p class="cap">数字1つがスイッチ8個なので、8・16・24 は切れ目がちょうど数字の境目に来ます。</p>
+  </div>
+  <div class="scroll"><table>
+    <tr><th>書き方</th><th>固定される部分</th><th>範囲</th><th>個数</th></tr>
+    <tr><td><code>10.0.0.0/8</code></td><td><code>10</code></td><td><code>10.0.0.0</code> 〜 <code>10.255.255.255</code></td><td>約1,677万</td></tr>
+    <tr><td><code>10.0.0.0/16</code></td><td><code>10.0</code></td><td><code>10.0.0.0</code> 〜 <code>10.0.255.255</code></td><td>65,536</td></tr>
+    <tr><td><code>10.0.0.0/24</code></td><td><code>10.0.0</code></td><td><code>10.0.0.0</code> 〜 <code>10.0.0.255</code></td><td>256</td></tr>
+  </table></div>
+  <div class="ok"><b>固定する部分が長いほど、自由な部分が減って、範囲は狭くなる。</b>「<code>/</code> の後ろが大きいほど狭い」はここから来ています。<br>
+  個数は、自由なスイッチの数（32 − <code>/</code> の後ろ）だけ 2 をかけたものです。<code>/24</code> なら自由が8個で 256、<code>/20</code> なら自由が12個で 4,096。</div>
+</section>
+
+<section id="s6">
+  <h2><span class="num">6</span>/20 は、3つ目の数字の「途中」まで固定する</h2>
+  <p>VPC は <code>10.0.0.0/20</code> で作ります。20 は 16 と 24 の間なので、切れ目が数字の途中に来ます。左から20個数えてみます。</p>
+  <div class="fig"><svg viewBox="0 0 860 230" role="img" aria-label="/20 は3つ目の数字の途中まで固定する"><text class="lbl" x="20" y="63">/20</text><rect class="bf" x="90" y="44" width="18" height="26" rx="3"/><rect class="bf" x="110" y="44" width="18" height="26" rx="3"/><rect class="bf" x="130" y="44" width="18" height="26" rx="3"/><rect class="bf" x="150" y="44" width="18" height="26" rx="3"/><rect class="bf" x="170" y="44" width="18" height="26" rx="3"/><rect class="bf" x="190" y="44" width="18" height="26" rx="3"/><rect class="bf" x="210" y="44" width="18" height="26" rx="3"/><rect class="bf" x="230" y="44" width="18" height="26" rx="3"/><rect class="bf" x="266" y="44" width="18" height="26" rx="3"/><rect class="bf" x="286" y="44" width="18" height="26" rx="3"/><rect class="bf" x="306" y="44" width="18" height="26" rx="3"/><rect class="bf" x="326" y="44" width="18" height="26" rx="3"/><rect class="bf" x="346" y="44" width="18" height="26" rx="3"/><rect class="bf" x="366" y="44" width="18" height="26" rx="3"/><rect class="bf" x="386" y="44" width="18" height="26" rx="3"/><rect class="bf" x="406" y="44" width="18" height="26" rx="3"/><rect class="bf" x="442" y="44" width="18" height="26" rx="3"/><rect class="bf" x="462" y="44" width="18" height="26" rx="3"/><rect class="bf" x="482" y="44" width="18" height="26" rx="3"/><rect class="bf" x="502" y="44" width="18" height="26" rx="3"/><rect class="bz" x="522" y="44" width="18" height="26" rx="3"/><rect class="bz" x="542" y="44" width="18" height="26" rx="3"/><rect class="bz" x="562" y="44" width="18" height="26" rx="3"/><rect class="bz" x="582" y="44" width="18" height="26" rx="3"/><rect class="bz" x="618" y="44" width="18" height="26" rx="3"/><rect class="bz" x="638" y="44" width="18" height="26" rx="3"/><rect class="bz" x="658" y="44" width="18" height="26" rx="3"/><rect class="bz" x="678" y="44" width="18" height="26" rx="3"/><rect class="bz" x="698" y="44" width="18" height="26" rx="3"/><rect class="bz" x="718" y="44" width="18" height="26" rx="3"/><rect class="bz" x="738" y="44" width="18" height="26" rx="3"/><rect class="bz" x="758" y="44" width="18" height="26" rx="3"/><path d="M90,76 v6 H248 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="169.0" y="98" text-anchor="middle">8個</text><path d="M266,76 v6 H424 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="345.0" y="98" text-anchor="middle">8個</text><path d="M442,76 v6 H520 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="481.0" y="98" text-anchor="middle">4個</text><path d="M522,76 v6 H776 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="649.0" y="98" text-anchor="middle">残り12個（自由）</text><text class="redt" x="521.0" y="30" text-anchor="middle">20個目はここ ↓（3つ目の数字の途中）</text><rect class="bf" x="250" y="150" width="40" height="40" rx="6"/><text class="btf" x="270" y="176" text-anchor="middle" style="font-size:18px">0</text><rect class="bf" x="296" y="150" width="40" height="40" rx="6"/><text class="btf" x="316" y="176" text-anchor="middle" style="font-size:18px">0</text><rect class="bf" x="342" y="150" width="40" height="40" rx="6"/><text class="btf" x="362" y="176" text-anchor="middle" style="font-size:18px">0</text><rect class="bf" x="388" y="150" width="40" height="40" rx="6"/><text class="btf" x="408" y="176" text-anchor="middle" style="font-size:18px">0</text><rect class="bz" x="434" y="150" width="40" height="40" rx="6"/><text class="btd" x="454" y="176" text-anchor="middle" style="font-size:18px">?</text><rect class="bz" x="480" y="150" width="40" height="40" rx="6"/><text class="btd" x="500" y="176" text-anchor="middle" style="font-size:18px">?</text><rect class="bz" x="526" y="150" width="40" height="40" rx="6"/><text class="btd" x="546" y="176" text-anchor="middle" style="font-size:18px">?</text><rect class="bz" x="572" y="150" width="40" height="40" rx="6"/><text class="btd" x="592" y="176" text-anchor="middle" style="font-size:18px">?</text><text class="lbl" x="20" y="176">3つ目の数字を拡大</text><path d="M250,196 v6 H428 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="339.0" y="218" text-anchor="middle">前半4個：固定（0000）</text><path d="M434,196 v6 H612 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="523.0" y="218" text-anchor="middle">後半4個：自由 → 16通り（0〜15）</text></svg>
+    <p class="cap">20 ＝ 8 ＋ 8 ＋ 4。1つ目と2つ目の数字は丸ごと固定、3つ目の数字は前半4個だけ固定になります。</p>
+  </div>
+  <div class="note"><b>「前半4個を固定する」と自分で指定した覚えはなくて当然です。</b> <code>/20</code> と入力したとき、左から20個目がたまたま3つ目の数字の真ん中に来た、という結果です。</div>
+
+  <h3>だから、3つ目の数字は 0〜15 しか取れない</h3>
+  <p>VPC を <code>10.0.<b>0</b>.0/20</code> と書いたので、3つ目の数字は <code>0</code> ＝ <code>00000000</code>。その前半4個（<code>0000</code>）が固定されます。動かせるのは後半4個だけです。</p>
+  <div class="scroll"><table>
+    <tr><th>スイッチ（前半4個は固定）</th><th>3つ目の数字</th></tr>
+    <tr><td><code>0000</code> <code>0000</code></td><td>0</td></tr>
+    <tr><td><code>0000</code> <code>0001</code></td><td>1</td></tr>
+    <tr><td><code>0000</code> <code>0010</code></td><td>2</td></tr>
+    <tr><td>…</td><td>…</td></tr>
+    <tr><td><code>0000</code> <code>1111</code></td><td class="hi">15（最大）</td></tr>
+  </table></div>
+  <p>16 にするには <code>0001 0000</code> が必要ですが、これは固定されている前半を動かさないと作れません。<b>だから 16 以上にはならない。</b></p>
+<pre><code>10.0.0.0/20  ＝  10.0.0.0 〜 10.0.15.255     （16 × 256 ＝ 4,096個）</code></pre>
+</section>
+
+<section id="s7">
+  <h2><span class="num">7</span>VPC とサブネットの関係：大きい範囲を、小分けにする</h2>
+  <p>サブネットは「VPC の範囲を、さらに小分けにしたもの」です。小分けにするので範囲は VPC より狭い。範囲が狭い＝固定するスイッチが多い＝<code>/</code> の後ろが大きい。<b>だから VPC が <code>/20</code> で、サブネットが <code>/24</code></b> です。</p>
+  <div class="scroll"><table>
+    <tr><th></th><th>住所で言うと</th><th>決まっている部分</th></tr>
+    <tr><td>VPC <code>/20</code></td><td>「〇〇市」</td><td>市まで</td></tr>
+    <tr><td>サブネット <code>/24</code></td><td>「〇〇市 △△町」</td><td>市 ＋ 町</td></tr>
+    <tr><td>サーバー1台</td><td>「〇〇市 △△町 5番地」</td><td>全部</td></tr>
+  </table></div>
+  <div class="fig"><svg viewBox="0 0 860 222" role="img" aria-label="VPC の自由な12個を、区画4個とサーバー8個に分ける"><text class="lbl" x="10" y="49">VPC /20</text><rect class="bf" x="90" y="30" width="18" height="26" rx="3"/><rect class="bf" x="110" y="30" width="18" height="26" rx="3"/><rect class="bf" x="130" y="30" width="18" height="26" rx="3"/><rect class="bf" x="150" y="30" width="18" height="26" rx="3"/><rect class="bf" x="170" y="30" width="18" height="26" rx="3"/><rect class="bf" x="190" y="30" width="18" height="26" rx="3"/><rect class="bf" x="210" y="30" width="18" height="26" rx="3"/><rect class="bf" x="230" y="30" width="18" height="26" rx="3"/><rect class="bf" x="266" y="30" width="18" height="26" rx="3"/><rect class="bf" x="286" y="30" width="18" height="26" rx="3"/><rect class="bf" x="306" y="30" width="18" height="26" rx="3"/><rect class="bf" x="326" y="30" width="18" height="26" rx="3"/><rect class="bf" x="346" y="30" width="18" height="26" rx="3"/><rect class="bf" x="366" y="30" width="18" height="26" rx="3"/><rect class="bf" x="386" y="30" width="18" height="26" rx="3"/><rect class="bf" x="406" y="30" width="18" height="26" rx="3"/><rect class="bf" x="442" y="30" width="18" height="26" rx="3"/><rect class="bf" x="462" y="30" width="18" height="26" rx="3"/><rect class="bf" x="482" y="30" width="18" height="26" rx="3"/><rect class="bf" x="502" y="30" width="18" height="26" rx="3"/><rect class="bz" x="522" y="30" width="18" height="26" rx="3"/><rect class="bz" x="542" y="30" width="18" height="26" rx="3"/><rect class="bz" x="562" y="30" width="18" height="26" rx="3"/><rect class="bz" x="582" y="30" width="18" height="26" rx="3"/><rect class="bz" x="618" y="30" width="18" height="26" rx="3"/><rect class="bz" x="638" y="30" width="18" height="26" rx="3"/><rect class="bz" x="658" y="30" width="18" height="26" rx="3"/><rect class="bz" x="678" y="30" width="18" height="26" rx="3"/><rect class="bz" x="698" y="30" width="18" height="26" rx="3"/><rect class="bz" x="718" y="30" width="18" height="26" rx="3"/><rect class="bz" x="738" y="30" width="18" height="26" rx="3"/><rect class="bz" x="758" y="30" width="18" height="26" rx="3"/><path d="M90,62 v6 H520 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="305.0" y="84" text-anchor="middle">20個は固定</text><path d="M522,62 v6 H776 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="649.0" y="84" text-anchor="middle">12個は自由</text><text class="lbl" x="10" y="132">サブネット</text><text class="lbl" x="10" y="148">/24</text><rect class="bf" x="90" y="120" width="18" height="26" rx="3"/><rect class="bf" x="110" y="120" width="18" height="26" rx="3"/><rect class="bf" x="130" y="120" width="18" height="26" rx="3"/><rect class="bf" x="150" y="120" width="18" height="26" rx="3"/><rect class="bf" x="170" y="120" width="18" height="26" rx="3"/><rect class="bf" x="190" y="120" width="18" height="26" rx="3"/><rect class="bf" x="210" y="120" width="18" height="26" rx="3"/><rect class="bf" x="230" y="120" width="18" height="26" rx="3"/><rect class="bf" x="266" y="120" width="18" height="26" rx="3"/><rect class="bf" x="286" y="120" width="18" height="26" rx="3"/><rect class="bf" x="306" y="120" width="18" height="26" rx="3"/><rect class="bf" x="326" y="120" width="18" height="26" rx="3"/><rect class="bf" x="346" y="120" width="18" height="26" rx="3"/><rect class="bf" x="366" y="120" width="18" height="26" rx="3"/><rect class="bf" x="386" y="120" width="18" height="26" rx="3"/><rect class="bf" x="406" y="120" width="18" height="26" rx="3"/><rect class="bf" x="442" y="120" width="18" height="26" rx="3"/><rect class="bf" x="462" y="120" width="18" height="26" rx="3"/><rect class="bf" x="482" y="120" width="18" height="26" rx="3"/><rect class="bf" x="502" y="120" width="18" height="26" rx="3"/><rect class="bs" x="522" y="120" width="18" height="26" rx="3"/><rect class="bs" x="542" y="120" width="18" height="26" rx="3"/><rect class="bs" x="562" y="120" width="18" height="26" rx="3"/><rect class="bs" x="582" y="120" width="18" height="26" rx="3"/><rect class="bz" x="618" y="120" width="18" height="26" rx="3"/><rect class="bz" x="638" y="120" width="18" height="26" rx="3"/><rect class="bz" x="658" y="120" width="18" height="26" rx="3"/><rect class="bz" x="678" y="120" width="18" height="26" rx="3"/><rect class="bz" x="698" y="120" width="18" height="26" rx="3"/><rect class="bz" x="718" y="120" width="18" height="26" rx="3"/><rect class="bz" x="738" y="120" width="18" height="26" rx="3"/><rect class="bz" x="758" y="120" width="18" height="26" rx="3"/><path d="M90,152 v6 H520 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="305.0" y="174" text-anchor="middle">VPC と同じ</text><path d="M522,152 v6 H600 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="redt" x="561.0" y="174" text-anchor="middle">4個</text><path d="M618,152 v6 H776 v-6" style="fill:none;stroke:#5b7893;stroke-width:1.2"/><text class="sm" x="697.0" y="174" text-anchor="middle">8個は自由</text><text class="sm" x="561.0" y="196" text-anchor="middle">どの区画か</text><text class="sm" x="561.0" y="212" text-anchor="middle">（16通り）</text><text class="sm" x="697.0" y="196" text-anchor="middle">サーバーに配る番号</text><text class="sm" x="697.0" y="212" text-anchor="middle">（256通り）</text></svg>
+    <p class="cap">VPC では自由だった12個を、サブネットでは「どの区画かを決める4個」と「サーバーに配る8個」に分けて使います。4個で16通りなので、区画は最大16個。4,096 ＝ 16区画 × 256個。</p>
+  </div>
+
+  <h3>今回の4つのサブネット</h3>
+  <p>「真ん中の4個を決める」のと「3つ目の数字を 0〜15 から1つ選ぶ」のは同じことです。<code>/24</code> のサブネットを1つ作るたびに、3つ目の数字を1つ選んでいます。</p>
+  <div class="fig"><svg viewBox="0 0 860 152" role="img" aria-label="VPC の16マスのうち 0・1・8・9 を使っている図"><text class="lbl" x="46" y="24">VPC 10.0.0.0/20 の中身：3つ目の数字で16マスに分かれる</text><text class="sm" x="68" y="52" text-anchor="middle">0</text><rect class="bz" x="46" y="60" width="44" height="58" rx="6"/><text class="sm" x="68" y="84" text-anchor="middle" style="fill:#12314e;font-weight:700">公開</text><text class="sm" x="68" y="104" text-anchor="middle" style="fill:#12314e">1a</text><text class="sm" x="116" y="52" text-anchor="middle">1</text><rect class="bz" x="94" y="60" width="44" height="58" rx="6"/><text class="sm" x="116" y="84" text-anchor="middle" style="fill:#12314e;font-weight:700">公開</text><text class="sm" x="116" y="104" text-anchor="middle" style="fill:#12314e">1c</text><text class="sm" x="164" y="52" text-anchor="middle">2</text><rect class="be" x="142" y="60" width="44" height="58" rx="6"/><text class="sm" x="164" y="94" text-anchor="middle">空き</text><text class="sm" x="212" y="52" text-anchor="middle">3</text><rect class="be" x="190" y="60" width="44" height="58" rx="6"/><text class="sm" x="212" y="94" text-anchor="middle">空き</text><text class="sm" x="260" y="52" text-anchor="middle">4</text><rect class="be" x="238" y="60" width="44" height="58" rx="6"/><text class="sm" x="260" y="94" text-anchor="middle">空き</text><text class="sm" x="308" y="52" text-anchor="middle">5</text><rect class="be" x="286" y="60" width="44" height="58" rx="6"/><text class="sm" x="308" y="94" text-anchor="middle">空き</text><text class="sm" x="356" y="52" text-anchor="middle">6</text><rect class="be" x="334" y="60" width="44" height="58" rx="6"/><text class="sm" x="356" y="94" text-anchor="middle">空き</text><text class="sm" x="404" y="52" text-anchor="middle">7</text><rect class="be" x="382" y="60" width="44" height="58" rx="6"/><text class="sm" x="404" y="94" text-anchor="middle">空き</text><text class="sm" x="452" y="52" text-anchor="middle">8</text><rect class="bs" x="430" y="60" width="44" height="58" rx="6"/><text class="sm" x="452" y="84" text-anchor="middle" style="fill:#12314e;font-weight:700">非公開</text><text class="sm" x="452" y="104" text-anchor="middle" style="fill:#12314e">1a</text><text class="sm" x="500" y="52" text-anchor="middle">9</text><rect class="bs" x="478" y="60" width="44" height="58" rx="6"/><text class="sm" x="500" y="84" text-anchor="middle" style="fill:#12314e;font-weight:700">非公開</text><text class="sm" x="500" y="104" text-anchor="middle" style="fill:#12314e">1c</text><text class="sm" x="548" y="52" text-anchor="middle">10</text><rect class="be" x="526" y="60" width="44" height="58" rx="6"/><text class="sm" x="548" y="94" text-anchor="middle">空き</text><text class="sm" x="596" y="52" text-anchor="middle">11</text><rect class="be" x="574" y="60" width="44" height="58" rx="6"/><text class="sm" x="596" y="94" text-anchor="middle">空き</text><text class="sm" x="644" y="52" text-anchor="middle">12</text><rect class="be" x="622" y="60" width="44" height="58" rx="6"/><text class="sm" x="644" y="94" text-anchor="middle">空き</text><text class="sm" x="692" y="52" text-anchor="middle">13</text><rect class="be" x="670" y="60" width="44" height="58" rx="6"/><text class="sm" x="692" y="94" text-anchor="middle">空き</text><text class="sm" x="740" y="52" text-anchor="middle">14</text><rect class="be" x="718" y="60" width="44" height="58" rx="6"/><text class="sm" x="740" y="94" text-anchor="middle">空き</text><text class="sm" x="788" y="52" text-anchor="middle">15</text><rect class="be" x="766" y="60" width="44" height="58" rx="6"/><text class="sm" x="788" y="94" text-anchor="middle">空き</text><text class="sm" x="46" y="142">1マス ＝ /24 のサブネット1つ ＝ 256個。16マスのうち4マスを使用、12マスは空き。</text></svg></div>
+  <div class="scroll"><table>
+    <tr><th>サブネット</th><th>CIDR</th><th>範囲</th><th>選んだマス</th></tr>
+    <tr><td><code>memo-public-1a</code></td><td><code>10.0.0.0/24</code></td><td><code>10.0.0.0</code> 〜 <code>10.0.0.255</code></td><td>0</td></tr>
+    <tr><td><code>memo-public-1c</code></td><td><code>10.0.1.0/24</code></td><td><code>10.0.1.0</code> 〜 <code>10.0.1.255</code></td><td>1</td></tr>
+    <tr><td><code>memo-private-1a</code></td><td><code>10.0.8.0/24</code></td><td><code>10.0.8.0</code> 〜 <code>10.0.8.255</code></td><td>8</td></tr>
+    <tr><td><code>memo-private-1c</code></td><td><code>10.0.9.0/24</code></td><td><code>10.0.9.0</code> 〜 <code>10.0.9.255</code></td><td>9</td></tr>
+  </table></div>
+  <ul>
+    <li>パブリックは 0 番台、プライベートは 8 番台。16マスの左半分と右半分に分けて置いているので、CIDR を見ただけでどちらか分かります。</li>
+    <li>3つ目の数字を 16 以上にすると（<code>10.0.16.0/24</code> など）VPC からはみ出すので、AWS にエラーで断られます。</li>
+    <li>サブネットは <code>/24</code> でなくても作れます。決まりは「VPC より狭いこと」だけ。<code>/24</code> は「3つ目の数字＝区画の番号、4つ目の数字＝サーバーの番号」と読みやすいので、よく使われます。</li>
+  </ul>
+</section>
+
+<section id="s8">
+  <h2><span class="num">8</span>最後の数字（0〜255）は、サーバーを置いたときに配られる</h2>
+  <p class="addr"><span class="a">10.0</span>.<span class="b">8</span>.<span class="c">37</span></p>
+  <div class="scroll"><table>
+    <tr><th>部分</th><th>意味</th><th>いつ決まるか</th></tr>
+    <tr><td><code>10.0</code></td><td>どの VPC か</td><td>VPC を作ったとき</td></tr>
+    <tr><td><code>8</code></td><td>どのサブネット（区画）か</td><td>サブネットを作ったとき</td></tr>
+    <tr><td><code>37</code></td><td>その区画の中の、どの1台か</td><td><b>サーバーを置いたとき（AWS が自動で付ける）</b></td></tr>
+  </table></div>
+  <p>サブネットが「町」なら、最後の数字は「番地」です（建物と部屋のたとえなら、部屋の中に置いた機械1台ずつの番号です）。町を作っただけでは番地は使われません。次の回で EC2 を作るとき、「どのサブネットに置くか」を選ぶと、AWS がその範囲から空いている番号を1つ選んで付けます。自分で番号を考える必要はありません。</p>
+  <div class="grid2">
+    <div class="note"><b>256個すべては使えません。</b><br>各サブネットで5個（<code>.0</code>、<code>.1</code>、<code>.2</code>、<code>.3</code>、<code>.255</code>）を AWS が予約しています。配れるのは251個。コンソールに「利用可能な IPv4 アドレス：251」と出るのはこのためです。</div>
+    <div class="ok"><b>この番号は VPC の中だけで通じます。</b><br><code>10.</code> で始まる番号は「内部専用」と世界で決められているので、インターネットからは届きません。外から届く番号は別に付きます（下の表）。</div>
+  </div>
+  <div class="scroll"><table>
+    <tr><th>番号の種類</th><th>例</th><th>どこで通じるか</th><th>どこで設定したか</th></tr>
+    <tr><td>プライベートIP</td><td><code>10.0.0.37</code></td><td>VPC の中だけ</td><td>サブネットの CIDR から自動</td></tr>
+    <tr><td>パブリックIP</td><td><code>54.xxx.xxx.xxx</code></td><td>インターネット全体</td><td>「パブリック IPv4 アドレスの自動割り当て」のチェック。次の回で Elastic IP に置き換える</td></tr>
+  </table></div>
+</section>
+
+<section id="s9">
+  <h2><span class="num">9</span>ルートテーブル：パブリックとプライベートの違いは1行だけ</h2>
+  <p>ルートテーブルは「この番号あての通信は、どこへ送るか」の表です。ここにも CIDR が出てきます。</p>
+<pre><code>memo-public-rt
+  10.0.0.0/20 → local      VPC の中の番号あては、中でそのまま届ける（最初から入っている）
+  0.0.0.0/0   → memo-igw   それ以外の全部（＝インターネットあて）は、出入口へ</code></pre>
+  <ul>
+    <li><code>0.0.0.0/0</code> は「固定するスイッチが0個」。何も固定しない＝<b>全部の IPアドレス</b>という意味です。</li>
+    <li>2行とも当てはまるときは、範囲が狭いほう（<code>/</code> の後ろが大きいほう）が優先されます。だから VPC の中あての通信は IGW に行かず、中で届きます。</li>
+  </ul>
+  <div class="scroll"><table>
+    <tr><th></th><th>付いているルートテーブル</th><th><code>0.0.0.0/0 → memo-igw</code> の行</th><th>結果</th></tr>
+    <tr><td>パブリックの2つ</td><td><code>memo-public-rt</code></td><td class="hi">ある</td><td>外に出られる</td></tr>
+    <tr><td>プライベートの2つ</td><td>メインのルートテーブル</td><td>ない</td><td>外に出られない</td></tr>
+  </table></div>
+  <div class="ok"><b>この回で一番大事な1点。</b> サブネットに「パブリックにする」というスイッチはありません。IGW への道案内が付いている区画を、結果的にパブリックと呼んでいるだけです。違いは、道案内が1行あるかどうかだけ。</div>
+  <div class="note"><b>IGW を作っただけでは通れません。</b> ①作る、②VPC にアタッチする（取り付ける）、③ルートテーブルに「外あては IGW へ」と書く、④そのルートテーブルをサブネットに関連付ける。この4つが揃って、初めて道がつながります。</div>
+</section>
+
+<section id="s10">
+  <h2><span class="num">10</span>つまずきやすいところ</h2>
+  <div class="scroll"><table>
+    <tr><th>症状</th><th>まず疑うところ</th></tr>
+    <tr><td>さっき作ったものが一覧に無い</td><td>右上のリージョンが「東京」になっているか。リージョンごとに中身は完全に別です</td></tr>
+    <tr><td>サブネットや IGW の作成画面で選ぶ VPC が2つある</td><td>必ず <code>memo-vpc</code> を選ぶ。名前が空のほうは最初からあるデフォルト VPC です</td></tr>
+    <tr><td>サブネット作成で CIDR のエラーが出る</td><td>3つ目の数字が 0〜15 の範囲か。他のサブネットと同じ番号を使っていないか</td></tr>
+    <tr><td>IGW の状態が Detached のまま</td><td>作っただけで、VPC へのアタッチをしていない</td></tr>
+    <tr><td>プライベート側にも <code>0.0.0.0/0</code> の行が出る</td><td><code>memo-public-rt</code> の関連付けで、プライベートのサブネットにもチェックを入れてしまっている</td></tr>
+  </table></div>
+</section>
+
+<section id="s11">
+  <h2><span class="num">11</span>確認問題</h2>
+  <details><summary>Q1. <code>10.0.0.0/16</code> は、左から何個が固定で、どの数字が変えられますか。</summary>
+    <p>16個が固定、16個が自由。1つ目と2つ目（<code>10.0</code>）が固定で、3つ目と4つ目が変えられます。範囲は <code>10.0.0.0</code> 〜 <code>10.0.255.255</code>。</p></details>
+  <details><summary>Q2. <code>10.0.1.37</code> という番号のサーバーは、4つのサブネットのどれに入っていますか。</summary>
+    <p><code>memo-public-1c</code>（<code>10.0.1.0/24</code>）。3つ目の数字が 1 だからです。</p></details>
+  <details><summary>Q3. <code>10.0.5.0/24</code> は <code>memo-vpc</code> の中に作れますか。</summary>
+    <p>作れます。3つ目の数字 5 は 0〜15 の範囲内で、まだ使っていない5番のマスです。</p></details>
+  <details><summary>Q4. <code>10.0.20.0/24</code> を <code>memo-vpc</code> の中に作ろうとすると、どうなりますか。</summary>
+    <p>エラーになります。3つ目の数字 20 は 15 を超えていて、VPC の範囲（<code>10.0.0.0</code> 〜 <code>10.0.15.255</code>）からはみ出すからです。</p></details>
+  <details><summary>Q5. <code>memo-private-1a</code> に置いたサーバーが、インターネットに出られないのはなぜですか。</summary>
+    <p>付いているルートテーブル（メイン）に <code>0.0.0.0/0 → memo-igw</code> の行が無いからです。インターネットあての通信の送り先が決まっていません。</p></details>
+</section>
+
+</div>
+</body>
+</html>
