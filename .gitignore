@@ -26,5 +26,6 @@ Thumbs.db
 .idea/
 .vscode/
 
-# 専用リポジトリで管理しているデプロイ練習用アプリ
+# 専用リポジトリで管理しているアプリ
 02.homework/06.week6/deploy-*/
+02.homework/06.week6/subsc-manager/
