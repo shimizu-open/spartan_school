@@ -118,7 +118,7 @@ h2 .ht{flex:1; min-width:0}
 <li><a href="#ex3">14. 通し例3：テーブルが増えない機能（締め切り・絞り込み）</a></li>
 <li class="p">第5部　自分でやる</li>
 <li><a href="#sheet">15. 設計シート（書き込み用）</a></li>
-<li><a href="#practice">16. チュートリアルを「考える練習」に変える方法</a></li>
+<li><a href="#practice">16. 教材を「考える練習」に変える方法</a></li>
 </ol></nav>
 
 <svg width="0" height="0" style="position:absolute"><defs>
@@ -131,7 +131,7 @@ h2 .ht{flex:1; min-width:0}
 
 <section id="intro">
   <h2><span class="num">1</span><span class="ht">この資料が答える4つの問い</span><span class="k c">共通</span></h2>
-  <p>チュートリアルを写して動かせるようになったあと、多くの人がここで止まります。</p>
+  <p>教材を写して動かせるようになったあと、多くの人がここで止まります。</p>
   <div class="scroll"><table>
     <tr><th style="width:52%">問い</th><th>答えがある章</th></tr>
     <tr><td>機能を足すとき、<b>何から考えればいい？</b></td><td><a href="#flow">2章</a>〜<a href="#steps">4章</a></td></tr>
@@ -342,7 +342,7 @@ h2 .ht{flex:1; min-width:0}
 
 <section id="order">
   <h2><span class="num">8</span><span class="ht">なぜ「奥から手前へ」作るのか</span><span class="k c">共通</span></h2>
-  <p>チュートリアルの手順はたいてい <b>マイグレーション → モデル → migrate → コントローラ → ルート → ビュー</b>。これはリクエストが流れる向きの<b>ちょうど逆</b>です。</p>
+  <p>教材の手順はたいてい <b>マイグレーション → モデル → migrate → コントローラ → ルート → ビュー</b>。これはリクエストが流れる向きの<b>ちょうど逆</b>です。</p>
   <div class="fig">
     <svg viewBox="0 0 860 225" role="img" aria-label="リクエストは画面からテーブルへ流れ、作る順番はその逆">
       <text class="lbl" x="20" y="28">リクエストが進む向き</text>
@@ -590,8 +590,8 @@ Schema::table('tasks', function (Blueprint $table) {
 </section>
 
 <section id="practice">
-  <h2><span class="num">16</span><span class="ht">チュートリアルを「考える練習」に変える方法</span><span class="k c">共通</span></h2>
-  <p>チュートリアルは④（データの形）までが済んだ状態で渡されるので、上から写すだけでは①〜④の練習になりません。同じ教材を練習に変える方法は次の3つです。</p>
+  <h2><span class="num">16</span><span class="ht">教材を「考える練習」に変える方法</span><span class="k c">共通</span></h2>
+  <p>教材は④（データの形）までが済んだ状態で渡されるので、上から写すだけでは①〜④の練習になりません。同じ教材を練習に変える方法は次の3つです。</p>
   <ol>
     <li><b>写し終えたコードは、逆向きに読む。</b> 1行ずつ見て「これはどのルールを書いたもの？」を言う。<a href="#ex1">12章</a>のような「ルール → コード」の対応表を自分で作ってみる。</li>
     <li><b>次の章は、コードを見る前に設計シートを埋める。</b> 見出しの1文だけ読んで、テーブル・URL・コントローラのメソッドを自分で予想する。そのあとコードと比べ、<b>違ったところの理由</b>を考える。</li>

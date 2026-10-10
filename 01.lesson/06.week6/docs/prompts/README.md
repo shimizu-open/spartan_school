@@ -33,6 +33,29 @@ bash docs/gen-recap.sh recap-1-trust recap-2-query recap-3-undo
 
 共通の前後文は `_recap-common-head.txt` / `_recap-common-tail.txt`。添付は `_style-clean.png` `_style-dense.png` `_ref-cat.jpg`。
 
+### note 記事用（note-*）
+
+```bash
+bash docs/gen-recap.sh note-0-overall note-1-flow note-2-need note-3-examples
+```
+
+| ファイル | 構成 |
+|---|---|
+| `note-0-overall.txt`  | 記事全体のまとめ（9ステップの帯＋3つの要点） |
+| `note-1-flow.txt`     | 9ステップをV字に並べる |
+| `note-2-need.txt`     | 何が要るかを決める3つの問い／テーブルのつなぎ方3種類 |
+| `note-3-examples.txt` | ToDoアプリの3つの例（同じ質問、ちがう答え） |
+| `_note-thumb.txt`     | 見出し画像。共通の前後文を使わず、これ単体で渡す。3:2で作り、上下1割を切って 1280×670 にする |
+
+貼り付け用の原稿と図は `docs/note/`（`python3 note/build-note.py` で作り直せる）。
+
+このとき分かったこと：
+- **同じプロンプトでも、全体が白くかすんだ淡い仕上がりになる回がある。** → 「白くかすませない。霧やぼかしをかけない。くっきりした線と明るい発色」と書く。
+- **猫を多く描かせるほど、どれかが崩れる。** 実例：手が青い／蝶ネクタイが細長いネクタイに。
+  → カードが多い構図では「猫は1匹だけ。カードの中は物の絵だけ」にする。
+- **猫を大きく描かせると、長毛の写実的な子猫になりやすい。**
+  → 「短い毛、すっきりした線。白いのは前髪と口元だけ。頭と体の比率は見本と同じ」と書く。
+
 ## 添付画像の役割
 | ファイル | 役割 |
 |---|---|

@@ -25,3 +25,6 @@ yarn-error.log*
 Thumbs.db
 .idea/
 .vscode/
+
+# 専用リポジトリで管理しているデプロイ練習用アプリ
+02.homework/06.week6/deploy-*/
