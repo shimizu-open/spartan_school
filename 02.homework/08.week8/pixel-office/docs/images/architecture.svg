@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" font-family="system-ui, 'Hiragino Sans', 'Noto Sans JP', sans-serif" font-size="13">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5d6180"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2fbf71"/>
+    </marker>
+  </defs>
+  <rect width="960" height="560" fill="#ffffff"/>
+  <text x="24" y="34" font-size="20" font-weight="700" fill="#23253a">Pixel Office の全体像</text>
+  <text x="24" y="56" fill="#5d6180">位置・チャット・通話の準備はサーバー経由。声と映像はブラウザ同士で直接つながる（サーバーは中身を見ない）</text>
+
+  <!-- Clients -->
+  <g>
+    <rect x="24" y="84" width="300" height="340" rx="14" fill="#eef1ff" stroke="#5468ff"/>
+    <text x="40" y="110" font-size="15" font-weight="700" fill="#3d4fe0">利用者の端末（ブラウザ / PWA / Electron）</text>
+    <rect x="44" y="126" width="260" height="66" rx="10" fill="#fff" stroke="#c9cff8"/>
+    <text x="58" y="148" font-weight="700" fill="#23253a">Controller（client/src/controllers）</text>
+    <text x="58" y="168" fill="#5d6180">画面遷移・移動入力・通話・カメラ</text>
+    <text x="58" y="184" fill="#5d6180">App / Space / Input / Rtc / Media</text>
+    <rect x="44" y="202" width="260" height="56" rx="10" fill="#fff" stroke="#c9cff8"/>
+    <text x="58" y="224" font-weight="700" fill="#23253a">Model（client/src/models）</text>
+    <text x="58" y="244" fill="#5d6180">参加者・位置・チャット・設定</text>
+    <rect x="44" y="268" width="260" height="56" rx="10" fill="#fff" stroke="#c9cff8"/>
+    <text x="58" y="290" font-weight="700" fill="#23253a">View（client/src/views）</text>
+    <text x="58" y="310" fill="#5d6180">マップ描画(canvas)・ビデオ・パネル</text>
+    <rect x="44" y="334" width="260" height="56" rx="10" fill="#fff" stroke="#c9cff8"/>
+    <text x="58" y="356" font-weight="700" fill="#23253a">shared/（サーバーと共通）</text>
+    <text x="58" y="376" fill="#5d6180">マップ・距離ルール・型・入力チェック</text>
+    <text x="44" y="410" fill="#5d6180">Electron 版も同じ画面を表示する</text>
+  </g>
+
+  <!-- Second client -->
+  <rect x="24" y="492" width="300" height="52" rx="12" fill="#eef1ff" stroke="#5468ff"/>
+  <text x="40" y="523" font-weight="700" fill="#3d4fe0">ほかの参加者の端末（同じ構成）</text>
+
+  <!-- AWS / server -->
+  <g>
+    <rect x="420" y="84" width="516" height="300" rx="14" fill="#fff7ec" stroke="#e2a33d"/>
+    <text x="436" y="110" font-size="15" font-weight="700" fill="#a86a0c">サーバー（AWS：CloudFront → EC2 上の Docker）</text>
+    <rect x="440" y="126" width="140" height="58" rx="10" fill="#fff" stroke="#f0c98a"/>
+    <text x="454" y="150" font-weight="700" fill="#23253a">CloudFront</text>
+    <text x="454" y="170" fill="#5d6180">HTTPS の入口</text>
+    <rect x="600" y="126" width="316" height="240" rx="10" fill="#fff" stroke="#f0c98a"/>
+    <text x="614" y="150" font-weight="700" fill="#23253a">app コンテナ（Node.js 24）</text>
+    <text x="614" y="174" fill="#5d6180">routes → controllers → models → views</text>
+    <text x="614" y="200" font-weight="700" fill="#23253a">Express（HTTP）</text>
+    <text x="614" y="220" fill="#5d6180">画面ファイル配信・/api/config・/healthz</text>
+    <text x="614" y="246" font-weight="700" fill="#23253a">Socket.IO（リアルタイム）</text>
+    <text x="614" y="266" fill="#5d6180">位置・状態・チャット・リアクション</text>
+    <text x="614" y="286" fill="#5d6180">通話準備メッセージの中継</text>
+    <text x="614" y="306" fill="#5d6180">（近い人同士の分だけ通す）</text>
+    <text x="614" y="334" fill="#5d6180">データはメモリのみ（DB なし）</text>
+    <text x="614" y="352" fill="#5d6180">全員退出でスペースは消える</text>
+    <path d="M580 155 L600 155" stroke="#5d6180" stroke-width="2" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- TURN -->
+  <rect x="600" y="404" width="316" height="70" rx="12" fill="#f3f4f8" stroke="#9aa0b8" stroke-dasharray="5 4"/>
+  <text x="614" y="430" font-weight="700" fill="#23253a">turn コンテナ（任意・coturn）</text>
+  <text x="614" y="452" fill="#5d6180">会社のファイアウォール越しの通話を中継</text>
+
+  <!-- Arrows -->
+  <path d="M324 160 L440 155" stroke="#5d6180" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="338" y="186" fill="#5d6180">HTTPS /</text>
+  <text x="338" y="204" fill="#5d6180">WebSocket</text>
+  <path d="M324 518 C 400 518, 420 260, 440 175" stroke="#5d6180" stroke-width="2" fill="none" marker-end="url(#arr)"/>
+  <path d="M110 428 L110 488" stroke="#2fbf71" stroke-width="3" marker-start="url(#arrG)" marker-end="url(#arrG)"/>
+  <text x="124" y="456" fill="#1f8f53" font-weight="700">声・映像・画面共有</text>
+  <text x="124" y="474" fill="#1f8f53" font-weight="700">（WebRTC で直接）</text>
+  <path d="M324 372 C 450 380, 520 430, 600 436" stroke="#9aa0b8" stroke-width="2" stroke-dasharray="5 4" fill="none" marker-end="url(#arr)"/>
+  <text x="384" y="458" fill="#5d6180">直接つながらないときだけ経由</text>
+</svg>

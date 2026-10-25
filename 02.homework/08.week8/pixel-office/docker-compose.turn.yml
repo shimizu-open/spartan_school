@@ -1,0 +1,45 @@
+# Optional TURN server (coturn). Use together with docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.turn.yml up -d --build
+# Set TURN_SECRET, TURN_EXTERNAL_IP and TURN_URLS in .env first.
+# The app hands each person a temporary TURN password made from TURN_SECRET
+# (coturn "use-auth-secret"), so there is no fixed password to leak.
+
+services:
+  # TURN relays audio/video for people behind strict firewalls (company networks,
+  # some mobile carriers). Needs UDP 3478 and 49160-49200 open, and the public IP.
+  turn:
+    image: coturn/coturn:4.18.0
+    network_mode: host
+    restart: unless-stopped
+    command:
+      - -n
+      - --log-file=stdout
+      - --listening-port=3478
+      - --min-port=49160
+      - --max-port=49200
+      - --fingerprint
+      - --use-auth-secret
+      - --static-auth-secret=${TURN_SECRET:?set TURN_SECRET in .env}
+      - --realm=pixel-office
+      # limits so the relay cannot be used up by one person
+      - --user-quota=12
+      - --total-quota=600
+      - --max-bps=3000000
+      - --external-ip=${TURN_EXTERNAL_IP:-}
+      - --no-cli
+      - --no-tlsv1
+      - --no-tlsv1_1
+      - --no-multicast-peers
+      # do not relay to private networks (protects the AWS VPC / metadata service)
+      - --denied-peer-ip=0.0.0.0-0.255.255.255
+      - --denied-peer-ip=10.0.0.0-10.255.255.255
+      - --denied-peer-ip=100.64.0.0-100.127.255.255
+      - --denied-peer-ip=127.0.0.0-127.255.255.255
+      - --denied-peer-ip=169.254.0.0-169.254.255.255
+      - --denied-peer-ip=172.16.0.0-172.31.255.255
+      - --denied-peer-ip=192.168.0.0-192.168.255.255
+      # the same for IPv6: loopback, private (fc00::/7), link-local (fe80::/10), IPv4-mapped
+      - --denied-peer-ip=::1
+      - --denied-peer-ip=fc00::-fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+      - --denied-peer-ip=fe80::-febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff
+      - --denied-peer-ip=::ffff:0.0.0.0-::ffff:255.255.255.255

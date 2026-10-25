@@ -1,0 +1,28 @@
+{
+  "name": "pixel-office",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MetaLife-style 2D virtual office: walk around, talk to people nearby",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "node --watch-path=server --watch-path=shared server/index.ts",
+    "build": "vite build",
+    "start": "NODE_ENV=production node server/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "NODE_ENV=production node --test --test-concurrency=1 \"test/**/*.test.ts\""
+  },
+  "dependencies": {
+    "express": "5.3.0",
+    "socket.io": "4.8.4"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "26.6.5",
+    "socket.io-client": "4.8.4",
+    "typescript": "7.0.2",
+    "vite": "8.3.4"
+  }
+}
