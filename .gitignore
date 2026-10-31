@@ -30,4 +30,6 @@ Thumbs.db
 # 04.product の中のフォルダは、それぞれ自分のリポジトリで GitHub に上げる
 04.product/*/
 02.homework/06.week6/deploy-*/
-02.homework/06.week6/subsc-manager/
+
+# すぱるた塾のレッスンページの写し（会員向けの教材なので公開しない。手元だけに置く）
+99.text/
