@@ -27,7 +27,7 @@ Thumbs.db
 .vscode/
 
 # 専用リポジトリで管理しているアプリ
+# 04.product の中のフォルダは、それぞれ自分のリポジトリで GitHub に上げる
+04.product/*/
 02.homework/06.week6/deploy-*/
 02.homework/06.week6/subsc-manager/
-02.homework/07.week7/baker-street-english/
-02.homework/08.week8/pixel-office/
